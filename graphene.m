@@ -48,4 +48,4 @@ len = 80;
 tb.set_kvector(-range,range,len);
 tb.calculate_band();
 f = tb.plot_band();
-
+%f.Color = [0.5 0.5 0.2];
