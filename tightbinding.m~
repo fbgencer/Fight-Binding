@@ -107,7 +107,7 @@ classdef tightbinding < handle
         elseif(obj.no_primvec == 2)
             surf(kx,ky,obj.E);
             hold on;
-            %surf(kx,ky,obj.En);
+            surf(kx,ky,obj.En);
         elseif(obj.no_primvec == 1)
             surf(kx,obj.E);
         end

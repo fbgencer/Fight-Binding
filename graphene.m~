@@ -43,8 +43,8 @@ tb.add_hopping(-t,1,2,[0 -1]);  % 0 to 3
 tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 
 
-range = 2*pi/a;
-len = 150;
+range = pi/a;
+len = 80;
 tb.set_kvector(-range,range,len);
 tb.calculate_band();
 f = tb.plot_band();

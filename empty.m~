@@ -63,29 +63,15 @@ gp = lattice_drawer(1,30,30);
 %o1 = gp.draw('line',25,20,3,3);
 
 o = [];
-for i = 0:5
-    %o2 = gp.draw('eqtri',5+i*3,5,3);
-    %o3 = gp.draw('circle',5+i*3,5,.1,'red');
-    
-    %gp.draw('hexagon',5+i*2,10,1);
-    %gp.draw('circle',5+i*2,10,.1,'red');
-    ;
+for i = 1:5
+    o2 = gp.draw('eqtri',5+i*3,5,3);
+    o3 = gp.draw('circle',5+i*3,5,.1,'red');
+    o(end+1) = o2;
 end
 
-%gp.draw('line',5,5,20,5);
-
-gp.draw('hexagon',10,10,5);
-gp.draw('hexagon',10,10+5*sqrt(3),5);
-gp.draw('hexagon',10+15/2,10+5*sqrt(3)/2,5);
-gp.draw('hexagon',10+15/2,10-5*sqrt(3)/2,5);
-gp.draw('circle',10,10,1);
-gp.draw('circle',10,10+5*sqrt(3),1);
-gp.draw('circle',10+15/2,10+5*sqrt(3)/2,1);
-gp.draw('circle',10+15/2,10-5*sqrt(3)/2,1);
-
-gp.draw('vector',10,10,10+15/2,10+5*sqrt(3)/2,'black');
-gp.draw('vector',10,10,10+15/2,10+5*sqrt(3)/2,'black');
-gp.draw('vector',10,10,10+15/2,10+5*sqrt(3)/2,'black');
+gp.draw('line',8,5,20,5);
+gp.draw('hexagon',20,2,1);
+gp.draw('hexagon',20,2,1);
 
 % o1 = gp.draw('circle',5,5,1,'green','green');
 % o2 = gp.draw('circle',5,15,1,'red','red');
