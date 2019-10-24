@@ -53,39 +53,149 @@
 %r.FaceColor = 'red';
 %r1 = rectangle('Position',[0 0 10 10]);
 
-close all;
-clear;
-clc;
-gp = lattice_drawer(1,30,30);
+close all; clear; clc;
+gp = lattice_drawer(figure(1),30,30);
 
 %o1 = gp.draw('line',3,3,3,10);
 %o1 = gp.draw('line',3,10,25,20);
 %o1 = gp.draw('line',25,20,3,3);
 
-o = [];
-for i = 0:5
-    %o2 = gp.draw('eqtri',5+i*3,5,3);
-    %o3 = gp.draw('circle',5+i*3,5,.1,'red');
+a = 3;
+a1 = [a*sqrt(3)/2, a/2,0];
+a2 = [a*sqrt(3)/2, -a/2,0];
+
+gp.set_title('$Graphene\hspace{1mm}C_{6}$','Interpreter','latex');
+gp.set_xlabel('$X$','Interpreter','latex');
+x = 5; y = 5;
+
+cx = 15; cy = 15;
+
+
+% for i =  0:1
+% for j = 0:1
+%     
+%     cx = i*a1(1)+j*a2(1)+cx;
+%     cy = i*a1(2)+j*a2(2)+cy;
+%     
+%     l1 = gp.draw('line',cx-1,cy,cx+1,cy,'black');
+%     cr = gp.draw('circle',cx-1,cy,0.3,'red','red');
+%     cb = gp.draw('circle',cx+1,cy,0.3,'blue','blue');
+%     cx = 15; cy = 15;
+% end
+% end
+
+
+gp.fig.Position = [713 175 560 420];
+ctr = 1;
+for i =  -7:7
+for j =  -7:7
     
-    %gp.draw('hexagon',5+i*2,10,1);
-    %gp.draw('circle',5+i*2,10,.1,'red');
-    ;
+    cx = i*a1(1)+j*a2(1)+cx;
+    cy = i*a1(2)+j*a2(2)+cy;
+
+cxa= cx-1;
+cya = cy;
+cxb= cx+1;
+cyb = cy;
+
+
+%next first neighbor
+cx1 = cx+a1(1);
+cy1 = cy+a1(2);
+cx1a = cx1-1;
+cy1a = cy1;
+cx1b = cx1+1;
+cy1b = cy1;
+l1 = gp.draw('line',cxb,cyb,cx1a,cy1a);
+
+cx1 = cx-a1(1);
+cy1 = cy-a1(2);
+cx1a = cx1-1;
+cy1a = cy1;
+cx1b = cx1+1;
+cy1b = cy1;
+l1 = gp.draw('line',cxa,cya,cx1b,cy1b);
+
+cx1 = cx-a2(1);
+cy1 = cy-a2(2);
+cx1a = cx1-1;
+cy1a = cy1;
+cx1b = cx1+1;
+cy1b = cy1;
+l1 = gp.draw('line',cxa,cya,cx1b,cy1b);
+
+cx1 = cx+a2(1);
+cy1 = cy+a2(2);
+cx1a = cx1-1;
+cy1a = cy1;
+cx1b = cx1+1;
+cy1b = cy1;
+l1 = gp.draw('line',cxb,cyb,cx1a,cy1a);
+    
+    l1 = gp.draw('line black',cx-1,cy,cx+1,cy);
+    cr = gp.draw('circle',cx-1,cy,0.3);
+    cb = gp.draw('circle blue',cx+1,cy,0.3);
+    %gp.set_text(cr,sprintf('%d',ctr));
+    cx = 15; cy = 15;
+end
 end
 
+
+
+
+
+
+
+%gp.infinite_layer();
+
+% for j = 0:3*a:20
+% for i = 0:6
+%     h1=gp.draw('hexagon',j+x,y+i*(sqrt(3)*a),a);
+%     h2=gp.draw('hexagon',j+x+3*a/2,a*sqrt(3)/2+y+i*(sqrt(3)*a),a);
+%     for kk = 1:6
+%         ll = h1.UserData(kk);
+%         ll2 = h2.UserData(kk);
+%         ll.Marker = 'o';
+%         ll.MarkerFaceColor = 'blue';
+%         ll2.Marker = 'o';
+%         ll2.MarkerFaceColor = 'blue';
+%     end
+%     gp.draw('circle',j+x,y+i*(sqrt(3)*a),0.3,'black');
+%     gp.draw('circle',j+x+3*a/2,a*sqrt(3)/2+y+i*(sqrt(3)*a),0.3,'green');
+% end
+% end
+
+%cc = gp.draw('circle',10,20,5);
+%sv = gp.draw('line',10,0,10,20);
+
+
+%gp.draw('line',35,0,35,40);
+%gp.draw('line',0,35,40,35);
+%v1=gp.draw('vector',30,30,35,35,'red');
+
+%v2=gp.draw('vector',30,30,38,33,'black');
+%v3=gp.draw('vector',0,0,30,40,'black');
+%gp.set_text(v1,'a1');
+%gp.set_text(v3,'XYZ');
+
+%gp.save_pdf('hexa_lattice2');
+
 %gp.draw('line',5,5,20,5);
+% 4
 
-gp.draw('hexagon',10,10,5);
-gp.draw('hexagon',10,10+5*sqrt(3),5);
-gp.draw('hexagon',10+15/2,10+5*sqrt(3)/2,5);
-gp.draw('hexagon',10+15/2,10-5*sqrt(3)/2,5);
-gp.draw('circle',10,10,1);
-gp.draw('circle',10,10+5*sqrt(3),1);
-gp.draw('circle',10+15/2,10+5*sqrt(3)/2,1);
-gp.draw('circle',10+15/2,10-5*sqrt(3)/2,1);
+% gp.draw('hexagon',10,10+5*sqrt(3),5);
+% gp.draw('hexagon',10+15/2,10+5*sqrt(3)/2,5);
+% gp.draw('hexagon',10+15/2,10-5*sqrt(3)/2,5);
+% gp.draw('circle',10,10,1);
+% gp.draw('circle',10,10+5*sqrt(3),1);
+% gp.draw('circle',10+15/2,10+5*sqrt(3)/2,1);
+% gp.draw('circle',10+15/2,10-5*sqrt(3)/2,1);
+% 
+% gp.draw('vector',10,10,10,10+5*sqrt(3),'black');
+% gp.draw('vector',10,10,10+15/2,10+5*sqrt(3)/2,'black');
+% gp.draw('vector',10,10,10+15/2,10-5*sqrt(3)/2,'black');
 
-gp.draw('vector',10,10,10+15/2,10+5*sqrt(3)/2,'black');
-gp.draw('vector',10,10,10+15/2,10+5*sqrt(3)/2,'black');
-gp.draw('vector',10,10,10+15/2,10+5*sqrt(3)/2,'black');
+
 
 % o1 = gp.draw('circle',5,5,1,'green','green');
 % o2 = gp.draw('circle',5,15,1,'red','red');
@@ -104,4 +214,12 @@ gp.draw('vector',10,10,10+15/2,10+5*sqrt(3)/2,'black');
 % gp.connect(o2,o4);
 % gp.connect(o1,o4);
 
+
+%1- Atomic species, positions and orbitals verince unit cell'i çıkartsın ve unit cell'in 2D veya 3D interaktif görüntüsünü çıkartabilsin
+%2- bantları çıkarttıktan sonra electronic DOS çıkartılması (toplam ve her band için ayrı ayrı istenebilsin)
+%3- Brillouin Zone hesaplasın, reciprocal space vektörlerini bulsun, Brillouin zone'daki yüksek simetrisi olan noktaları çıkartsın
+%3- elektron bantların, orbital, angular simetri, spin ve atomic ağırlıklarını versin
+%4- 2D veya 3D Fermi yüzeyini çıkartsın, içeri doğru topolojisini versin, Fermi wave-vectorleri versin
+%5- introducing the spin and the spin-orbit coupling
+%6- from tight binding to electron-phonon interaction
 

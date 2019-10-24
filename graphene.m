@@ -6,10 +6,11 @@ a0 = 1.42*1e-10;
 a = a0*sqrt(3);
 
 %primitive vectors
-a1 = [a*sqrt(3)/2, a/2,  0];
+a1 = [a*sqrt(3)/2,  a/2,  0];
 a2 = [a*sqrt(3)/2, -a/2, 0];
 
-tb = tightbinding('graphene',2,[a1;a2]);
+tb = tightbinding('graphene',2);
+tb.set_primitive_vectors(a1,a2);
 
 
 %Graphene Structure
@@ -44,8 +45,22 @@ tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 
 
 range = 2*pi/a;
-len = 150;
+len = 80;
 tb.set_kvector(-range,range,len);
 tb.calculate_band();
 f = tb.plot_band();
 %f.Color = [0.5 0.5 0.2];
+
+K1 = [-4*pi / (3*sqrt(3)*a), 0,0];
+Gamma = [0, 0, 0];
+gp = lattice_drawer(f);
+ll = gp.draw('vector',K1(1),K1(2),Gamma(1),Gamma(2));
+ll.MaxHeadSize = 1;
+%ll.LineWidth = 2;
+M = [0, 2*pi / (3*a),0];
+ll = gp.draw('vector',Gamma(1),Gamma(2),M(1),M(2));
+ll.MaxHeadSize = 1;
+%ll.LineWidth = 2;
+K2 = [2*pi / (3*sqrt(3)*a), 2*pi / (3*a),0];
+ll = gp.draw('vector',M(1),M(2),K2(1),K2(2));
+%ll.LineWidth = 2;
