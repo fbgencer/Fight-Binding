@@ -1,7 +1,7 @@
 clear; clc; close all;
 %graphene consts
-Eo = 1;
-t = 2;
+Eo = 0;
+t = 0.1;
 a0 = 1.42*1e-10;
 a = a0*sqrt(3);
 
@@ -43,22 +43,41 @@ tb.add_hopping(-t,2,1,[1 0]);   % 0 to 2 with a1 vector
 tb.add_hopping(-t,1,2,[0 -1]);  % 0 to 3
 tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 
+%Do this, just make sure to get symmetric 
+%tb.hermitian_hamiltonian();
+
 
 range = 2*pi/a;
-len = 80;
+len = 50;
 tb.set_kvector(-range,range,len);
 tb.calculate_band();
-f = tb.plot_band();
+f = figure(1);
+tb.plot_band(f);
+
+Gamma = [0, 0,0];
+K1 = [-2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
+M = [2*pi / (sqrt(3)*a), 0, 0];
+K2 = [2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
+
+f2 = tb.plot_high_symmetry_points(figure(2),K1,Gamma,M,K2);
+title(f2.CurrentAxes,'FBG','Interpreter','Latex');
+%xlabel(f2.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
+xticks(f2.CurrentAxes,[0 50 100 150]);
+xticklabels(f2.CurrentAxes,{'K','\Gamma','M','K'});
+
+%gp_byhand;
 %f.Color = [0.5 0.5 0.2];
 
-K1 = [-4*pi / (3*sqrt(3)*a), 0,0];
-Gamma = [0, 0, 0];
-gp = lattice_drawer(f);
-ll = gp.draw('line',K1(1),K1(2),Gamma(1),Gamma(2),'black');
-ll.LineWidth = 2;
-M = [0, 2*pi / (3*a),0];
-ll = gp.draw('line',Gamma(1),Gamma(2),M(1),M(2),'black');
-ll.LineWidth = 2;
-K2 = [2*pi / (3*sqrt(3)*a), 2*pi / (3*a),0];
-ll = gp.draw('line',K1(1),K1(2),Gamma(1),Gamma(2),'black');
-ll.LineWidth = 2;
+%K1 = [-4*pi / (3*sqrt(3)*a), 0,0];
+%Gamma = [0, 0, 0];
+%gp = lattice_drawer(f);
+%ll = gp.draw('vector',K1(1),K1(2),Gamma(1),Gamma(2));
+%ll.MaxHeadSize = 1;
+%ll.LineWidth = 2;
+%M = [0, 2*pi / (3*a),0];
+%ll = gp.draw('vector',Gamma(1),Gamma(2),M(1),M(2));
+%ll.MaxHeadSize = 1;
+%ll.LineWidth = 2;
+%K2 = [2*pi / (3*sqrt(3)*a), 2*pi / (3*a),0];
+%ll = gp.draw('vector',M(1),M(2),K2(1),K2(2));
+%ll.LineWidth = 2;

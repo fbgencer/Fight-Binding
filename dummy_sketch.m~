@@ -1,0 +1,38 @@
+close all
+clear all
+clc
+t=-2.550; 
+acc=1.44e-10; 
+a=1.732*acc; 
+s=0:0.02:1 ;
+k_x=(2*pi/(sqrt(3)*a))*(1-s) ;
+k_y=(2*pi/(3*a))*(1-s);
+E1=t.*sqrt(1+4.*cos((sqrt(3).*a/2).*k_x).*cos((a/2).*k_y)+4.*cos((a/2).*k_y).^2) ;
+E2=-E1; 
+
+plot(E1,'*') 
+hold on 
+plot(E2,'*')
+
+
+
+s=0:0.02:1;
+k_x=(2*pi/(sqrt(3)*a))*s;
+k_y=0;
+E1=t.*sqrt(1+4.*cos((sqrt(3).*a/2).*k_x).*cos((a/2).*k_y)+4.*cos((a/2).*k_y).^2);
+E2=-E1;
+plot(E1,'*')
+hold on
+plot(E2,'*')
+s=0:0.02:1;
+k_x=(2*pi/(sqrt(3)*a));
+k_y=(2*pi/(3*a))*s ;
+E1=t.*sqrt(1+4.*cos((sqrt(3).*a/2).*k_x).*cos((a/2).*k_y)+4.*cos((a/2).*k_y).^2);
+
+E2=-E1; 
+plot(E1,'*')
+hold on
+plot(E2,'*')
+
+
+

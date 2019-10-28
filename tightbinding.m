@@ -5,9 +5,10 @@ classdef tightbinding < handle
       pvec = 0; %primitive vectors
       recip_vec = 0; %reciprocal vectors
       no_primvec = 0; %number of primitive vectors
+      no_unit = 0;
       hm = {}; % Hamiltonian matrix
       phase = {};
-      no_unit = 0;
+      bonds = {};
       kvec = {};
       E = 0; % without calculation it is just zero
       En = 0;
@@ -63,7 +64,7 @@ classdef tightbinding < handle
         r.b2 = 2*pi*cross(a1,a3)/(dot(a2,cross(a1,a3)));
         r.b3 = 2*pi*cross(a1,a2)/(dot(a3,cross(a1,a2)));
       end
-       
+       %%
 %add_hopping(amplitude,interaction between pairs,translation vec)
 %add_hopping(t,1,2,[0 0]);  % inside 0 A and B interaction interaction
 %between zero and one which A and B respectively.
@@ -74,53 +75,61 @@ classdef tightbinding < handle
       
       function add_hopping(self,amp,index1,index2,trans_vec)
         if(index1 > 0 && index2 > 0)
-            where = trans_vec * self.pvec;
-            m = zeros(self.no_unit);
-            m(index1,index2) =  amp;
-            self.hm{end+1} = m;
-            self.phase{end+1} = where;
+            %Here we will hold a struct that contains i,j locations,
+            %amplitude of the given hopping and phase value
+            
+            %where =
+            %m = zeros(self.no_unit);
+            %m(index1,index2) =  amp;
+            %self.hm{end+1} = m;
+            %self.phase{end+1} = where;
+            bond.phase =  trans_vec * self.pvec;
+            bond.i = index1;
+            bond.j = index2;
+            bond.amp = amp;
+            self.bonds{end+1} = bond;
         else
             disp('Atom indexes must be bigger than zero.');
         end
         
       end
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%
       function calculate_band(self)
+          
         len = size(self.kvec{1},2);
-        self.E = zeros(len,len);
         kx = self.kvec{1};
         ky = self.kvec{2};
         kz = self.kvec{3};
-        bonding_no = size(self.hm,2);
         
-        for i = 1:len
-            for j = 1:len
+        [self.E,self.En] = calc_band_internal(self,kx,ky,kz);
+        
+      end
+      function [Energy,negEnergy] = calc_band_internal(self,kx,ky,kz)
+         %assume they have equal sizes
+         ilen = size(kx,1);
+         jlen = size(kx,2);
+         Energy = zeros(ilen,jlen);
+         negEnergy = Energy;
+         bonding_no = size(self.bonds,2);
+         for i = 1:ilen
+            for j = 1:jlen
                 eig_matrix = zeros(self.no_unit);
                 k = [kx(i,j),ky(i,j),kz(i,j)];
                 for ob_iter = 1:bonding_no
-                    m = self.hm{ob_iter};
-                    v = self.phase{ob_iter};
-                    q = exp(1i*dot(k,v));
-                    eig_matrix = eig_matrix + (m * q);
-                    %fprintf("k = [%g %g %g] [%d]\n",k,ob_iter);
-                    %disp(q);
-                    %disp(v);
-                    
-                    %disp(eig_matrix);
-                    %alpha = -t*(exp(-1i*dot(k,a1))+exp(-1i*dot(k,a2)) + 1);
-                    %M = [Eo alpha; conj(alpha) Eo];
+                    bond = self.bonds{ob_iter};
+                    q = exp(1i*dot(k,bond.phase));
+                    eig_matrix(bond.i,bond.j) = eig_matrix(bond.i,bond.j) +  (bond.amp * q);
                 end
                 eigens = eig(eig_matrix);
-                %disp(eigens);
-                self.E(i,j) = eigens(1);
-                %self.En(i,j) = eigens(2);
+                Energy(i,j) = eigens(1);
+                if(size(eigens,1) == 2)
+                    negEnergy(i,j) = eigens(2);
+                end
             end
-        end
-        %disp(eig_matrix);
-        %disp(E);
+         end
         
       end
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      %%
       function set_kvector(self,from,to,len)
         k = linspace(from,to,len);
         if(self.no_primvec == 3)
@@ -136,66 +145,57 @@ classdef tightbinding < handle
             self.kvec = {kx,z,z}; 
         end    
       end
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      function f = plot_band(self)
+      %%
+      function f = plot_band(self,fig)
         kx = self.kvec{1};
         ky = self.kvec{2};
         kz = self.kvec{3};
-        f = figure(1);
+        f = fig();
+        s.positive_surface = 0;
+        s.negative_surface = 0;
         if(self.no_primvec == 3)
-            surf(kx,ky,kz,self.E);
+            s.positive_surface = surf(kx,ky,kz,self.E);
         elseif(self.no_primvec == 2)
-            surf(kx,ky,self.E);
-            hold on;
-            %surf(kx,ky,self.En);
-        elseif(self.no_primvec == 1)
-            surf(kx,self.E);
-        end
-        
-      end
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      function f = plot_high_symmetry_points(self)
-        a0 = 1.42*1e-10;
-        a = a0*sqrt(3);
-        f = figure(2);
-        K1 = [-4*pi / (3*sqrt(3)*a), 0,0];
-        Gamma = [0, 0, 0];
-        M = [0, 2*pi / (3*a),0];
-        K2 = [2*pi / (3*sqrt(3)*a), 2*pi / (3*a),0];
-        
-        len = size(self.kvec{1},2);
-        kx = linspace(K1(1),Gamma(1),len);
-        ky = zeros(1,len);
-        kz = zeros(1,len);
-       
-        Energy = zeros(len,len);
-        bonding_no = size(self.hm,2);
-        
-        for i = 1:len
-            for j = 1:len
-                eig_matrix = zeros(self.no_unit);
-                k = [kx(i,j),ky(i,j),kz(i,j)];
-                for ob_iter = 1:bonding_no
-                    m = self.hm{ob_iter};
-                    v = self.phase{ob_iter};
-                    q = exp(1i*dot(k,v));
-                    eig_matrix = eig_matrix + (m * q);
-                    %fprintf("k = [%g %g %g] [%d]\n",k,ob_iter);
-                    %disp(q);
-                    %disp(v);
-                    
-                    %disp(eig_matrix);
-                    %alpha = -t*(exp(-1i*dot(k,a1))+exp(-1i*dot(k,a2)) + 1);
-                    %M = [Eo alpha; conj(alpha) Eo];
-                end
-                eigens = eig(eig_matrix);
-                %disp(eigens);
-                Energy(i,j) = eigens(1);
-                %self.En(i,j) = eigens(2);
+            s.positive_surface = surf(kx,ky,self.E);
+            if(self.En ~= 0)
+                hold on;
+                s.negative_surface = surf(kx,ky,self.En);
             end
+        elseif(self.no_primvec == 1)
+            s.positive_surface = surf(kx,self.E);
         end
-        plot(kx,Energy);
+        f.UserData = s;
       end
+      %%
+      function f = plot_high_symmetry_points(self,fig,varargin)
+
+        f = fig();
+        
+        if(nargin < 2)
+            disp('In order to plot at least two high symmetry points are required.');
+            return;
+        end
+        
+        prec = size(self.kvec{1},2);
+        kx = [];
+        ky = [];
+        kz = [];
+        no_point = nargin-3;
+        for i = 1:no_point
+            kx = [kx,linspace(varargin{i}(1),varargin{i+1}(1),prec)];
+            ky = [ky,linspace(varargin{i}(2),varargin{i+1}(2),prec)];
+            kz = [kz,linspace(varargin{i}(3),varargin{i+1}(3),prec)];
+        end
+        
+        [Energy,Energyn] = calc_band_internal(self,kx,ky,kz);
+        p.positive_plot = plot(Energy);
+        if(self.En ~= 0)
+            hold on;
+            p.negative_plot = plot(Energyn);
+        end
+        f.UserData = p;
+      end
+      %%
    end
 end
 
