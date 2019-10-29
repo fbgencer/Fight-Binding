@@ -5,7 +5,7 @@ classdef tightbinding < handle
       pvec = 0; %primitive vectors
       recip_vec = 0; %reciprocal vectors
       no_primvec = 0; %number of primitive vectors
-      no_unit = 0;
+      unit_cell = {};
       hm = {}; % Hamiltonian matrix
       phase = {};
       bonds = {};
@@ -19,9 +19,20 @@ classdef tightbinding < handle
        %dim: Dimension of the model, 1d-2d-3d
        %unit_cell atom no
        %primvec: primitive vectors
-       function tb = tightbinding(name,no_unit)
+       function tb = tightbinding(name,a1,varargin)
          tb.name = name;
-         tb.no_unit = no_unit; % number of atoms in unit cell
+         tb.set_primitive_vectors(a1,varargin{:});
+       end
+       %%
+       function set_unit_cell(self,varargin)
+       %nargin must be even, we will create a structure that holds our unit
+       %cell-
+            atom = struct('name','','pos',0);
+            for i = 1:2:nargin-1
+                atom.name = varargin{i};
+                atom.pos = varargin{i+1};
+               self.unit_cell{end+1} = atom;
+            end
        end
        %%
        function set_primitive_vectors(self,a1,varargin)
@@ -83,7 +94,7 @@ classdef tightbinding < handle
             %m(index1,index2) =  amp;
             %self.hm{end+1} = m;
             %self.phase{end+1} = where;
-            bond.phase =  trans_vec * self.pvec;
+            bond.phase =  trans_vec;
             bond.i = index1;
             bond.j = index2;
             bond.amp = amp;
@@ -113,11 +124,11 @@ classdef tightbinding < handle
          bonding_no = size(self.bonds,2);
          for i = 1:ilen
             for j = 1:jlen
-                eig_matrix = zeros(self.no_unit);
+                eig_matrix = zeros(size(self.unit_cell,2));
                 k = [kx(i,j),ky(i,j),kz(i,j)];
                 for ob_iter = 1:bonding_no
                     bond = self.bonds{ob_iter};
-                    q = exp(1i*dot(k,bond.phase));
+                    q = exp(1i*dot(k,bond.phase*self.pvec));
                     eig_matrix(bond.i,bond.j) = eig_matrix(bond.i,bond.j) +  (bond.amp * q);
                 end
                 eigens = eig(eig_matrix);
@@ -196,6 +207,104 @@ classdef tightbinding < handle
         f.UserData = p;
       end
       %%
+      function plot_lattice(self,gp,varargin)
+            
+            canvas_x = gp.canvas_x;
+            canvas_y = gp.canvas_y;
+            %gp.set_title('$Graphene\hspace{1mm}C_{6}$','Interpreter','latex');
+            %gp.set_xlabel('$X$','Interpreter','latex');
+            
+            
+            no_varg = nargin-2;
+            if(no_varg>0)
+                type_struct = varargin{1};
+                plot_bond_obj = type_struct.bond;
+                plot_atoms_obj = type_struct.atom;
+            end
+            
+            cx = 0;
+            cy = 0;
+            gp.fig.CurrentAxes.XLim = [-canvas_x/2 canvas_x/2];
+            gp.fig.CurrentAxes.YLim = [-canvas_y/2 canvas_y/2];
+            
+            normalize = 1e10;
+            a1 = self.pvec(1,:).*normalize;
+            a2 = self.pvec(2,:).*normalize;
+            
+            %a3 = self.pvec(3,1);
+            
+            %atom_circles = {};
+            %atom_bonds = {};
+            
+            %for every atom in the unitcell create a circle
+            for i = 1:size(self.unit_cell,2)
+                atom = self.unit_cell{i};
+                %atom_circles{end+1} = gp.draw("circle "+clr,atom.pos(1)*normalize,atom.pos(2)*normalize,0.3);
+                cx = cx+atom.pos(1)*normalize;
+                cy = cy+atom.pos(2)*normalize;
+            end
+            
+            main_cx = cx/size(self.unit_cell,2);
+            main_cy = cy/size(self.unit_cell,2);
+            
+            lattice_fill_factorx = ceil( canvas_x/(abs(a1(1))+abs(a2(1)))) ;
+            lattice_fill_factory = ceil( canvas_y/(abs(a1(2))+abs(a2(2))) ) ;           
+            
+            
+            for e1 = -lattice_fill_factorx:lattice_fill_factorx
+            for e2 = -lattice_fill_factory:lattice_fill_factory
+                cx = main_cx + e1*a1(1)+e2*a2(1);
+                cy = main_cy + e1*a1(2)+e2*a2(2);
+            for i = 1:size(self.bonds,2)
+                bond = self.bonds{i};
+                atom1 = self.unit_cell{bond.i};
+                atom2 = self.unit_cell{bond.j};
+                tvector = a1.*bond.phase(1)+a2.*bond.phase(2); % tvec translates our unitcell to new unitcells
+                new_unitcell_cx = cx+tvector(1);
+                new_unitcell_cy = cy+tvector(2);
+                %gp.draw('vector',cx,cy,new_unitcell_cx,new_unitcell_cy);
+                x1 = cx + atom1.pos(1)*normalize;
+                y1 = cy + atom1.pos(2)*normalize;
+                x2 = new_unitcell_cx + atom2.pos(1)*normalize;
+                y2 = new_unitcell_cy + atom2.pos(2)*normalize;
+                
+                if(x1 == x2 && y1 == y2)
+                   continue;
+                end
+
+                
+                %p.draw(bond1.type+" "+bond1.color,x1,y1,x2,y2);
+                %gp.draw(atom1.type+" "+atom1.color,x1,y1,atom1.radius);
+                tbond = gp.copy_to(plot_bond_obj{1},x1,y1,x2,y2);
+                tbond.Visible = 'on';
+                tsite1 = gp.copy_to(plot_atoms_obj{1},x1,y1);
+                tsite1.Visible = 'on';
+                tsite2 = gp.copy_to(plot_atoms_obj{2},x2,y2);
+                tsite2.Visible = 'on';
+                %%gp.draw(atom2.type+" "+atom2.color,x2,y2,atom2.radius);
+                %gp.draw('circle red',x2,y2,0.2);
+                
+                %fprintf("x1 %g, y1 %g, x2 %g, y2 %g\n",x1,y1,x2,y2);
+                %gp.copy_to(atom_circles{bond.j},x2,y2);
+            end
+            end
+            end
+%             new_cx = cx;
+%             new_cy = cy;
+%             for i = 1
+%             for j = 1
+%                 new_cx = i*a1(1)+j*a2(1)+new_cx;
+%                 new_cy = i*a1(2)+j*a2(2)+new_cy;
+%                 for k = 1:size(atom_circles,2)
+%                 %gp.draw('line black',cx-1,cy,cx+1,cy,'black');
+%                     gp.copy_to(atom_circles{k},new_cx,new_cy);
+%                 end
+%                 new_cx = cx;
+%                 new_cy = cy;
+%             end
+%             end
+
+      end
    end
 end
 

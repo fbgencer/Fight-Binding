@@ -1,18 +1,3 @@
-clear; clc; close all;
-%graphene consts
-Eo = 0;
-t = 0.1;
-a0 = 1.42*1e-10;
-a = a0*sqrt(3);
-
-%primitive vectors
-a1 = [a*sqrt(3)/2,  a/2,  0];
-a2 = [a*sqrt(3)/2, -a/2, 0];
-
-tb = tightbinding('graphene',2);
-tb.set_primitive_vectors(a1,a2);
-
-
 %Graphene Structure
 % [A]--[B]         [A]--[B]
 % (1)    \        /  (2)
@@ -33,37 +18,63 @@ tb.set_primitive_vectors(a1,a2);
 %add_hopping(t,2,1,[0 1]);  % 0 -> 3
 %add_hopping(t,1,2,[0 -1]);  % 0 -> 4
 
+clear; clc; close all;
+%graphene consts
+
+a0 = 1.42*1e-10;
+a = a0*sqrt(3);
+
+%primitive vectors
+a1 = [a*sqrt(3)/2,  a/2,  0];
+a2 = [a*sqrt(3)/2, -a/2, 0];
+
+tb = tightbinding('graphene',a1,a2);% Start with name and primitive vectors
+tb.set_unit_cell('A',[-a0/2 0],'B',[a0/2 0]); %give unit cell atoms and their locations
+
+Eo = 0;
+t = 0.1;
 tb.add_hopping(Eo,1,1,[0 0]);  % 0 to 0
 tb.add_hopping(Eo,2,2,[0 0]);  % 0 to 0
 
 tb.add_hopping(-t,1,2,[0 0]);  % 0 to 0
 tb.add_hopping(-t,2,1,[0 0]);  % 0 to 0
+
 tb.add_hopping(-t,1,2,[-1 0]);  % 0 to 1 with -a1 vector
 tb.add_hopping(-t,2,1,[1 0]);   % 0 to 2 with a1 vector
 tb.add_hopping(-t,1,2,[0 -1]);  % 0 to 3
 tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 
-%Do this, just make sure to get symmetric 
+%Do this, just make sure to get symmetric hamiltonian
 %tb.hermitian_hamiltonian();
+lat_f = figure(3);
+
+atoma = gp.draw('circle blue',0,0,0.3,'Visible','off');
+atomb = gp.draw('circle red',0,0,0.3,'Visible','off');
+bond = gp.draw('line black',0,0,0,0,'Visible','off');
+type_str = struct('bo');
+tb.plot_lattice(lat_f,20,20,);
+
 
 
 range = 2*pi/a;
 len = 50;
 tb.set_kvector(-range,range,len);
 tb.calculate_band();
-f = figure(1);
-tb.plot_band(f);
+%f = figure(1);
+%tb.plot_band(f);
 
 Gamma = [0, 0,0];
 K1 = [-2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 M = [2*pi / (sqrt(3)*a), 0, 0];
 K2 = [2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 
-f2 = tb.plot_high_symmetry_points(figure(2),K1,Gamma,M,K2);
-title(f2.CurrentAxes,'FBG','Interpreter','Latex');
+%f2 = tb.plot_high_symmetry_points(figure(2),K1,Gamma,M,K2);
+%f2 = tb.plot_high_symmetry_points(figure(2),Gamma,M,K2,Gamma);
+
+%title(f2.CurrentAxes,'FBG','Interpreter','Latex');
 %xlabel(f2.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
-xticks(f2.CurrentAxes,[0 50 100 150]);
-xticklabels(f2.CurrentAxes,{'K','\Gamma','M','K'});
+%xticks(f2.CurrentAxes,[0 50 100 150]);
+%xticklabels(f2.CurrentAxes,{'K','\Gamma','M','K'});
 
 %gp_byhand;
 %f.Color = [0.5 0.5 0.2];
