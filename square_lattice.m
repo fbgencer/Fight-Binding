@@ -9,7 +9,8 @@ a = a0;
 a1 = [a, 0, 0];
 a2 = [0, a, 0];
 
-tb = tightbinding('Square Lattice',1,[a1;a2]);
+tb = tightbinding('Square Lattice',a1,a2);
+tb.set_unit_cell('A',[0 0]); %give unit cell atoms and their locations
 
 
 tb.add_hopping(Eo,1,1,[0 0]);  % 0 to 0
@@ -20,10 +21,20 @@ tb.add_hopping(-t,1,1,[0 1]);  % 0 to 3
 tb.add_hopping(-t,1,1,[0 -1]);  % 0 to 4
 
 
+lat_f = figure(3);
+gp = lattice_drawer(lat_f,20,20);
+atoma = gp.draw('circle blue',0,0,0.3,'Visible','off');
+atomb = gp.draw('circle red',0,0,0.3,'Visible','off');
+bond = gp.draw('line black',0,0,0,0,'Visible','off');
+type_struct.bond = {bond};
+type_struct.atom = {atoma,atomb};
+tb.plot_lattice(gp,type_struct);
+
 
 range = 2*pi/a;
 len = 80;
 tb.set_kvector(-range,range,len);
 tb.calculate_band();
-f = tb.plot_band();
+plot_f = figure(1);
+tb.plot_band(plot_f);
 

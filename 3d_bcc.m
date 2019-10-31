@@ -7,12 +7,12 @@ a0 = 1.42*1e-10;
 a = a0;
 
 %primitive vectors
-a1 = [a, 0, 0];
-a2 = [0 0 0];
-%We have two orbitals in one unit cell
-% o-O--o-O--o-O--o-O-- : chain
+a1 = (a/2)*[1, 1, -1];
+a2 = (a/2)*[-1, 1, 1];
+a3 = (a/2)*[1, -1, 1];
 
-tb = tightbinding('1D-Chain',a1,a2);% Start with name and primitive vectors
+
+tb = tightbinding('Bcc',a1,a2,a3);% Start with name and primitive vectors
 tb.set_unit_cell('A',[-a0/2 0],'B',[a0/2 0]); %give unit cell atoms and their locations
 
 
@@ -24,18 +24,7 @@ tb.add_hopping(-t,2,1,[0 0]);
 tb.add_hopping(-t,2,1,[1 0 ]);
 tb.add_hopping(-t,1,2,[-1 0]);
 
-if(1)
-lat_f = figure(3);
-gp = lattice_drawer(lat_f,20,20);
-atoma = gp.draw('circle blue',0,0,0.3,'Visible','off');
-atomb = gp.draw('circle red',0,0,0.3,'Visible','off');
-bond = gp.draw('line black',0,0,0,0,'Visible','off');
-type_struct.bond = {bond};
-type_struct.atom = {atoma,atomb};
-tb.plot_lattice(gp,type_struct);
 
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 range = 2*pi/a;
 len = 80;

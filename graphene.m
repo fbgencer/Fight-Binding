@@ -46,7 +46,7 @@ tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 
 %Do this, just make sure to get symmetric hamiltonian
 %tb.hermitian_hamiltonian();
-if(0)
+if(1)
 lat_f = figure(3);
 gp = lattice_drawer(lat_f,20,20);
 atoma = gp.draw('circle blue',0,0,0.3,'Visible','off');
@@ -63,14 +63,15 @@ uc_rect{4} = gp.draw('line',0,-1,-2,0,'Color','red');
 end
 
 
+if(0)
 
 range = 5*pi/a;
 precision = 100;
 tb.set_kvector(-range,range,precision);
 tb.calculate_band();
 fig_band = figure(1);
-%tb.plot_band(fig_band);
-contour(tb.kvec{1},tb.kvec{2},tb.E);
+tb.plot_band(fig_band);
+%contour(tb.kvec{1},tb.kvec{2},tb.E);
 
 
 Gamma = [0, 0,0];
@@ -78,8 +79,8 @@ K1 = [-2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 M = [2*pi / (sqrt(3)*a), 0, 0];
 K2 = [2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 
-%k_fig = figure(2);
-%f2 = tb.plot_high_symmetry_points(k_fig,K1,Gamma,M,K2);
+k_fig = figure(2);
+f2 = tb.plot_high_symmetry_points(k_fig,K1,Gamma,M,K2);
 %f2 = tb.plot_high_symmetry_points(figure(2),Gamma,M,K2,Gamma);
 
 %title(f2.CurrentAxes,'FBG','Interpreter','Latex');
@@ -103,6 +104,7 @@ l = band_dw.draw('vector',K2(1),K2(2),K1(1),K1(2));
 %l.ZData = [1 1];
 l.MaxHeadSize = 1;
 
+end
 
 
 %gp_byhand;

@@ -35,19 +35,21 @@ classdef tightbinding < handle
             end
        end
        %%
-       function set_primitive_vectors(self,a1,varargin)
-         if(nargin > 2)%include self,a1 and a2
+        function set_primitive_vectors(self,a1,varargin)
+          primvec = a1;
+          if(nargin > 2)%include self,a1 and a2
             a2 = varargin{1};
             primvec = [a1;a2];
             if(nargin > 3 ) % include self,a1,a2,a3
                 a3 = varargin{2};
                 primvec = [a1;a2;a3];
             end
-         end
-         self.pvec = primvec;
-         self.dim = size(primvec,2); % dimension of the lattice
-         self.no_primvec = size(primvec,1); % number of primitive vectors 
-       end
+          end
+          self.pvec = primvec;
+          self.dim = size(primvec,2); % dimension of the lattice
+          self.no_primvec = size(primvec,1); % number of primitive vectors 
+          disp(self.no_primvec);
+        end
        %%
        function r = get_primitive_vectors(self)
         r.a1 = self.pvec(1,:);
@@ -72,8 +74,12 @@ classdef tightbinding < handle
             end
         end
         r.b1 = 2*pi*cross(a2,a3)/(dot(a1,cross(a2,a3)));
-        r.b2 = 2*pi*cross(a1,a3)/(dot(a2,cross(a1,a3)));
-        r.b3 = 2*pi*cross(a1,a2)/(dot(a3,cross(a1,a2)));
+        if(self.no_primvec > 1) 
+          r.b2 = 2*pi*cross(a1,a3)/(dot(a2,cross(a1,a3)));
+            if(self.no_primvec > 2)
+              r.b3 = 2*pi*cross(a1,a2)/(dot(a3,cross(a1,a2)));
+            end
+        end
       end
        %%
 %add_hopping(amplitude,interaction between pairs,translation vec)
@@ -89,11 +95,6 @@ classdef tightbinding < handle
             %Here we will hold a struct that contains i,j locations,
             %amplitude of the given hopping and phase value
             
-            %where =
-            %m = zeros(self.no_unit);
-            %m(index1,index2) =  amp;
-            %self.hm{end+1} = m;
-            %self.phase{end+1} = where;
             bond.phase =  trans_vec;
             bond.i = index1;
             bond.j = index2;
@@ -125,6 +126,9 @@ classdef tightbinding < handle
          for i = 1:ilen
             for j = 1:jlen
                 eig_matrix = zeros(size(self.unit_cell,2));
+                if(size(eig_matrix) == 0)
+                    error(message('Unit cell is undefined !'));
+                end
                 k = [kx(i,j),ky(i,j),kz(i,j)];
                 for ob_iter = 1:bonding_no
                     bond = self.bonds{ob_iter};
@@ -164,6 +168,7 @@ classdef tightbinding < handle
         f = fig();
         s.positive_surface = 0;
         s.negative_surface = 0;
+
         if(self.no_primvec == 3)
             s.positive_surface = surf(kx,ky,kz,self.E);
         elseif(self.no_primvec == 2)
@@ -174,6 +179,7 @@ classdef tightbinding < handle
             end
         elseif(self.no_primvec == 1)
             s.positive_surface = surf(kx,self.E);
+            %plot(kx,self.E);
         end
         f.UserData = s;
       end
@@ -187,15 +193,15 @@ classdef tightbinding < handle
             return;
         end
         
-        prec = size(self.kvec{1},2);
+        precision = size(self.kvec{1},2);
         kx = [];
         ky = [];
         kz = [];
         no_point = nargin-3;
         for i = 1:no_point
-            kx = [kx,linspace(varargin{i}(1),varargin{i+1}(1),prec)];
-            ky = [ky,linspace(varargin{i}(2),varargin{i+1}(2),prec)];
-            kz = [kz,linspace(varargin{i}(3),varargin{i+1}(3),prec)];
+            kx = [kx,linspace(varargin{i}(1),varargin{i+1}(1),precision)];
+            ky = [ky,linspace(varargin{i}(2),varargin{i+1}(2),precision)];
+            kz = [kz,linspace(varargin{i}(3),varargin{i+1}(3),precision)];
         end
         
         [Energy,Energyn] = calc_band_internal(self,kx,ky,kz);
@@ -229,17 +235,22 @@ classdef tightbinding < handle
             
             normalize = 1e10;
             a1 = self.pvec(1,:).*normalize;
-            a2 = self.pvec(2,:).*normalize;
+            if(self.no_primvec == 2) 
+              a2 = self.pvec(2,:).*normalize;
+            else
+              a2 = zeros(1,size(a1,2));
+            end
+
             
             %a3 = self.pvec(3,1);
             
             %atom_circles = {};
             %atom_bonds = {};
             
-            %for every atom in the unitcell create a circle
+            %iterate for each atom in the unit cell and get the center
+            %values
             for i = 1:size(self.unit_cell,2)
                 atom = self.unit_cell{i};
-                %atom_circles{end+1} = gp.draw("circle "+clr,atom.pos(1)*normalize,atom.pos(2)*normalize,0.3);
                 cx = cx+atom.pos(1)*normalize;
                 cy = cy+atom.pos(2)*normalize;
             end
@@ -247,45 +258,38 @@ classdef tightbinding < handle
             main_cx = cx/size(self.unit_cell,2);
             main_cy = cy/size(self.unit_cell,2);
             
-            lattice_fill_factorx = ceil( canvas_x/(abs(a1(1))+abs(a2(1)))) ;
-            lattice_fill_factory = ceil( canvas_y/(abs(a1(2))+abs(a2(2))) ) ;           
+            lattice_fill_factorx = -canvas_x/2 : canvas_x/2;
+            lattice_fill_factory = -canvas_y/2 : canvas_y/2 ;           
             
+            %bunu 1d icin yaptim düzelmesi gerekiyor.
+            if(a2 == 0)
+                lattice_fill_factory = 1;
+            end
             
-            for e1 = -lattice_fill_factorx:lattice_fill_factorx
-            for e2 = -lattice_fill_factory:lattice_fill_factory
-                cx = main_cx + e1*a1(1)+e2*a2(1);
-                cy = main_cy + e1*a1(2)+e2*a2(2);
+            for e1 = lattice_fill_factorx
+            for e2 = lattice_fill_factory
+                cx = main_cx + e1 * a1(1) + e2 * a2(1);
+                cy = main_cy + e1 * a1(2) + e2 * a2(2);
             for i = 1:size(self.bonds,2)
                 bond = self.bonds{i};
                 atom1 = self.unit_cell{bond.i};
                 atom2 = self.unit_cell{bond.j};
-                tvector = a1.*bond.phase(1)+a2.*bond.phase(2); % tvec translates our unitcell to new unitcells
-                new_unitcell_cx = cx+tvector(1);
-                new_unitcell_cy = cy+tvector(2);
+                tvector = a1 .* bond.phase(1)+a2 .* bond.phase(2); % tvec translates our unitcell to new unitcells
+                new_unitcell_cx = cx + tvector(1);
+                new_unitcell_cy = cy + tvector(2);
                 %gp.draw('vector',cx,cy,new_unitcell_cx,new_unitcell_cy);
-                x1 = cx + atom1.pos(1)*normalize;
-                y1 = cy + atom1.pos(2)*normalize;
-                x2 = new_unitcell_cx + atom2.pos(1)*normalize;
-                y2 = new_unitcell_cy + atom2.pos(2)*normalize;
+                x1 = cx + atom1.pos(1) * normalize;
+                y1 = cy + atom1.pos(2) * normalize;
+                x2 = new_unitcell_cx + atom2.pos(1) * normalize;
+                y2 = new_unitcell_cy + atom2.pos(2) * normalize;
                 
                 if(x1 == x2 && y1 == y2)
                    continue;
                 end
 
-                
-                %p.draw(bond1.type+" "+bond1.color,x1,y1,x2,y2);
-                %gp.draw(atom1.type+" "+atom1.color,x1,y1,atom1.radius);
-                tbond = gp.copy_to(plot_bond_obj{1},x1,y1,x2,y2);
-                tbond.Visible = 'on';
-                tsite1 = gp.copy_to(plot_atoms_obj{1},x1,y1);
-                tsite1.Visible = 'on';
-                tsite2 = gp.copy_to(plot_atoms_obj{2},x2,y2);
-                tsite2.Visible = 'on';
-                %%gp.draw(atom2.type+" "+atom2.color,x2,y2,atom2.radius);
-                %gp.draw('circle red',x2,y2,0.2);
-                
-                %fprintf("x1 %g, y1 %g, x2 %g, y2 %g\n",x1,y1,x2,y2);
-                %gp.copy_to(atom_circles{bond.j},x2,y2);
+                tbond = gp.copy_to(plot_bond_obj{1},x1,y1,x2,y2,'Visible','on');
+                tsite1 = gp.copy_to(plot_atoms_obj{1},x1,y1,'Visible','on');
+                tsite2 = gp.copy_to(plot_atoms_obj{2},x2,y2,'Visible','on');
             end
             end
             end
