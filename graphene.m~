@@ -47,34 +47,37 @@ tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 %Do this, just make sure to get symmetric hamiltonian
 %tb.hermitian_hamiltonian();
 lat_f = figure(3);
-
+gp = lattice_drawer(lat_f,20,20);
 atoma = gp.draw('circle blue',0,0,0.3,'Visible','off');
 atomb = gp.draw('circle red',0,0,0.3,'Visible','off');
 bond = gp.draw('line black',0,0,0,0,'Visible','off');
-type_str = struct('bo');
-tb.plot_lattice(lat_f,20,20,);
+type_str.bond = {bond};
+type_str.atom = {atoma,atomb};
+tb.plot_lattice(gp,type_str);
 
+uc_rect(1) = gp.draw('line',-2,0,0,1,'Color','red');
+uc_rect(2) = gp.draw('line',-2,0,0,1,'Color','red');
 
 
 range = 2*pi/a;
-len = 50;
-tb.set_kvector(-range,range,len);
+precision = 50;
+tb.set_kvector(-range,range,precision);
 tb.calculate_band();
-%f = figure(1);
-%tb.plot_band(f);
+f = figure(1);
+tb.plot_band(f);
 
 Gamma = [0, 0,0];
 K1 = [-2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 M = [2*pi / (sqrt(3)*a), 0, 0];
 K2 = [2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 
-%f2 = tb.plot_high_symmetry_points(figure(2),K1,Gamma,M,K2);
+f2 = tb.plot_high_symmetry_points(figure(2),K1,Gamma,M,K2);
 %f2 = tb.plot_high_symmetry_points(figure(2),Gamma,M,K2,Gamma);
 
 %title(f2.CurrentAxes,'FBG','Interpreter','Latex');
 %xlabel(f2.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
 %xticks(f2.CurrentAxes,[0 50 100 150]);
-%xticklabels(f2.CurrentAxes,{'K','\Gamma','M','K'});
+xticklabels(f2.CurrentAxes,{'K','\Gamma','M','K'});
 
 %gp_byhand;
 %f.Color = [0.5 0.5 0.2];

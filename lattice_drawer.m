@@ -21,6 +21,7 @@ classdef lattice_drawer < handle
        %%
        function r = draw(self,type_str,varargin)
            self.fig();
+           ax = self.fig.CurrentAxes;
            if(nargin < 3)
                disp('Draw function takes bigger than 3 arguments'); 
                return;
@@ -48,7 +49,7 @@ classdef lattice_drawer < handle
                     r = rectangle('Position',[x,y,w,h],varargin{5:end});
                     if(color ~= 0) r.FaceColor = color; end
                 case 'square'
-                    r = rectangle('Position',[x,y,w,w]);
+                    r = rectangle('Position',[x,y,w,w],varargin{5:end});
                     if(color ~= 0) r.FaceColor = color; end
                 case 'circle'
                     %shift the circle to make x and y as center coordinates
@@ -62,7 +63,7 @@ classdef lattice_drawer < handle
                case 'line'
                     %x1,y1,x2,y2
                     y2 = varargin{4};
-                    r = line([x,w],[y,y2]);
+                    r = line(ax,[x,w],[y,y2],varargin{5:end});
                     if(color ~= 0) r.Color = color; end
                case 'tri'
                    if(nargin ~= 8)

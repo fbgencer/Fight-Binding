@@ -21,6 +21,7 @@ classdef lattice_drawer < handle
        %%
        function r = draw(self,type_str,varargin)
            self.fig();
+           ax = self.fig
            if(nargin < 3)
                disp('Draw function takes bigger than 3 arguments'); 
                return;
@@ -48,7 +49,7 @@ classdef lattice_drawer < handle
                     r = rectangle('Position',[x,y,w,h],varargin{5:end});
                     if(color ~= 0) r.FaceColor = color; end
                 case 'square'
-                    r = rectangle('Position',[x,y,w,w]);
+                    r = rectangle('Position',[x,y,w,w],varargin{5:end});
                     if(color ~= 0) r.FaceColor = color; end
                 case 'circle'
                     %shift the circle to make x and y as center coordinates
@@ -62,7 +63,7 @@ classdef lattice_drawer < handle
                case 'line'
                     %x1,y1,x2,y2
                     y2 = varargin{4};
-                    r = line([x,w],[y,y2]);
+                    r = line([x,w],[y,y2],varargin{5:end});
                     if(color ~= 0) r.Color = color; end
                case 'tri'
                    if(nargin ~= 8)
@@ -196,16 +197,16 @@ classdef lattice_drawer < handle
             x = varargin{1};
             y = varargin{2};
             w = 0;
-            switch r.Tag
+            switch obj.Tag
                 case 'rect'
                     if(nargin > 4)
                         w = varargin{3};
                         h = varargin{4};
                     else
-                        w = 
+                        w = r.Position(3);
+                        h = r.Position(4);
                     end
-                    r = rectangle('Position',[x,y,w,h],varargin{5:end});
-                    
+                    r.Position = [x,y,w,h];
                 case 'circle'
                     if(nargin > 4)
                         w = varargin{3};
@@ -215,6 +216,9 @@ classdef lattice_drawer < handle
                     x = x-w;
                     y = y-w;
                     r.Position = [x,y,2*w,2*w];
+                case 'line'
+                    r.XData = [x,varargin{3}];
+                    r.YData = [y,varargin{4}];
             end
             r.Parent = obj.Parent;
        end

@@ -1,20 +1,22 @@
-%close all; clear; clc;
+close all; clear; clc;
 Eo = 0;
-t = 0.1;
+t = 0.8;
 a0 = 1.42*1e-10;
 a = a0*sqrt(3);
 
 from = 2*pi/a;
-len = 50;
+len = 300;
 kx = linspace(-from,from,len);
 [kx,ky] = meshgrid(kx);
 E = Eo+t.*sqrt(1+4*cos( (sqrt(3)/2)*kx*a).*cos(ky*a/2)+4*((cos(ky*a/2).^2)));
 %E = Eo + t.*sqrt(E);
 
-f = figure(3);
+f = figure(1);
 surf(kx,ky,E);
 hold on;
 surf(kx,ky,-E);
+f = figure(2);
+contour(kx,ky,E);
 %colormap(f,jet);
 
 %Gamma = [0, 0]
