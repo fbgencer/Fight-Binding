@@ -220,7 +220,6 @@ classdef tightbinding < handle
             %gp.set_title('$Graphene\hspace{1mm}C_{6}$','Interpreter','latex');
             %gp.set_xlabel('$X$','Interpreter','latex');
             
-            
             no_varg = nargin-2;
             if(no_varg>0)
                 type_struct = varargin{1};
@@ -250,7 +249,7 @@ classdef tightbinding < handle
             %iterate for each atom in the unit cell and get the center
             %values
             for i = 1:size(self.unit_cell,2)
-                atom = self.unit_cell{i};
+                atom = self.unit_cell{i}; %unit_cell{} contains atoms inside the unit cell
                 cx = cx+atom.pos(1)*normalize;
                 cy = cy+atom.pos(2)*normalize;
             end
@@ -266,6 +265,7 @@ classdef tightbinding < handle
                 lattice_fill_factory = 1;
             end
             
+
             for e1 = lattice_fill_factorx
             for e2 = lattice_fill_factory
                 cx = main_cx + e1 * a1(1) + e2 * a2(1);
@@ -274,41 +274,110 @@ classdef tightbinding < handle
                 bond = self.bonds{i};
                 atom1 = self.unit_cell{bond.i};
                 atom2 = self.unit_cell{bond.j};
-                tvector = a1 .* bond.phase(1)+a2 .* bond.phase(2); % tvec translates our unitcell to new unitcells
+                tvector = a1 .* bond.phase(1) + a2 .* bond.phase(2); % tvec translates our unitcell to new unitcells
                 new_unitcell_cx = cx + tvector(1);
                 new_unitcell_cy = cy + tvector(2);
                 %gp.draw('vector',cx,cy,new_unitcell_cx,new_unitcell_cy);
-                x1 = cx + atom1.pos(1) * normalize;
-                y1 = cy + atom1.pos(2) * normalize;
-                x2 = new_unitcell_cx + atom2.pos(1) * normalize;
-                y2 = new_unitcell_cy + atom2.pos(2) * normalize;
+                x(1) = cx + atom1.pos(1) * normalize;
+                y(1) = cy + atom1.pos(2) * normalize;
+                x(2) = new_unitcell_cx + atom2.pos(1) * normalize;
+                y(2) = new_unitcell_cy + atom2.pos(2) * normalize;
                 
-                if(x1 == x2 && y1 == y2)
+                if(x(1) == x(2) && y(1) == y(2))
                    continue;
                 end
 
-                tbond = gp.copy_to(plot_bond_obj{1},x1,y1,x2,y2,'Visible','on');
-                tsite1 = gp.copy_to(plot_atoms_obj{1},x1,y1,'Visible','on');
-                tsite2 = gp.copy_to(plot_atoms_obj{2},x2,y2,'Visible','on');
+                tbond = gp.copy_to(plot_bond_obj{1},x(1),y(1),x(2),y(2),'Visible','on');
+                for site_iter = 1:size(plot_atoms_obj,2)
+                  gp.copy_to(plot_atoms_obj{site_iter},x(site_iter),y(site_iter),'Visible','on');
+                end
             end
             end
             end
-%             new_cx = cx;
-%             new_cy = cy;
-%             for i = 1
-%             for j = 1
-%                 new_cx = i*a1(1)+j*a2(1)+new_cx;
-%                 new_cy = i*a1(2)+j*a2(2)+new_cy;
-%                 for k = 1:size(atom_circles,2)
-%                 %gp.draw('line black',cx-1,cy,cx+1,cy,'black');
-%                     gp.copy_to(atom_circles{k},new_cx,new_cy);
-%                 end
-%                 new_cx = cx;
-%                 new_cy = cy;
-%             end
-%             end
+      end
+
+      %%
+      function plot_only_atoms(self,gp,x_offset,y_offset,varargin)
+        normalize = 1e10;
+        gp.fig.CurrentAxes.XLim = [-gp.canvas_x/2 gp.canvas_x/2];
+        gp.fig.CurrentAxes.YLim = [-gp.canvas_y/2 gp.canvas_y/2];
+        
+
+        if(nargin > 4)
+          atom_object = varargin{1}.atoms;
+        else
+          atom_object = cell(1,size(self.unit_cell,2));
+          colors = {"red","blue","green","magenta","yellow","black"};
+          for i = 1:size(atom_object,2)
+            atom_object{i} = gp.draw("circle "+colors{mod(i,6)+1},0,0,0.2,'Visible','off');
+          end
+        end
+
+
+
+        %first get the atoms from the unitcell
+        cx = 0; % unitcell center value
+        cy = 0;
+        for i = 1:size(self.unit_cell,2)
+            atom = self.unit_cell{i}; %unit_cell{} contains atoms inside the unit cell
+            cx = cx+atom.pos(1)*normalize;
+            cy = cy+atom.pos(2)*normalize;
+        end
+
+        for i = 1:size(self.unit_cell,2)
+          atom = self.unit_cell{i};
+          x = x_offset + cx + atom.pos(1)*normalize;
+          y = y_offset + cy + atom.pos(2)*normalize;
+          gp.copy_to(atom_object{i},x,y,'Visible','on');
+        end
 
       end
+      %%
+      function plot_only_bonds(self,gp,x_offset,y_offset,varargin)
+        normalize = 1e10;
+        gp.fig.CurrentAxes.XLim = [-gp.canvas_x/2 gp.canvas_x/2];
+        gp.fig.CurrentAxes.YLim = [-gp.canvas_y/2 gp.canvas_y/2];
+        
+        normalize = 1e10;
+        a1 = self.pvec(1,:).*normalize;
+        if(self.no_primvec == 2) 
+          a2 = self.pvec(2,:).*normalize;
+        else
+          a2 = zeros(1,size(a1,2));
+        end
+
+        if(nargin > 4)
+          line_object = varargin{1}.bonds{1};
+        else
+          line_object = gp.draw("line black",0,0,0,0,'Visible','off');
+        end
+
+        for i = 1:size(self.bonds,2)
+          bond = self.bonds{i};
+          
+          if(bond.phase == 0 & bond.i == bond.j)
+            continue;
+          end
+
+          % tvec translates our unitcell to new unitcells
+          tvector = a1 .* bond.phase(1) + a2 .* bond.phase(2); 
+          atom1 = self.unit_cell{bond.i};
+          atom2 = self.unit_cell{bond.j};
+          x(1) = x_offset + atom1.pos(1) * normalize;
+          y(1) = y_offset + atom1.pos(2) * normalize;
+          x(2) = x_offset + tvector(1) + atom2.pos(1) * normalize;
+          y(2) = y_offset + tvector(2) + atom2.pos(2) * normalize;
+
+          if(x(1) == x(2) & y(1) == y(2))
+            continue;
+          end
+
+          gp.copy_to(line_object,x(1),y(1),x(2),y(2),'Visible','on');
+
+        end
+      end
+      %%
+
    end
 end
 

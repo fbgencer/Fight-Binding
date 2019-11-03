@@ -35,7 +35,6 @@ tb.plot_band(fig_band);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 k_fig = figure(2);
 f2 = tb.plot_high_symmetry_points(k_fig,[0 0 0],[3.2/a 0 0]);
 

@@ -65,12 +65,13 @@ end
 
 if(0)
 
-range = 5*pi/a;
+range = 2*pi/a;
 precision = 100;
 tb.set_kvector(-range,range,precision);
 tb.calculate_band();
 fig_band = figure(1);
 tb.plot_band(fig_band);
+%For contour, uncomment below
 %contour(tb.kvec{1},tb.kvec{2},tb.E);
 
 
@@ -83,10 +84,10 @@ k_fig = figure(2);
 f2 = tb.plot_high_symmetry_points(k_fig,K1,Gamma,M,K2);
 %f2 = tb.plot_high_symmetry_points(figure(2),Gamma,M,K2,Gamma);
 
-%title(f2.CurrentAxes,'FBG','Interpreter','Latex');
-%xlabel(f2.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
-%xticks(f2.CurrentAxes,[0 50 100 150]);
-%xticklabels(f2.CurrentAxes,{'K','\Gamma','M','K'});
+title(f2.CurrentAxes,'FBG','Interpreter','Latex');
+xlabel(f2.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
+xticks(f2.CurrentAxes,[0 50 100 150]);
+xticklabels(f2.CurrentAxes,{'K','\Gamma','M','K'});
 
 
 band_dw = lattice_drawer(fig_band); 

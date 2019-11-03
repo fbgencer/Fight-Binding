@@ -229,4 +229,3 @@ a.Visible = 'on';
 %4- 2D veya 3D Fermi yüzeyini çıkartsın, içeri doğru topolojisini versin, Fermi wave-vectorleri versin
 %5- introducing the spin and the spin-orbit coupling
 %6- from tight binding to electron-phonon interaction
-
