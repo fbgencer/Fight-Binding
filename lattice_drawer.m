@@ -3,31 +3,78 @@ classdef lattice_drawer < handle
 			 fig = 0;
 			 canvas_x = 0;
 			 canvas_y = 0;
+			 canvas_z = 0;
 	 end
 	 methods
 			 %%
 			 function f = lattice_drawer(fig,varargin)
 						f.fig = fig;
-						if(nargin>1) 
+						nvargin = nargin-1;
+						if(nvargin > 1) 
 								f.canvas_x = varargin{1};
 								f.canvas_y = varargin{2};
-								axis([0 f.canvas_x 0 f.canvas_y]);
+								if(nvargin > 2)
+									f.canvas_z = varargin{3};
+								end
+								%fig.CurrentAxes.XLim = [0 f.canvas_x];
+								%fig.CurrentAxes.YLim = [0 f.canvas_y];
+								%fig.CurrentAxes.ZLim = [0 f.canvas_z];
+								
+								axis([0 f.canvas_x 0 f.canvas_y ]);
+								if(f.canvas_z ~= 0)
+									fig.CurrentAxes.ZLim = [0 f.canvas_z];
+									view(fig.CurrentAxes,3);
+								end
+
 						else
-								f.canvas_x = fig.CurrentAxes.XLim(2)-fig.CurrentAxes.XLim(1);
-								f.canvas_y = fig.CurrentAxes.YLim(2)-fig.CurrentAxes.YLim(1);
+								f.canvas_x = fig.CurrentAxes.XLim(2) - fig.CurrentAxes.XLim(1);
+								f.canvas_y = fig.CurrentAxes.YLim(2) - fig.CurrentAxes.YLim(1);
+								f.canvas_z = fig.CurrentAxes.ZLim(2) - fig.CurrentAxes.ZLim(1);
 						end
 			 end
-			 
 			 %%
-			 function r = draw(self,type_str,varargin)
+			 function change_axis_limits(self,varargin)
+			 	if(nargin > 1)
+			 		i = 1;
+			 		while(i <= size(varargin,2))
+			 			if(varargin{i} == "x")
+			 				self.fig.CurrentAxes.XLim = [varargin{i+1} varargin{i+2}];
+			 			elseif(varargin{i} == "y")
+			 				self.fig.CurrentAxes.YLim = [varargin{i+1} varargin{i+2}];
+			 			elseif(varargin{i} == "z")
+			 				self.fig.CurrentAxes.ZLim = [varargin{i+1} varargin{i+2}];
+			 			else
+			 				disp('Coordinate strings must be x,y or z');
+			 				return;
+			 			end
+			 			i = i+3;
+			 		end
+			 	end
+			 end
+			 %%
+			 function xaxis_symmetric(self)
+			 		self.fig.CurrentAxes.XLim = [-self.canvas_x/2 self.canvas_x/2];
+			 end
+			 %%
+			 function yaxis_symmetric(self)
+			 		self.fig.CurrentAxes.YLim = [-self.canvas_y/2 self.canvas_y/2];
+			 end
+			 %%
+			 function zaxis_symmetric(self)
+			 	if(self.canvas_z > 0)
+			 		self.fig.CurrentAxes.ZLim = [-self.canvas_z/2 self.canvas_z/2];
+			 	end
+			 end			 
+			 %%
+			 function r = draw(self,type_string,varargin)
 					 self.fig();
 					 ax = self.fig.CurrentAxes;
 					 if(nargin < 3)
-							 disp('Draw function takes bigger than 3 arguments'); 
+							 disp('Draw function takes at least 2 arguments'); 
 							 return;
 					 end
 					 
-					 splitted_str = strsplit(type_str,' ');
+					 splitted_str = strsplit(type_string,' ');
 					 type = splitted_str{1};
 					 color = 0;
 					 if(size(splitted_str,2) > 1 )
@@ -36,34 +83,58 @@ classdef lattice_drawer < handle
 					 
 					 x = varargin{1};
 					 y = varargin{2};
-					 w = varargin{3};
 					 
-					 if(x > self.canvas_x || y > self.canvas_y)
+					 if(x > self.canvas_x | y > self.canvas_y)
 								r = 0;
 								return;
 					 end
+					 %number of varargin, basically size 
+					 nvargin = size(varargin,2);
 					 
 					 switch type
 								case 'rect'
+					 					w = varargin{3};
 										h = varargin{4};
 										r = rectangle('Position',[x,y,w,h],varargin{5:end});
 										if(color ~= 0) r.FaceColor = color; end
 								case 'square'
+					 					w = varargin{3};
 										r = rectangle('Position',[x,y,w,w],varargin{5:end});
 										if(color ~= 0) r.FaceColor = color; end
 								case 'circle'
+
+					 					rad = varargin{3};
 										%shift the circle to make x and y as center coordinates
 										%default is edge coordinate of rectangle
 										%x-r : edge x
-										x = x-w;
-										y = y-w;
+										x = x-rad;
+										y = y-rad;
 										%y-r : edge y
-										r = rectangle('Position',[x,y,2*w,2*w],'Curvature',[1 1],varargin{4:end});
+										r = rectangle('Position',[x,y,2*rad,2*rad],'Curvature',[1 1],varargin{4:end});
 										if(color ~= 0) r.FaceColor = color; end
 							 case 'line'
 										%x1,y1,x2,y2
+										x1 = varargin{1};
+										y1 = varargin{2};
+										x2 = varargin{3};
 										y2 = varargin{4};
-										r = line(ax,[x,w],[y,y2],varargin{5:end});
+										z1 = 0; z2 = 0;
+									
+										varargin_start = 5;
+										
+										if(nvargin > 4)
+											if(isnumeric(varargin{5}))
+												x1 = varargin{1};
+												y1 = varargin{2};
+												z1 = varargin{3};
+												x2 = varargin{4};
+												y2 = varargin{5};
+												z2 = varargin{6};
+												varargin_start = 7;
+											end
+										end
+
+										r = line(ax,[x1,x2],[y1,y2],[z1,z2],varargin{varargin_start:end});
 										if(color ~= 0) r.Color = color; end
 							 case 'tri'
 									 if(nargin ~= 8)
@@ -83,6 +154,7 @@ classdef lattice_drawer < handle
 							 case 'eqtri'
 									 % x and y are the center of equilateral triangle
 									 % w is one side of the triangle
+									 w = varargin{3};
 									 a = w;
 									 y1 = y-a/(2*sqrt(3));
 									 y3 = y1;
@@ -96,7 +168,7 @@ classdef lattice_drawer < handle
 											 r = self.draw('tri',x1,y1,x2,y2,x3,y3);
 									 end
 							 case 'hexagon'
-									 a = w;
+									 a = varargin{3};
 									 x1 = x-a; y1 = y;
 									 x2 = x-a/2; y2 = y+a*sqrt(3)/2;
 									 x3 = x+a/2; y3 = y2;
@@ -115,19 +187,73 @@ classdef lattice_drawer < handle
 									 r.UserData = [r n1 n2 n3 n4 n5];
 
 							 case 'vector'
-										y2 = varargin{4};
-										x2 = w;
+									x2 = varargin{3};
+									y2 = varargin{4};
+
+									hold on;
+
+									if(nvargin > 4)
+										if( isnumeric(varargin{5}) )
+											x = varargin{1};
+											y = varargin{2};
+											z = varargin{3};
+											x2 = varargin{4};
+											y2 = varargin{5};
+											z2 = varargin{6};
+											r = quiver3(ax,x,y,z,x2-x,y2-y,z2-z,varargin{7:end});
+										else
+											r = quiver(ax,x,y,x2-x,y2-y,varargin{5:end});
+										end
+									else
+											r = quiver(ax,x,y,x2-x,y2-y,varargin{5:end});
+									end
+
+									r.AutoScaleFactor = 1;
+									r.MaxHeadSize = 5/sqrt((x2-x)^2+(y2-y)^2);
 										
-										ax = self.fig.CurrentAxes;
-										hold on;
-										r = quiver(ax,x,y,x2-x,y2-y);
-										r.AutoScaleFactor = 1;
-										r.MaxHeadSize = 5/sqrt((x2-x)^2+(y2-y)^2);
-										
-									 if(color ~= 0)
-												r.Color = color;
-									 end
-										
+									if(color ~= 0)
+										r.Color = color;
+									end
+
+								case 'cuboid'
+									x1 = varargin{1};
+									y1 = varargin{2};
+									z1 = varargin{3};
+									w = varargin{4};
+									l = varargin{5};
+									h = varargin{6};
+
+									vertx = [x1, x1, x1, x1, x1+w, x1+w, x1+w, x1+w];
+									verty = [y1, y1+l, y1+l, y1, y1, y1+l, y1+l, y1];
+									vertz = [z1, z1, z1+h, z1+h, z1, z1, z1+h, z1+h];
+									fac = [1 2 6 5;2 3 7 6;3 4 8 7;4 1 5 8;1 2 3 4;5 6 7 8];
+									r = patch(ax,vertx,verty,vertz,'red','Faces',fac,varargin{7:end});
+									if(color ~= 0)
+										r.FaceColor = color;
+									end
+									view(ax,3);
+
+								case 'point'
+									z = 0;
+									varargin_start = 3;
+									if(nvargin > 2)
+										if(isnumeric(varargin{3}))
+											z = varargin{3};
+											varargin_start = 4;
+										end
+									end
+									hold on;
+									
+									r = scatter3(ax,x,y,z,varargin{varargin_start:end});
+
+									if(color ~= 0)
+										r.MarkerFaceColor = color;
+										r.MarkerEdgeColor = color;
+									else
+										r.MarkerFaceColor = 'black';
+										r.MarkerEdgeColor = 'black';
+									end
+
 								otherwise
 										disp('Draw function undefined type!');
 										r = 0;
@@ -197,6 +323,7 @@ classdef lattice_drawer < handle
 						if(nargin > 4)
 							is_entry_numeric = (isstring(varargin{3}) == 0  && ischar(varargin{3}) == 0 );
 						end
+						nvargin = size(varargin,2);
 
 
 						switch obj.Tag
@@ -225,11 +352,29 @@ classdef lattice_drawer < handle
 										r.Position = [x,y,2*w,2*w];
 										
 								case 'line'
-										r.XData = [x,varargin{3}];
-										r.YData = [y,varargin{4}];
-										if(nargin > 6)
+									r.XData = [x,varargin{3}];
+									r.YData = [y,varargin{4}];
+									if(nvargin > 4)
+										if( isnumeric(varargin{5}) )
+											r.XData = [varargin{1},varargin{4}];
+											r.YData = [varargin{2},varargin{5}];
+											r.ZData = [varargin{3},varargin{6}];
+											set(r,varargin{7:end});
+										else
 											set(r,varargin{5:end});
 										end
+									end
+								case 'point'
+									r.XData = x;
+									r.YData = y;
+									if(size(varargin,2) > 3 && is_entry_numeric)
+										r.ZData = varargin{3};
+										set(r,varargin{4:end});
+									else
+										set(r,varargin{3:end});
+									end
+
+
 						end
 						r.Parent = obj.Parent;
 			 end

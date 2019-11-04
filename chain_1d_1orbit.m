@@ -9,34 +9,25 @@ a = a0;
 %primitive vectors
 a1 = [a, 0, 0];
 %We have two orbitals in one unit cell
-% o-O--o-O--o-O--o-O-- : chain
+% o-o-o-o- : chain
 
 tb = tightbinding('1D-Chain',a1);% Start with name and primitive vectors
-tb.set_unit_cell('A',[-a0/4 0],'B',[a0/4 0]); %give unit cell atoms and their locations
+tb.set_unit_cell('A',[0 0]); %give unit cell atoms and their locations
 
 
-tb.add_hopping(Eo,1,1,[0 0]);
-tb.add_hopping(Eo,2,2,[0 0]);
-tb.add_hopping(-t,1,2,[0 0]);
-tb.add_hopping(-t,2,1,[0 0]);
-
-tb.add_hopping(-t,2,1,[1 0]);
-tb.add_hopping(-t,1,2,[-1 0]);
+tb.add_hopping(Eo,1,1,[0]);
+tb.add_hopping(-t,1,1,[1]);
+tb.add_hopping(-t,1,1,[-1]);
 
 if(1)
 lat_f = figure(3);
-gp = lattice_drawer(lat_f,20,10);
-atoma = gp.draw('circle blue',0,0,0.25,'Visible','off');
-%atomb = gp.draw('circle red',0,0,0.1,'Visible','off');
-atomb = gp.draw('point',0,0,'Visible','off');
+gp = lattice_drawer(lat_f,10,10);
+atoma = gp.draw('circle red',0,0,0.25,'Visible','off');
 bond = gp.draw('line black',0,0,0,0,'Visible','off');
 type_struct.bonds = {bond};
-type_struct.atoms = {atoma,atomb};
+type_struct.atoms = {atoma};
 %tb.plot_lattice(gp,type_struct);
-
-
-tb.plot_lattice(gp,type_struct);
-
+tb.plot_only_atoms(gp,type_struct);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

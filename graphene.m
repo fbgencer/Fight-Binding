@@ -49,11 +49,11 @@ tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 if(1)
 lat_f = figure(3);
 gp = lattice_drawer(lat_f,20,20);
-atoma = gp.draw('circle blue',0,0,0.3,'Visible','off');
+atoma = gp.draw('circle blue',0,0,0.2,'Visible','off');
 atomb = gp.draw('circle red',0,0,0.3,'Visible','off');
 bond = gp.draw('line black',0,0,0,0,'Visible','off');
-type_str.bond = {bond};
-type_str.atom = {atoma,atomb};
+type_str.bonds = {bond};
+type_str.atoms = {atoma,atomb};
 tb.plot_lattice(gp,type_str);
 
 uc_rect{1} = gp.draw('line',-2,0,0,1,'Color','red');

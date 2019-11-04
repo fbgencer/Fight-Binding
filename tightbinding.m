@@ -6,7 +6,6 @@ classdef tightbinding < handle
       recip_vec = 0; %reciprocal vectors
       no_primvec = 0; %number of primitive vectors
       unit_cell = {};
-      hm = {}; % Hamiltonian matrix
       phase = {};
       bonds = {};
       kvec = {};
@@ -36,7 +35,7 @@ classdef tightbinding < handle
        end
        %%
         function set_primitive_vectors(self,a1,varargin)
-          primvec = a1;
+          primvec = [a1];
           if(nargin > 2)%include self,a1 and a2
             a2 = varargin{1};
             primvec = [a1;a2];
@@ -46,9 +45,9 @@ classdef tightbinding < handle
             end
           end
           self.pvec = primvec;
-          self.dim = size(primvec,2); % dimension of the lattice
+          self.dim = size(primvec,1); % dimension of the lattice
           self.no_primvec = size(primvec,1); % number of primitive vectors 
-          disp(self.no_primvec);
+          
         end
        %%
        function r = get_primitive_vectors(self)
@@ -117,28 +116,34 @@ classdef tightbinding < handle
         
       end
       function [Energy,negEnergy] = calc_band_internal(self,kx,ky,kz)
-         %assume they have equal sizes
-         ilen = size(kx,1);
-         jlen = size(kx,2);
-         Energy = zeros(ilen,jlen);
-         negEnergy = Energy;
-         bonding_no = size(self.bonds,2);
-         for i = 1:ilen
-            for j = 1:jlen
-                eig_matrix = zeros(size(self.unit_cell,2));
-                if(size(eig_matrix) == 0)
-                    error(message('Unit cell is undefined !'));
-                end
-                k = [kx(i,j),ky(i,j),kz(i,j)];
-                for ob_iter = 1:bonding_no
-                    bond = self.bonds{ob_iter};
-                    q = exp(1i*dot(k,bond.phase*self.pvec));
-                    eig_matrix(bond.i,bond.j) = eig_matrix(bond.i,bond.j) +  (bond.amp * q);
-                end
-                eigens = eig(eig_matrix);
-                Energy(i,j) = eigens(1);
-                if(size(eigens,1) == 2)
-                    negEnergy(i,j) = eigens(2);
+        %assume they have equal sizes
+        alen = size(kx,1);
+        blen = size(kx,2);
+        clen = size(kx,3);
+
+        Energy = zeros(alen,blen,clen);
+        negEnergy = Energy;
+        bonding_no = size(self.bonds,2);
+        if(size(self.unit_cell,2) == 0)
+          error(message('Unit cell is undefined !'));
+        end
+
+         for a = 1:alen
+            for b = 1:blen
+              for c = 1:clen
+                  eig_matrix = zeros(size(self.unit_cell,2));
+                  k = [kx(a,b,c),ky(a,b,c),kz(a,b,c)];
+                  for ob_iter = 1:bonding_no
+                      bond = self.bonds{ob_iter};
+                      q = exp(1i*dot(k,bond.phase*self.pvec));
+
+                      eig_matrix(bond.i,bond.j) = eig_matrix(bond.i,bond.j) +  (bond.amp * q);
+                  end
+                  eigens = eig(eig_matrix);
+                  Energy(a,b,c) = real(eigens(1));
+                  if(size(eigens,1) == 2)
+                    negEnergy(a,b,c) = real(eigens(2));
+                  end
                 end
             end
          end
@@ -170,7 +175,8 @@ classdef tightbinding < handle
         s.negative_surface = 0;
 
         if(self.no_primvec == 3)
-            s.positive_surface = surf(kx,ky,kz,self.E);
+            s.positive_surface = surf(kx(:,:,1),ky(:,:,1),self.E(:,:,1));
+            
         elseif(self.no_primvec == 2)
             s.positive_surface = surf(kx,ky,self.E);
             if(self.En ~= 0)
@@ -179,7 +185,7 @@ classdef tightbinding < handle
             end
         elseif(self.no_primvec == 1)
             s.positive_surface = surf(kx,self.E);
-            %plot(kx,self.E);
+            %(kx,self.E);
         end
         f.UserData = s;
       end
@@ -203,7 +209,7 @@ classdef tightbinding < handle
             ky = [ky,linspace(varargin{i}(2),varargin{i+1}(2),precision)];
             kz = [kz,linspace(varargin{i}(3),varargin{i+1}(3),precision)];
         end
-        
+
         [Energy,Energyn] = calc_band_internal(self,kx,ky,kz);
         p.positive_plot = plot(Energy);
         if(self.En ~= 0)
@@ -213,97 +219,18 @@ classdef tightbinding < handle
         f.UserData = p;
       end
       %%
-      function plot_lattice(self,gp,varargin)
-            
-            canvas_x = gp.canvas_x;
-            canvas_y = gp.canvas_y;
-            %gp.set_title('$Graphene\hspace{1mm}C_{6}$','Interpreter','latex');
-            %gp.set_xlabel('$X$','Interpreter','latex');
-            
-            no_varg = nargin-2;
-            if(no_varg>0)
-                type_struct = varargin{1};
-                plot_bond_obj = type_struct.bond;
-                plot_atoms_obj = type_struct.atom;
-            end
-            
-            cx = 0;
-            cy = 0;
-            gp.fig.CurrentAxes.XLim = [-canvas_x/2 canvas_x/2];
-            gp.fig.CurrentAxes.YLim = [-canvas_y/2 canvas_y/2];
-            
-            normalize = 1e10;
-            a1 = self.pvec(1,:).*normalize;
-            if(self.no_primvec == 2) 
-              a2 = self.pvec(2,:).*normalize;
-            else
-              a2 = zeros(1,size(a1,2));
-            end
+      function plot_only_atoms(self,gp,varargin)
+        x_offset = 0;
+        y_offset = 0;
+        z_offset = 0;
 
-            
-            %a3 = self.pvec(3,1);
-            
-            %atom_circles = {};
-            %atom_bonds = {};
-            
-            %iterate for each atom in the unit cell and get the center
-            %values
-            for i = 1:size(self.unit_cell,2)
-                atom = self.unit_cell{i}; %unit_cell{} contains atoms inside the unit cell
-                cx = cx+atom.pos(1)*normalize;
-                cy = cy+atom.pos(2)*normalize;
-            end
-            
-            main_cx = cx/size(self.unit_cell,2);
-            main_cy = cy/size(self.unit_cell,2);
-            
-            lattice_fill_factorx = -canvas_x/2 : canvas_x/2;
-            lattice_fill_factory = -canvas_y/2 : canvas_y/2 ;           
-            
-            %bunu 1d icin yaptim düzelmesi gerekiyor.
-            if(a2 == 0)
-                lattice_fill_factory = 1;
-            end
-            
-
-            for e1 = lattice_fill_factorx
-            for e2 = lattice_fill_factory
-                cx = main_cx + e1 * a1(1) + e2 * a2(1);
-                cy = main_cy + e1 * a1(2) + e2 * a2(2);
-            for i = 1:size(self.bonds,2)
-                bond = self.bonds{i};
-                atom1 = self.unit_cell{bond.i};
-                atom2 = self.unit_cell{bond.j};
-                tvector = a1 .* bond.phase(1) + a2 .* bond.phase(2); % tvec translates our unitcell to new unitcells
-                new_unitcell_cx = cx + tvector(1);
-                new_unitcell_cy = cy + tvector(2);
-                %gp.draw('vector',cx,cy,new_unitcell_cx,new_unitcell_cy);
-                x(1) = cx + atom1.pos(1) * normalize;
-                y(1) = cy + atom1.pos(2) * normalize;
-                x(2) = new_unitcell_cx + atom2.pos(1) * normalize;
-                y(2) = new_unitcell_cy + atom2.pos(2) * normalize;
-                
-                if(x(1) == x(2) && y(1) == y(2))
-                   continue;
-                end
-
-                tbond = gp.copy_to(plot_bond_obj{1},x(1),y(1),x(2),y(2),'Visible','on');
-                for site_iter = 1:size(plot_atoms_obj,2)
-                  gp.copy_to(plot_atoms_obj{site_iter},x(site_iter),y(site_iter),'Visible','on');
-                end
-            end
-            end
-            end
-      end
-
-      %%
-      function plot_only_atoms(self,gp,x_offset,y_offset,varargin)
         normalize = 1e10;
-        gp.fig.CurrentAxes.XLim = [-gp.canvas_x/2 gp.canvas_x/2];
-        gp.fig.CurrentAxes.YLim = [-gp.canvas_y/2 gp.canvas_y/2];
+        gp.xaxis_symmetric();
+        gp.yaxis_symmetric();
+        gp.zaxis_symmetric();
         
 
-        if(nargin > 4)
+        if(nargin > 2)
           atom_object = varargin{1}.atoms;
         else
           atom_object = cell(1,size(self.unit_cell,2));
@@ -318,35 +245,61 @@ classdef tightbinding < handle
         %first get the atoms from the unitcell
         cx = 0; % unitcell center value
         cy = 0;
+        cz = 0;
         for i = 1:size(self.unit_cell,2)
             atom = self.unit_cell{i}; %unit_cell{} contains atoms inside the unit cell
-            cx = cx+atom.pos(1)*normalize;
-            cy = cy+atom.pos(2)*normalize;
+            cx = cx + atom.pos(1) .* normalize;
+            cy = cy + atom.pos(2) .* normalize;
+            if(size(atom.pos,2) > 2)
+              cz = cz + atom.pos(3) .* normalize;
+              
+            end
         end
+        
 
         for i = 1:size(self.unit_cell,2)
           atom = self.unit_cell{i};
           x = x_offset + cx + atom.pos(1)*normalize;
           y = y_offset + cy + atom.pos(2)*normalize;
-          gp.copy_to(atom_object{i},x,y,'Visible','on');
+          z = 0;
+
+          if(size(atom.pos,2) > 2)
+            z = z_offset + cz + atom.pos(3) * normalize;
+          end
+
+          if(size(atom.pos,2) > 2)
+            gp.copy_to(atom_object{i},x,y,z,'Visible','on');
+          else 
+            gp.copy_to(atom_object{i},x,y,'Visible','on');
+          end          
+            
         end
 
       end
       %%
-      function plot_only_bonds(self,gp,x_offset,y_offset,varargin)
+      function plot_only_bonds(self,gp,varargin)
+        x_offset = 0;
+        y_offset = 0;
+        z_offset = 0;
         normalize = 1e10;
-        gp.fig.CurrentAxes.XLim = [-gp.canvas_x/2 gp.canvas_x/2];
-        gp.fig.CurrentAxes.YLim = [-gp.canvas_y/2 gp.canvas_y/2];
+        gp.xaxis_symmetric();
+        gp.yaxis_symmetric();
+        gp.zaxis_symmetric();
+        
         
         normalize = 1e10;
         a1 = self.pvec(1,:).*normalize;
-        if(self.no_primvec == 2) 
+        if(self.no_primvec > 1) 
           a2 = self.pvec(2,:).*normalize;
+          if(self.no_primvec > 2)
+            a3 = self.pvec(3,:).*normalize;
+          else
+            a3 = zeros(1,size(a1,2));
+          end
         else
           a2 = zeros(1,size(a1,2));
         end
-
-        if(nargin > 4)
+        if(nargin > 2)
           line_object = varargin{1}.bonds{1};
         else
           line_object = gp.draw("line black",0,0,0,0,'Visible','off');
@@ -360,23 +313,213 @@ classdef tightbinding < handle
           end
 
           % tvec translates our unitcell to new unitcells
-          tvector = a1 .* bond.phase(1) + a2 .* bond.phase(2); 
+          tvector = a1 .* bond.phase(1);
+          if(size(bond.phase,2) > 1)
+            tvector = tvector + a2 .* bond.phase(2);
+            if(size(bond.phase,2) > 2)
+              tvector = tvector + a3 .* bond.phase(3);
+            end
+          end 
+
           atom1 = self.unit_cell{bond.i};
           atom2 = self.unit_cell{bond.j};
-          x(1) = x_offset + atom1.pos(1) * normalize;
-          y(1) = y_offset + atom1.pos(2) * normalize;
-          x(2) = x_offset + tvector(1) + atom2.pos(1) * normalize;
-          y(2) = y_offset + tvector(2) + atom2.pos(2) * normalize;
+          x(1) = x_offset + atom1.pos(1) .* normalize;
+          y(1) = y_offset + atom1.pos(2) .* normalize;
+          x(2) = x_offset + tvector(1) + atom2.pos(1) .* normalize;
+          y(2) = y_offset + tvector(2) + atom2.pos(2) .* normalize;
+          z = [0 0];
 
-          if(x(1) == x(2) & y(1) == y(2))
+          if(size(atom1.pos,2) > 2)
+            z(1) = z_offset + atom1.pos(3) .* normalize;
+            z(2) = z_offset + tvector(3) + atom2.pos(3) .* normalize;
+          end
+
+          if(x(1) == x(2) & y(1) == y(2) &  z(1) == z(2))
             continue;
           end
 
-          gp.copy_to(line_object,x(1),y(1),x(2),y(2),'Visible','on');
+          if(x > gp.canvas_x/2 | x < -gp.canvas_x/2 | y > gp.canvas_y/2 | y < -gp.canvas_y/2)
+            continue;
+          end
+
+          fprintf( "[%g %g][%g %g][%g %g]\n",x,y,z );
+
+          gp.copy_to(line_object,x(1),y(1),z(1),x(2),y(2),z(2),'Visible','on');
 
         end
+
       end
       %%
+
+      function plot_lattice(self,gp,varargin)
+
+        x_offset = 0;
+        y_offset = 0;
+        z_offset = 0;
+
+        lattice_fill_factorx = -gp.canvas_x/2 : gp.canvas_x/2;
+        lattice_fill_factory = -gp.canvas_y/2 : gp.canvas_y/2;
+        lattice_fill_factorz = -gp.canvas_z/2 : gp.canvas_z/2;
+
+        if(self.dim == 1)
+          lattice_fill_factory = 1;
+        end
+        gp.xaxis_symmetric();
+        gp.yaxis_symmetric();
+        gp.zaxis_symmetric();
+        
+        normalize = 1e10;
+        a1 = self.pvec(1,:).*normalize;
+        if(self.no_primvec > 1) 
+          a2 = self.pvec(2,:).*normalize;
+        else
+          a2 = zeros(1,size(a1,2));
+        end
+        if(self.no_primvec > 2)
+          a3 = self.pvec(3,:).*normalize;
+        else
+          a3 = zeros(1,size(a1,2));
+        end
+
+        if(nargin > 2)
+          line_object = varargin{1}.bonds{1};
+          atom_object = varargin{1}.atoms;
+        else
+          line_object = gp.draw("line black",0,0,0,0,'Visible','off');
+
+          atom_object = cell(1,size(self.unit_cell,2));
+          colors = {"red","blue","green","magenta","yellow","black"};
+          for i = 1:size(atom_object,2)
+            atom_object{i} = gp.draw("point "+colors{mod(i,6)+1},0,0,0.2,'Visible','off');
+          end
+
+        end
+
+
+        cx = 0;
+        cy = 0;
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%BOND plottign
+        old_x = 0;
+        old_y = 0;
+        old_z = 0;
+        for i = 1:size(self.bonds,2)
+          for e1 = lattice_fill_factorx
+          for e2 = lattice_fill_factory
+          for e3 = lattice_fill_factorz
+            tx = e1 * a1(1) + e2 * a2(1) + e3 * a3(1);
+            ty = e1 * a1(2) + e2 * a2(2) + e3 * a3(2);
+            tz = e1 * a1(3) + e2 * a2(3) + e3 * a3(3);
+          
+            bond = self.bonds{i};
+            
+            if(bond.phase == 0 & bond.i == bond.j)
+              continue;
+            end
+
+            % tvec translates our unitcell to new unitcells
+            tvector = a1 .* bond.phase(1);
+            if(size(bond.phase,2) > 1)
+              tvector = tvector + a2 .* bond.phase(2);
+              if(size(bond.phase,2) > 2)
+                tvector = tvector + a3 .* bond.phase(3);
+              end
+            end 
+            atom1 = self.unit_cell{bond.i};
+            atom2 = self.unit_cell{bond.j};
+            x(1) = x_offset + atom1.pos(1) * normalize;
+            y(1) = y_offset + atom1.pos(2) * normalize;
+            x(2) = x_offset + tvector(1) + atom2.pos(1) * normalize;
+            y(2) = y_offset + tvector(2) + atom2.pos(2) * normalize;
+            x = x+tx;
+            y = y+ty;
+            z = [0 0];
+
+            if(size(atom1.pos,2) > 2)
+              z(1) = z_offset + atom1.pos(3) * normalize;
+              z(2) = z_offset + tvector(3) + atom2.pos(3) * normalize;
+              z = z+tz;
+            end
+
+            
+            if(x == old_x & y == old_y & z == old_z)
+              continue;
+            end
+            if(x(1) == x(2) & y(1) == y(2) &  z(1) == z(2))
+              continue;
+            end
+
+            if(x > gp.canvas_x/2 | x < -gp.canvas_x/2 | y > gp.canvas_y/2 | y < -gp.canvas_y/2)
+              continue;
+            end
+
+            gp.copy_to(line_object,x(1),y(1),z(1),x(2),y(2),z(2),'Visible','on');
+
+            old_x = x;
+            old_y = y;
+            old_z = z;
+          end
+          end
+          end
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %first get the atoms from the unitcell
+        cx = 0; % unitcell center value
+        cy = 0;
+        for i = 1:size(self.unit_cell,2)
+            atom = self.unit_cell{i}; %unit_cell{} contains atoms inside the unit cell
+            cx = cx+atom.pos(1)*normalize;
+            cy = cy+atom.pos(2)*normalize;
+        end
+
+        old_x = 0;
+        old_y = 0;
+        old_z = 0;
+
+        for i = 1:size(self.unit_cell,2)
+          for e1 = lattice_fill_factorx
+            for e2 = lattice_fill_factory
+              for e3 = lattice_fill_factorz
+                tx = e1 * a1(1) + e2 * a2(1) + e3 * a3(1);
+                ty = e1 * a1(2) + e2 * a2(2) + e3 * a3(2);
+                tz = e1 * a1(3) + e2 * a2(3) + e3 * a3(3);
+
+                atom = self.unit_cell{i};
+                x = tx + x_offset + cx + atom.pos(1)*normalize;
+                y = ty + y_offset + cy + atom.pos(2)*normalize;
+                z = 0;
+
+                if(size(atom.pos,2) > 2)
+                  z = atom.pos(3) * normalize;
+                  z = z+tz;
+                end
+
+                if(x == old_x & y == old_y & z == old_z)
+                  continue;
+                end
+
+                if(x > gp.canvas_x/2 | x < -gp.canvas_x/2 | y > gp.canvas_y/2 | y < -gp.canvas_y/2 | z > gp.canvas_z/2 | z < -gp.canvas_z/2)
+                  continue;
+                end
+
+                if(size(atom.pos,2) > 2)
+                  gp.copy_to(atom_object{i},x,y,z,'Visible','on');
+                else 
+                  gp.copy_to(atom_object{i},x,y,'Visible','on');
+                end
+                
+                old_x = x;
+                old_y = y;
+                old_z = z;
+              end
+            end
+          end
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      end
 
    end
 end

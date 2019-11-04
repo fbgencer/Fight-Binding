@@ -22,13 +22,12 @@ tb.add_hopping(-t,1,1,[0 -1]);  % 0 to 4
 
 
 lat_f = figure(3);
-gp = lattice_drawer(lat_f,20,20);
-atoma = gp.draw('circle blue',0,0,0.3,'Visible','off');
-atomb = gp.draw('circle red',0,0,0.3,'Visible','off');
-bond = gp.draw('line black',0,0,0,0,'Visible','off');
-type_struct.bond = {bond};
-type_struct.atom = {atoma,atomb};
-tb.plot_lattice(gp,type_struct);
+gp = lattice_drawer(lat_f,10,10);
+atoma = gp.draw('circle blue',0,0,0.25,'Visible','off');
+bond = gp.draw('line red',0,0,0,0,'Visible','off');
+type_struct.bonds = {bond};
+type_struct.atoms = {atoma};
+tb.plot_lattice(gp,0,0,type_struct);
 
 
 range = 2*pi/a;
