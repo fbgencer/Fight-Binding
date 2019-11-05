@@ -79,7 +79,12 @@ fig_band = figure(1);
 surfaces = tb.plot_band(fig_band);
 
 rp = lattice_drawer(fig_band);
-tb.plot_brillouin_zone(rp,'Color','red','LineWidth',1);
+%lin = rp.draw('line red',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
+tb.plot_brillouin_zone(rp,'plot points','plot lines','plot coordinates');
+
+surfaces.negative_surface.Visible = 'off';
+surfaces.positive_surface.Visible = 'off';
+
 %For contour, uncomment below
 %contour(tb.kvec{1},tb.kvec{2},tb.E);
 
@@ -91,14 +96,14 @@ K1 = [-2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 M = [2*pi / (sqrt(3)*a), 0, 0];
 K2 = [2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 
-k_fig = figure(2);
-f2 = tb.plot_high_symmetry_points(k_fig,K1,Gamma,M,K2);
+%k_fig = figure(2);
+%f2 = tb.plot_high_symmetry_points(k_fig,K1,Gamma,M,K2);
 %f2 = tb.plot_high_symmetry_points(figure(2),Gamma,M,K2,Gamma);
 
-title(f2.CurrentAxes,'FBG','Interpreter','Latex');
-xlabel(f2.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
-xticks(f2.CurrentAxes,[0 50 100 150]);
-xticklabels(f2.CurrentAxes,{'K','\Gamma','M','K'});
+%title(f2.CurrentAxes,'FBG','Interpreter','Latex');
+%xlabel(f2.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
+%xticks(f2.CurrentAxes,[0 50 100 150]);
+%xticklabels(f2.CurrentAxes,{'K','\Gamma','M','K'});
 
 
 % band_dw = lattice_drawer(fig_band); 

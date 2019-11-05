@@ -523,6 +523,34 @@ classdef tightbinding < handle
       function ln = plot_brillouin_zone(self,gp,varargin)
         %ln is line of the brillouin zone, so user can change its properties later
 
+        plot_points = 0;
+        plot_lines = 0;
+        plot_coordinates = 0;
+
+        nvargin = size(varargin,2);
+        for i = 1:nvargin
+          if(varargin{i} == "plot points")
+            plot_points = 1;
+            if(i < nvargin & ischar(varargin{i+1}) == 0 & isstring(varargin{i+1}) == 0)
+              i = i+1;
+              point_obj = varargin{i};
+            else
+              point_obj = gp.draw('point black',0,0,0.5,'Visible','off');
+            end
+          elseif(varargin{i} == "plot lines")
+            plot_lines = 1;
+            if(i < nvargin & ischar(varargin{i+1}) == 0 & isstring(varargin{i+1}) == 0)
+              i = i+1;
+              line_obj = varargin{i};
+            else
+              line_obj = gp.draw('line red',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
+            end
+          elseif(varargin{i} == "plot coordinates")
+            plot_coordinates = 1;          
+          end
+        end
+
+
         b = self.get_reciprocal_vectors();
         %Create closest points using recip vectors
         %assumption is we can create brillouin zone with the -1,0,1 indices of recp vectors
@@ -584,15 +612,54 @@ classdef tightbinding < handle
           vpx1 = vpx1(I);
           vpy1 = vpy1(I);
 
-          %finally connect first value to the array
-          vpx1(end+1) = vpx1(1);
-          vpy1(end+1) = vpy1(1);
-          %and now plot as a line
-          ln = gp.draw('line black',vpx1,vpy1,0.5*ones(1,size(vpx1,2)),varargin{1:end});  
+          if(plot_points)
+            for i = 1:size(vpx1,2)
+              gp.copy_to(point_obj,vpx1(i),vpy1(i),0.5,'Visible','on');
+            end
+          end
+
+          if(plot_coordinates)
+            for i = 1:size(vpx1,2)
+              x = fix(vpx1(i));
+              y = fix(vpy1(i));
+              txt = pp(x,2) + "," + pp(y,2);
+              %txt = sprintf("$$%g,%g$$",x,y);
+              
+
+              %txt = replace(txt,",","},");
+              %txt = replace(txt,"]","}]");
+              t = gp.draw('text',x,y,txt,'Color','black','Interpreter','Latex');
+              t.Position(3) = 0.5;
+            end            
+          end
+
+          if(plot_lines)
+            %finally connect first value to the array
+            vpx1(end+1) = vpx1(1);
+            vpy1(end+1) = vpy1(1);
+            %and now plot as a line
+            ln = gp.copy_to(line_obj,vpx1,vpy1,'Visible','on');
+          end
+
         end
 
       end
    end
 end
 
-
+function s=pp(x,n)
+% pretty-print a value in scientific notation
+% usage: s=pp(x,n)
+% where: x a floating-point value
+%        n is the number of decimal places desired
+%        s is the string representation of x with n decimal places, and
+%          exponent k
+if(x ~= 0)
+  exponent=floor(log10(abs(x))); %to accomodate for negative values
+  mantissa=x/(10^exponent);
+  s=sprintf('$%*.*f \\times 10^{%d}$',n+3,n,mantissa,exponent);
+else
+  s = sprintf('0');
+end
+% returns something like '$1.42 \times 10^{-1}$'
+end

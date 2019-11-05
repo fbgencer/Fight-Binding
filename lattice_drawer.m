@@ -269,7 +269,12 @@ classdef lattice_drawer < handle
 										r.MarkerFaceColor = 'black';
 										r.MarkerEdgeColor = 'black';
 									end
+								case 'text'
+									x = varargin{1};
+									y = varargin{2};
+									txt = varargin{3};
 
+									r = text(x,y,txt,varargin{4:end});
 								otherwise
 										disp('Draw function undefined type!');
 										r = 0;
@@ -388,30 +393,63 @@ classdef lattice_drawer < handle
 										r.Position = [x,y,2*w,2*w];
 										
 								case 'line'
-									r.XData = [x,varargin{3}];
-									r.YData = [y,varargin{4}];
-									if(nvargin > 4)
-										if( isnumeric(varargin{5}) )
-											r.XData = [varargin{1},varargin{4}];
-											r.YData = [varargin{2},varargin{5}];
-											r.ZData = [varargin{3},varargin{6}];
-											set(r,varargin{7:end});
+
+									varargin_start = 1;
+						 			if( isscalar(varargin{1}) == 0 & isscalar(varargin{2}) == 0 )
+										x = varargin{1};
+										y = varargin{2};
+										if(isscalar(varargin{3}) == 0 & ischar(varargin{3}) == 0 & isstring(varargin{3}) == 0)
+											z = varargin{3};
+											varargin_start = 4;
 										else
-											set(r,varargin{5:end});
+											varargin_start = 3;
+											z = r.ZData(1)*ones(1,size(x,2));
 										end
+									elseif(nvargin > 4 & isnumeric(varargin{5}))
+											%x1,y1,z1,x2,y2,z3;
+											x = [ varargin{1}, varargin{4} ];
+											y = [ varargin{2}, varargin{5} ];
+											z = [ varargin{3}, varargin{6} ];
+											varargin_start = 7;
+									else
+										%x1,y1,x2,y2
+										x = [ varargin{1}, varargin{3} ];
+										y = [ varargin{2}, varargin{4} ];
+										z = [r.ZData(1), r.ZData(2)];
+										varargin_start = 5;
 									end
-								case 'point'
+
 									r.XData = x;
 									r.YData = y;
-									if(size(varargin,2) > 3 && is_entry_numeric)
+									r.ZData = z;
+									% if(nvargin > 4)
+									% 	if( isnumeric(varargin{5}) )
+									% 		r.XData = [varargin{1},varargin{4}];
+									% 		r.YData = [varargin{2},varargin{5}];
+									% 		r.ZData = [varargin{3},varargin{6}];
+											
+									% 	else
+									% 		set(r,varargin{5:end});
+									% 	end
+									% end
+									if(nvargin >= varargin_start)
+										set(r,varargin{varargin_start:end});
+									end
+								case 'point'
+									r.XData = varargin{1};
+									r.YData = varargin{2};
+
+									varargin_start = 3;
+									if(nvargin >= 3 & ischar(varargin{3}) == 0 & isstring(varargin{3}) == 0)
 										r.ZData = varargin{3};
-										set(r,varargin{4:end});
-									else
-										set(r,varargin{3:end});
+										varargin_start = 4;
 									end
 
-
+									if(nvargin >= varargin_start)
+										set(r,varargin{varargin_start:end});
+									end
 						end
+
 						r.Parent = obj.Parent;
 			 end
 			 %%
