@@ -125,26 +125,22 @@ classdef lattice_drawer < handle
 										if(color ~= 0) r.FaceColor = color; end
 							 case 'line'
 										
-										if(nvargin == 2)
-											%for x and y arrays
+							 			if( isscalar(varargin{1}) == 0 & isscalar(varargin{2}) == 0 )
 											x = varargin{1};
 											y = varargin{2};
-											z = zeros(1,size(x,2));
-											varargin_start = 3;
-										elseif(nvargin == 3)
-											%for x and y and z arrays
-											x = varargin{1};
-											y = varargin{2};
-											z = varargin{3};
-											varargin_start = 4;
-										elseif(nvargin > 4)
-											if(isnumeric(varargin{5}))
+											if(isscalar(varargin{3}) == 0)
+												z = varargin{3};
+												varargin_start = 4;
+											else
+												varargin_start = 3;
+												z = zeros(1,size(x,2));
+											end
+										elseif(nvargin > 4 & isnumeric(varargin{5}))
 												%x1,y1,z1,x2,y2,z3;
 												x = [ varargin{1}, varargin{4} ];
 												y = [ varargin{2}, varargin{5} ];
 												z = [ varargin{3}, varargin{6} ];
 												varargin_start = 7;
-											end										
 										else
 											%x1,y1,x2,y2
 											x = [ varargin{1}, varargin{3} ];

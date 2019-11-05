@@ -518,99 +518,80 @@ classdef tightbinding < handle
             end
           end
         end
+      end
         %%
-        function plot_brillouin_zone(self,gp,varargin)
-          b = self.get_reciprocal_vectors();
-          if(self.dim == 1)
-            b{2} = zeros(1,3);
-            b{3} = zeros(1,3);
-          elseif(self.dim == 2)
-            b{3} = zeros(1,3);
-          end
+      function ln = plot_brillouin_zone(self,gp,varargin)
+        %ln is line of the brillouin zone, so user can change its properties later
 
-          %Create closest points using recip vectors
-          %assumption is we can create brillouin zone with the -1,0,1 indices of recp vectors
-          points = {};
+        b = self.get_reciprocal_vectors();
+        %Create closest points using recip vectors
+        %assumption is we can create brillouin zone with the -1,0,1 indices of recp vectors
+        points = [];
+        if(self.dim == 2)
           for i = [-1,0,1]
             for j = [-1,0,1]
-              for k = [-1,0,1]
-                points(end+1) = {i.*b{1}+j.*b{2}+k.*b{3}};
-              end
+              p = i.*b{1}+j.*b{2};
+              points = [points, [p(1);p(2)] ];
             end
           end
+    
+          %using voronoi calculate region vertices
+          [vpx,vpy] = voronoi(points(1,:),points(2,:));
+          %Voronoi calculates a lot of points but chose the first (XXXTODO think about this later, is it ok ?)
+          vpx1 = vpx(1,:);
+          vpy1 = vpy(1,:);
 
-
-          if(self.dim == 2)
-            px = [];
-            py = [];
-
-            for i = 1:size(points,2)
-              pt = points{i};
-              rp.draw('point',pt(1),pt(2),0.5);
-              px(end+1) = pt(1);
-              py(end+1) = pt(2);  
-            end            
-
-            [vpx,vpy] = voronoi(px,py);
-            vpx1 = vpx(1,:);
-            vpy1 = vpy(1,:);
-            [vpx1,I] = sort(vpx1);
-            vpy1 = vpy1(I);
-
-            good = {};
-
-            i = 1;
-            while( i <= size(vpx1,2) )
-              pt(1) = vpx1(i);
-              pt(2) = vpy1(i);
-              j = i+1;
-              while(j <= size(vpx1,2) )
-                if(pt(1) == vpx1(j) & pt(2) == vpy1(j))
-                  vpx1(j) = [];
-                  vpy1(j) = [];
-                end
-                j = j+1;
+          %now we will eliminate same vertex points
+          i = 1;
+          while( i <= size(vpx1,2) )
+            pt(1) = vpx1(i);
+            pt(2) = vpy1(i);
+            j = i+1;
+            while(j <= size(vpx1,2) )
+              if(pt(1) == vpx1(j) & pt(2) == vpy1(j))
+                vpx1(j) = [];
+                vpy1(j) = [];
               end
-              i = i+1;
+              j = j+1;
             end
-            hypots = transpose(hypot(vpx1(:),vpy1(:)));
+            i = i+1;
+          end
+          %Now vpx1 and vpy1 holds different vertex points, which one is closes to the origin ?, using hypot we can find closes points
 
-            [hypots,I] = sort(hypots);
-            vpx1 = vpx1(I);
-            vpy1 = vpy1(I);
+          hypots = transpose(hypot(vpx1(:),vpy1(:)));
+          %now sort hypots and sort vpx1 and vpy1 according to hypot
+          [hypots,I] = sort(hypots);
+          vpx1 = vpx1(I);
+          vpy1 = vpy1(I);
 
-
-
-            oldhyp = hypots;
-            hypotmin = min(hypots);
-            i = 1;
-            while (i <= size(hypots,2))
-              if(abs(hypots(i)-hypotmin) > 1e-4)
-                hypots(i) = [];
-                vpx1(i) = [];
-                vpy1(i) = [];
-              else
-                i = i + 1;
-              end 
-            end
-
-            angles = atan2d(vpy1,vpx1);
-            [angles,I] = sort(angles);
-            vpx1 = vpx1(I);
-            vpy1 = vpy1(I);
-
-            vpx1(end+1) = vpx1(1);
-            vpy1(end+1) = vpy1(1);
-            gp.draw('line',vpx1,vpy1,0.5*ones(1,size(vpx1,2)));  
+          %get hypot minimum
+          hypotmin = min(hypots);
+          i = 1;
+          while (i <= size(hypots,2))
+            if(abs(hypots(i)-hypotmin) > 1e-4) % k-space is huge and truncation will cause some equality errors,our tolerance is 1e-4, 
+              %if there is a difference between hypot values then we will eliminate them until finding the closest points
+              hypots(i) = [];
+              vpx1(i) = [];
+              vpy1(i) = [];
+            else
+              i = i + 1;
+            end 
           end
 
+          %now vpx1 and vpy1 hold closes points but in order to draw the brillouin zone we need to sort them in terms of angle between origin
+          angles = atan2d(vpy1,vpx1);
+          [angles,I] = sort(angles);
+          vpx1 = vpx1(I);
+          vpy1 = vpy1(I);
+
+          %finally connect first value to the array
+          vpx1(end+1) = vpx1(1);
+          vpy1(end+1) = vpy1(1);
+          %and now plot as a line
+          ln = gp.draw('line black',vpx1,vpy1,0.5*ones(1,size(vpx1,2)),varargin{1:end});  
         end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-        
       end
-
    end
 end
 
