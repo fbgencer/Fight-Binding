@@ -23,14 +23,14 @@ tb.add_hopping(-t,1,1,[0 -1]);  % 0 to 4
 
 lat_f = figure(3);
 gp = lattice_drawer(lat_f,10,10);
-atoma = gp.draw('circle blue',0,0,0.25,'Visible','off');
+atoma = gp.draw('crect blue',0,0,0.3,0.3,'Visible','off');
 bond = gp.draw('line red',0,0,0,0,'Visible','off');
 type_struct.bonds = {bond};
 type_struct.atoms = {atoma};
-tb.plot_lattice(gp,0,0,type_struct);
+tb.plot_lattice(gp,type_struct);
 
 
-range = 2*pi/a;
+range = pi/a;
 len = 80;
 tb.set_kvector(-range,range,len);
 tb.calculate_band();

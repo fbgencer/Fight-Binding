@@ -84,14 +84,25 @@ classdef lattice_drawer < handle
 					 x = varargin{1};
 					 y = varargin{2};
 					 
-					 if(x > self.canvas_x | y > self.canvas_y)
-								r = 0;
-								return;
-					 end
+
+					 %This uncomment is important, later decide it is useful or not
+					 %some points can be outside the canvas but if we return 0 text or other functions
+					 %raise error
+					% if(x > self.canvas_x | y > self.canvas_y)
+					%			r = 0;
+					%			return;
+					 %end
+
 					 %number of varargin, basically size 
 					 nvargin = size(varargin,2);
 					 
 					 switch type
+					 			case 'crect'
+					 				%centered rectangle
+				 					w = varargin{3};
+									h = varargin{4};
+									r = rectangle('Position',[x-w/2,y-h/2,w,h],varargin{5:end});
+									if(color ~= 0) r.FaceColor = color; end					 				
 								case 'rect'
 					 					w = varargin{3};
 										h = varargin{4};
@@ -113,28 +124,37 @@ classdef lattice_drawer < handle
 										r = rectangle('Position',[x,y,2*rad,2*rad],'Curvature',[1 1],varargin{4:end});
 										if(color ~= 0) r.FaceColor = color; end
 							 case 'line'
-										%x1,y1,x2,y2
-										x1 = varargin{1};
-										y1 = varargin{2};
-										x2 = varargin{3};
-										y2 = varargin{4};
-										z1 = 0; z2 = 0;
-									
-										varargin_start = 5;
 										
-										if(nvargin > 4)
+										if(nvargin == 2)
+											%for x and y arrays
+											x = varargin{1};
+											y = varargin{2};
+											z = zeros(1,size(x,2));
+											varargin_start = 3;
+										elseif(nvargin == 3)
+											%for x and y and z arrays
+											x = varargin{1};
+											y = varargin{2};
+											z = varargin{3};
+											varargin_start = 4;
+										elseif(nvargin > 4)
 											if(isnumeric(varargin{5}))
-												x1 = varargin{1};
-												y1 = varargin{2};
-												z1 = varargin{3};
-												x2 = varargin{4};
-												y2 = varargin{5};
-												z2 = varargin{6};
+												%x1,y1,z1,x2,y2,z3;
+												x = [ varargin{1}, varargin{4} ];
+												y = [ varargin{2}, varargin{5} ];
+												z = [ varargin{3}, varargin{6} ];
 												varargin_start = 7;
-											end
+											end										
+										else
+											%x1,y1,x2,y2
+											x = [ varargin{1}, varargin{3} ];
+											y = [ varargin{2}, varargin{4} ];
+											z = [ 0,0 ];
+											varargin_start = 5;
 										end
 
-										r = line(ax,[x1,x2],[y1,y2],[z1,z2],varargin{varargin_start:end});
+										r = line(ax,x,y,z,varargin{varargin_start:end});
+
 										if(color ~= 0) r.Color = color; end
 							 case 'tri'
 									 if(nargin ~= 8)
@@ -276,38 +296,46 @@ classdef lattice_drawer < handle
 						self.draw('line',cax,cay,cbx,cby,color);  
 			 end
 			 %%
-			 function set_text(self,obj,txt,varargin)
+			 function t = set_text(self,obj,txt,varargin)
 					[cax,cay] = self.get_center(obj);
 					if(nargin>3)
-							text(cax,cay,txt,varargin{:});
+							t = text(cax,cay,txt,varargin{:});
 					else
-							text(cax,cay,txt);
+							t = text(cax,cay,txt);
 					end
+					t.FontSize = 7;
 			 end
 			 %%
 			 function [cx,cy] = get_center(self,a)
-			 		%Notice that some classes does not have position property.
-					 if(a.Tag ~= "vector" && a.Tag ~= "line")
-						p = a.Position;
-					 end
+
+			 			if(a == 0)
+			 				disp("Empty value in get_center")
+			 				return;
+			 			end
+
 					 switch a.Tag
 							case "rect"
-									cx = (p(1)+p(3)/2);
-									cy = (p(2)+p(4)/2);
+								p = a.Position;
+								cx = (p(1)+p(3)/2);
+								cy = (p(2)+p(4)/2);
 							case "square"
-									cx = (p(1)+p(3)/2);
-									cy = (p(2)+p(4)/2);
+								p = a.Position;
+								cx = (p(1)+p(3)/2);
+								cy = (p(2)+p(4)/2);
 							case "circle"
-									 r = p(3)/2;
-									 cx = p(1)+r;
-									 cy = p(2)+r;
+								p = a.Position;
+								r = p(3)/2;
+								cx = p(1)+r;
+								cy = p(2)+r;
 							case "line"
-									 cx = 0.5*(a.XData(1) + a.XData(2));
-									 cy = 0.5*(a.YData(1) + a.YData(2));									
+								cx = 0.5*(a.XData(1) + a.XData(2));
+								cy = 0.5*(a.YData(1) + a.YData(2));									
 							case "vector"
-									 cx = a.XData + a.UData/2;
-									 cy = a.YData + a.VData/2;
-
+								cx = a.XData + a.UData/2;
+								cy = a.YData + a.VData/2;
+							case 'point'
+								cx = a.XData;
+								cy = a.YData;
 							otherwise
 								disp('Undefined tag for get_center function');
 								return;
@@ -327,6 +355,18 @@ classdef lattice_drawer < handle
 
 
 						switch obj.Tag
+								case 'crect'
+									if(nargin > 4 &&  is_entry_numeric)
+											w = varargin{3};
+											h = varargin{4};
+											set(r,varargin{5:end});
+									else
+											w = r.Position(3);
+											h = r.Position(4);
+											set(r,varargin{3:end});
+									end
+										r.Position = [x-w/2,y-h/2,w,h];
+
 								case 'rect'
 										if(nargin > 4 &&  is_entry_numeric)
 												w = varargin{3};

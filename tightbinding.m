@@ -51,13 +51,13 @@ classdef tightbinding < handle
         end
        %%
        function r = get_primitive_vectors(self)
-        r.a1 = self.pvec(1,:);
-        r.a2 = 0;
-        r.a3 = 0;
+        r{1} = self.pvec(1,:);
+        r{2} = 0;
+        r{3} = 0;
         if(self.no_primvec > 1)
-            r.a2 = self.pvec(2,:);
+            r{2} = self.pvec(2,:);
             if(self.no_primvec > 2)
-                r.a3 = self.pvec(3,:);
+                r{3} = self.pvec(3,:);
             end
         end
        end
@@ -72,11 +72,11 @@ classdef tightbinding < handle
                 a3 = self.pvec(3,:);
             end
         end
-        r.b1 = 2*pi*cross(a2,a3)/(dot(a1,cross(a2,a3)));
+        r{1} = 2*pi*cross(a2,a3)/(dot(a1,cross(a2,a3)));
         if(self.no_primvec > 1) 
-          r.b2 = 2*pi*cross(a1,a3)/(dot(a2,cross(a1,a3)));
+          r{2} = 2*pi*cross(a1,a3)/(dot(a2,cross(a1,a3)));
             if(self.no_primvec > 2)
-              r.b3 = 2*pi*cross(a1,a2)/(dot(a3,cross(a1,a2)));
+              r{3} = 2*pi*cross(a1,a2)/(dot(a3,cross(a1,a2)));
             end
         end
       end
@@ -166,7 +166,7 @@ classdef tightbinding < handle
         end    
       end
       %%
-      function f = plot_band(self,fig)
+      function s = plot_band(self,fig)
         kx = self.kvec{1};
         ky = self.kvec{2};
         kz = self.kvec{3};
@@ -188,6 +188,7 @@ classdef tightbinding < handle
             %(kx,self.E);
         end
         f.UserData = s;
+
       end
       %%
       function f = plot_high_symmetry_points(self,fig,varargin)
@@ -517,8 +518,97 @@ classdef tightbinding < handle
             end
           end
         end
+        %%
+        function plot_brillouin_zone(self,gp,varargin)
+          b = self.get_reciprocal_vectors();
+          if(self.dim == 1)
+            b{2} = zeros(1,3);
+            b{3} = zeros(1,3);
+          elseif(self.dim == 2)
+            b{3} = zeros(1,3);
+          end
+
+          %Create closest points using recip vectors
+          %assumption is we can create brillouin zone with the -1,0,1 indices of recp vectors
+          points = {};
+          for i = [-1,0,1]
+            for j = [-1,0,1]
+              for k = [-1,0,1]
+                points(end+1) = {i.*b{1}+j.*b{2}+k.*b{3}};
+              end
+            end
+          end
+
+
+          if(self.dim == 2)
+            px = [];
+            py = [];
+
+            for i = 1:size(points,2)
+              pt = points{i};
+              rp.draw('point',pt(1),pt(2),0.5);
+              px(end+1) = pt(1);
+              py(end+1) = pt(2);  
+            end            
+
+            [vpx,vpy] = voronoi(px,py);
+            vpx1 = vpx(1,:);
+            vpy1 = vpy(1,:);
+            [vpx1,I] = sort(vpx1);
+            vpy1 = vpy1(I);
+
+            good = {};
+
+            i = 1;
+            while( i <= size(vpx1,2) )
+              pt(1) = vpx1(i);
+              pt(2) = vpy1(i);
+              j = i+1;
+              while(j <= size(vpx1,2) )
+                if(pt(1) == vpx1(j) & pt(2) == vpy1(j))
+                  vpx1(j) = [];
+                  vpy1(j) = [];
+                end
+                j = j+1;
+              end
+              i = i+1;
+            end
+            hypots = transpose(hypot(vpx1(:),vpy1(:)));
+
+            [hypots,I] = sort(hypots);
+            vpx1 = vpx1(I);
+            vpy1 = vpy1(I);
+
+
+
+            oldhyp = hypots;
+            hypotmin = min(hypots);
+            i = 1;
+            while (i <= size(hypots,2))
+              if(abs(hypots(i)-hypotmin) > 1e-4)
+                hypots(i) = [];
+                vpx1(i) = [];
+                vpy1(i) = [];
+              else
+                i = i + 1;
+              end 
+            end
+
+            angles = atan2d(vpy1,vpx1);
+            [angles,I] = sort(angles);
+            vpx1 = vpx1(I);
+            vpy1 = vpy1(I);
+
+            vpx1(end+1) = vpx1(1);
+            vpy1(end+1) = vpy1(1);
+            gp.draw('line',vpx1,vpy1,0.5*ones(1,size(vpx1,2)));  
+          end
+
+        end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+        
       end
 
    end
