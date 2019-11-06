@@ -21,8 +21,8 @@ tb.add_hopping(-t,1,1,[0 1]);  % 0 to 3
 tb.add_hopping(-t,1,1,[0 -1]);  % 0 to 4
 
 
-lat_f = figure(3);
-gp = lattice_drawer(lat_f,10,10);
+fig_lat = figure("Name","Lattice Figure");
+gp = lattice_drawer(fig_lat,10,10);
 atoma = gp.draw('crect blue',0,0,0.3,0.3,'Visible','off');
 bond = gp.draw('line red',0,0,0,0,'Visible','off');
 type_struct.bonds = {bond};
@@ -30,10 +30,13 @@ type_struct.atoms = {atoma};
 tb.plot_lattice(gp,type_struct);
 
 
-range = pi/a;
-len = 80;
-tb.set_kvector(-range,range,len);
-tb.calculate_band();
-plot_f = figure(1);
-tb.plot_band(plot_f);
+range = 2*pi/a;
+len = 100;
+k = tb.set_kvector(-range,range,len);
+fig_band= figure("Name","Energy Band Figure");
+surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
 
+rp = lattice_drawer(fig_band);
+pt = rp.draw('point rgb:660066',0,0,10,'Visible','off');
+lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',10,'LineWidth',2);
+tb.plot_brillouin_zone(rp,'plot points',pt,'plot lines',lin,'plot coordinates');

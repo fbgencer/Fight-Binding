@@ -105,12 +105,11 @@ classdef tightbinding < handle
         
       end
       %%
-      function calculate_band(self)
-          
-        len = size(self.kvec{1},2);
-        kx = self.kvec{1};
-        ky = self.kvec{2};
-        kz = self.kvec{3};
+      function calculate_band(self,kvec)
+        
+        kx = kvec{1};
+        ky = kvec{2};
+        kz = kvec{3};
         
         [self.E,self.En] = calc_band_internal(self,kx,ky,kz);
         
@@ -150,44 +149,67 @@ classdef tightbinding < handle
         
       end
       %%
-      function set_kvector(self,from,to,len)
+      function kvec = set_kvector(self,from,to,len)
         k = linspace(from,to,len);
         if(self.no_primvec == 3)
             [kx,ky,kz] = meshgrid(k);
-            self.kvec = {kx,ky,kz};
+            kvec = {kx,ky,kz};
         elseif(self.no_primvec == 2)
             [kx,ky] = meshgrid(k);
             z = zeros(size(kx,1),size(kx,2));
-            self.kvec = {kx,ky,z}; 
+            kvec = {kx,ky,z}; 
         elseif(self.no_primvec == 1)
             [kx] = meshgrid(k);
             z = zeros(size(kx,1),size(kx,2));
-            self.kvec = {kx,z,z}; 
+            kvec = {kx,z,z}; 
         end    
       end
       %%
-      function s = plot_band(self,fig)
-        kx = self.kvec{1};
-        ky = self.kvec{2};
-        kz = self.kvec{3};
+      function s = plot_energy_band(self,fig,kvec,plot_type,varargin)
+
+        kx = kvec{1};
+        ky = kvec{2};
+        kz = kvec{3};
+
+        [Ep,En] = calc_band_internal(self,kx,ky,kz);
         f = fig();
         s.positive_surface = 0;
         s.negative_surface = 0;
 
-        if(self.no_primvec == 3)
-            s.positive_surface = surf(kx(:,:,1),ky(:,:,1),self.E(:,:,1));
-            
-        elseif(self.no_primvec == 2)
-            s.positive_surface = surf(kx,ky,self.E);
-            if(self.En ~= 0)
+        if(plot_type == 'surface')  
+          if(self.no_primvec == 3)
+              s.positive_surface = surf(kx(:,:,1),ky(:,:,1),Ep(:,:,1),varargin{:});
+              
+          elseif(self.no_primvec == 2)
+              s.positive_surface = surf(kx,ky,Ep,varargin{:});
+              if(En ~= 0)
+                  hold on;
+                  s.negative_surface = surf(kx,ky,En,varargin{:});
+              end
+          elseif(self.no_primvec == 1)
+              s.positive_surface = surf(kx,Ep,varargin{:});
+          else
+            error(message('Before plotting, define primitive vectors'));
+          end
+          f.UserData = s;
+
+        elseif(plot_type == 'contour')
+          if(self.no_primvec == 3)
+              s.positive_surface = surf(kx(:,:,1),ky(:,:,1),Ep(:,:,1),varargin{:});
+              
+          elseif(self.no_primvec == 2)
+              s.positive_contour = contour(kx,ky,Ep,varargin{:});
+              if(En ~= 0)
                 hold on;
-                s.negative_surface = surf(kx,ky,self.En);
-            end
-        elseif(self.no_primvec == 1)
-            s.positive_surface = surf(kx,self.E);
-            %(kx,self.E);
+                s.positive_contour = contour(kx,ky,En,varargin{:});
+              end
+          elseif(self.no_primvec == 1)
+              s.positive_contour = contour(kx,Ep,varargin{:});
+          else
+            error(message('Before plotting, define primitive vectors'));
+          end
+          f.UserData = s;          
         end
-        f.UserData = s;
 
       end
       %%
@@ -199,8 +221,7 @@ classdef tightbinding < handle
             disp('In order to plot at least two high symmetry points are required.');
             return;
         end
-        
-        precision = size(self.kvec{1},2);
+        precision = 100;
         kx = [];
         ky = [];
         kz = [];
@@ -211,11 +232,11 @@ classdef tightbinding < handle
             kz = [kz,linspace(varargin{i}(3),varargin{i+1}(3),precision)];
         end
 
-        [Energy,Energyn] = calc_band_internal(self,kx,ky,kz);
-        p.positive_plot = plot(Energy);
-        if(self.En ~= 0)
+        [Ep,En] = calc_band_internal(self,kx,ky,kz);
+        p.positive_plot = plot(Ep);
+        if(En ~= 0)
             hold on;
-            p.negative_plot = plot(Energyn);
+            p.negative_plot = plot(En);
         end
         f.UserData = p;
       end
@@ -614,7 +635,7 @@ classdef tightbinding < handle
 
           if(plot_points)
             for i = 1:size(vpx1,2)
-              gp.copy_to(point_obj,vpx1(i),vpy1(i),0.5,'Visible','on');
+              gp.copy_to(point_obj,vpx1(i),vpy1(i),'Visible','on');
             end
           end
 
