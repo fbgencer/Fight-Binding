@@ -233,7 +233,7 @@ classdef lattice_drawer < handle
 									end
 
 									r.AutoScaleFactor = 1;
-									r.MaxHeadSize = 5/sqrt((x2-x)^2+(y2-y)^2);
+									%r.MaxHeadSize = 5/sqrt((x2-x)^2+(y2-y)^2);
 										
 									if(isnumeric(color) | color ~= "None")
 										r.Color = color;
@@ -280,9 +280,17 @@ classdef lattice_drawer < handle
 								case 'text'
 									x = varargin{1};
 									y = varargin{2};
-									txt = varargin{3};
-
-									r = text(x,y,txt,varargin{4:end});
+									if(isnumeric(varargin{3}) == 0)
+										txt = varargin{3};
+										varargin_start = 4;
+										z = 0;
+									else 
+										z = varargin{3};
+										txt = varargin{4};
+										varargin_start = 5;
+									end
+									
+									r = text(ax,x,y,z,txt,varargin{varargin_start:end});
 								otherwise
 										disp('Draw function undefined type!');
 										r = 0;

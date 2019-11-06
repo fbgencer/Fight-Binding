@@ -49,20 +49,20 @@ bond = gp.draw('line black',0,0,0,0,'Visible','off');
 type_struct.bonds = {bond};
 type_struct.atoms = {atoma};
 %tb.plot_lattice(gp,type_struct);
-tb.plot_lattice(gp,type_struct);
-%tb.plot_only_atoms(gp,type_struct);
-%tb.plot_only_bonds(gp,type_struct);
+%tb.plot_lattice(gp,type_struct);
+tb.plot_only_atoms(gp,type_struct);
+tb.plot_only_bonds(gp,type_struct);
 end
 
 
 if(1)
 
-range = 2*pi/a;
-len = 50;
-tb.set_kvector(-range,range,len);
-tb.calculate_band();
-fig_band = figure(1);
-f = tb.plot_band(fig_band);
+range = 2*pi/a; 
+precision = 50;
+k = tb.set_kvector(-range,range,precision);
+fig_band = figure("Name","Energy Band Figure");
+surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
+
 colorbar;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

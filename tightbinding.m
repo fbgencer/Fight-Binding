@@ -140,6 +140,7 @@ classdef tightbinding < handle
                   end
                   eigens = eig(eig_matrix);
                   Energy(a,b,c) = real(eigens(1));
+
                   if(size(eigens,1) == 2)
                     negEnergy(a,b,c) = real(eigens(2));
                   end
@@ -179,6 +180,10 @@ classdef tightbinding < handle
         if(plot_type == 'surface')  
           if(self.no_primvec == 3)
               s.positive_surface = surf(kx(:,:,1),ky(:,:,1),Ep(:,:,1),varargin{:});
+              if(En ~= 0)
+                  hold on;
+                  s.negative_surface = surf(kx(:,:,1),ky(:,:,1),En(:,:,1),varargin{:});
+              end
               
           elseif(self.no_primvec == 2)
               s.positive_surface = surf(kx,ky,Ep,varargin{:});
@@ -379,16 +384,57 @@ classdef tightbinding < handle
         y_offset = 0;
         z_offset = 0;
 
+        line_object = "None";
+        atom_object = "None";
+
         lattice_fill_factorx = -gp.canvas_x/2 : gp.canvas_x/2;
         lattice_fill_factory = -gp.canvas_y/2 : gp.canvas_y/2;
         lattice_fill_factorz = -gp.canvas_z/2 : gp.canvas_z/2;
+        gp.xaxis_symmetric();
+        gp.yaxis_symmetric();
+        gp.zaxis_symmetric();
+
+        i = 1;
+        while(i <= size(varargin,2))
+          st = string(varargin{i});
+          i = i+1;
+          switch st
+            case 'atoms'
+              atom_object = varargin{i};
+            case 'bonds'
+              line_object = varargin{i}{1};
+            case 'x'
+              lattice_fill_factorx = varargin{i};
+              %gp.change_axis_limits("x",lattice_fill_factorx(1),lattice_fill_factorx(end));
+            case 'y'
+              lattice_fill_factory = varargin{i};
+              %gp.change_axis_limits("y",lattice_fill_factory(1),lattice_fill_factory(end));
+            case 'z'
+              lattice_fill_factorz = varargin{i}; 
+              %gp.change_axis_limits("z",lattice_fill_factorz(1),lattice_fill_factorz(end));        
+            otherwise
+              disp('eRRor');
+              return;
+          end
+          i = i+1;
+        end
+
+        if(isstring(line_object) & line_object == "None");
+          line_object = gp.draw("line black",0,0,0,0,'Visible','off');
+        end
+        if(isstring(atom_object) & atom_object == "None")
+          atom_object = cell(1,size(self.unit_cell,2));
+          colors = {"red","blue","green","magenta","yellow","black"};
+          for i = 1:size(self.unit_cell,2)
+            atom_object{i} = gp.draw("point "+colors{mod(i,6)+1},0,0,0.2,'Visible','off');
+          end
+        end
 
         if(self.dim == 1)
           lattice_fill_factory = 1;
         end
-        gp.xaxis_symmetric();
-        gp.yaxis_symmetric();
-        gp.zaxis_symmetric();
+
+
         
         normalize = 1e10;
         a1 = self.pvec(1,:).*normalize;
@@ -401,20 +447,6 @@ classdef tightbinding < handle
           a3 = self.pvec(3,:).*normalize;
         else
           a3 = zeros(1,size(a1,2));
-        end
-
-        if(nargin > 2)
-          line_object = varargin{1}.bonds{1};
-          atom_object = varargin{1}.atoms;
-        else
-          line_object = gp.draw("line black",0,0,0,0,'Visible','off');
-
-          atom_object = cell(1,size(self.unit_cell,2));
-          colors = {"red","blue","green","magenta","yellow","black"};
-          for i = 1:size(atom_object,2)
-            atom_object{i} = gp.draw("point "+colors{mod(i,6)+1},0,0,0.2,'Visible','off');
-          end
-
         end
 
 
@@ -471,7 +503,8 @@ classdef tightbinding < handle
               continue;
             end
 
-            if(x > gp.canvas_x/2 | x < -gp.canvas_x/2 | y > gp.canvas_y/2 | y < -gp.canvas_y/2)
+            if(x < lattice_fill_factorx(1) | x > lattice_fill_factorx(end) | y < lattice_fill_factory(1) | y > lattice_fill_factory(end) | ...
+               z > lattice_fill_factorz(1) | z < lattice_fill_factorz(end) )
               continue;
             end
 
@@ -504,6 +537,7 @@ classdef tightbinding < handle
           for e1 = lattice_fill_factorx
             for e2 = lattice_fill_factory
               for e3 = lattice_fill_factorz
+
                 tx = e1 * a1(1) + e2 * a2(1) + e3 * a3(1);
                 ty = e1 * a1(2) + e2 * a2(2) + e3 * a3(2);
                 tz = e1 * a1(3) + e2 * a2(3) + e3 * a3(3);
@@ -522,7 +556,8 @@ classdef tightbinding < handle
                   continue;
                 end
 
-                if(x > gp.canvas_x/2 | x < -gp.canvas_x/2 | y > gp.canvas_y/2 | y < -gp.canvas_y/2 | z > gp.canvas_z/2 | z < -gp.canvas_z/2)
+                if(x < lattice_fill_factorx(1) | x > lattice_fill_factorx(end) | y < lattice_fill_factory(1) | y > lattice_fill_factory(end) | ...
+                   z > lattice_fill_factorz(1) | z < lattice_fill_factorz(end) )
                   continue;
                 end
 

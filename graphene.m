@@ -55,17 +55,17 @@ tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
-atoma = gp.draw('circle rgb:0066cc',0,0,0.2,'Visible','off');
+atoma = gp.draw('circle rgb:0066cc',0,0,0.3,'Visible','off');
 atomb = gp.draw('circle rgb:fb7100',0,0,0.3,'Visible','off');
-bond = gp.draw('line black',0,0,0,0,'Visible','off');
-type_str.bonds = {bond};
-type_str.atoms = {atoma,atomb};
-tb.plot_lattice(gp,type_str);
+bond = gp.draw('line black',0,0,0,0,'Visible','off','LineWidth',2);
+bonds = {bond};
+atoms = {atoma,atomb};
+tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",-5:5);
 
-uc_rect{1} = gp.draw('line',-2,0,0,1,'Color','red');
-uc_rect{2} = gp.draw('line',0,1,2,0,'Color','red');
-uc_rect{3} = gp.draw('line',2,0,0,-1,'Color','red');
-uc_rect{4} = gp.draw('line',0,-1,-2,0,'Color','red');
+uc_rect{1} = gp.draw('line',-2,0,0,1,'Color','red','LineWidth',2);
+uc_rect{2} = gp.draw('line',0,1,2,0,'Color','red','LineWidth',2);
+uc_rect{3} = gp.draw('line',2,0,0,-1,'Color','red','LineWidth',2);
+uc_rect{4} = gp.draw('line',0,-1,-2,0,'Color','red','LineWidth',2);
 end
 
 
@@ -79,13 +79,10 @@ surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
 
 rp = lattice_drawer(fig_band);
 lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
-tb.plot_brillouin_zone(rp,'plot points','plot lines',lin,'plot coordinates');
+tb.plot_brillouin_zone(rp,'plot points','plot lines',lin);
 
 %surfaces.negative_surface.Visible = 'off';
 %surfaces.positive_surface.Visible = 'off';
-
-%For contour, uncomment below
-%contour(tb.kvec{1},tb.kvec{2},tb.E);
 
 view(0,90);
 
@@ -95,29 +92,24 @@ K1 = [-2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 M = [2*pi / (sqrt(3)*a), 0, 0];
 K2 = [2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 
-k_fig = figure("Name","High Symmetry Points Figure");
-f2 = tb.plot_high_symmetry_points(k_fig,K1,Gamma,M,K2);
+fig_hsym = figure("Name","High Symmetry Points Figure");
+f2 = tb.plot_high_symmetry_points(fig_hsym,K1,Gamma,M,K2);
 title(f2.CurrentAxes,'High Symmetry Points','Interpreter','Latex');
 xlabel(f2.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
 xticks(f2.CurrentAxes,0:precision:precision*4);
 xticklabels(f2.CurrentAxes,{'K','\Gamma','M','K'});
 
 
-% band_dw = lattice_drawer(fig_band); 
-% l = band_dw.draw('vector',K1(1),K1(2),1,Gamma(1),Gamma(2),1);
-% %vector için
-% l.MaxHeadSize = 1;
-% %l.ZData = [1 1];
-% l = band_dw.draw('vector',Gamma(1),Gamma(2),1,M(1),M(2),1);
-% %l.ZData = [1 1];
-% l.MaxHeadSize = 1;
-% l = band_dw.draw('vector',M(1),M(2),1,K2(1),K2(2),1);
-% %l.ZData = [1 1];
-% l.MaxHeadSize = 1;
-% l = band_dw.draw('vector',K2(1),K2(2),1,K1(1),K1(2),1);
-% %l.ZData = [1 1];
-% l.MaxHeadSize = 1;
+band_dw = lattice_drawer(fig_band); 
+band_dw.draw('vector red',K1(1),K1(2),0.5,Gamma(1),Gamma(2),0.5,'LineWidth',2,'MaxHeadSize',0.3);
+band_dw.draw('vector black',Gamma(1),Gamma(2),0.5,M(1),M(2),0.5,'LineWidth',2,'MaxHeadSize',0.3);
+band_dw.draw('vector green',M(1),M(2),0.5,K2(1),K2(2),0.5,'LineWidth',2,'MaxHeadSize',0.5);
+l = band_dw.draw('vector black',K2(1),K2(2),0.5,K1(1),K1(2),0.5,'LineWidth',2,'MaxHeadSize',0.3);
 
+t = band_dw.draw('text',K1(1),K1(2),0.6,'K','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
+band_dw.draw('text',Gamma(1),Gamma(2),0.6,'$$\Gamma$$','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
+band_dw.draw('text',M(1),M(2),0.6,'M','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
+band_dw.draw('text',K2(1),K2(2),0.6,'K','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
 end
 
 
