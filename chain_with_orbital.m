@@ -8,33 +8,26 @@ a = a0;
 
 %primitive vectors
 a1 = [a, 0, 0];
-%We have two atoms in one unit cell
-% o-O--o-O--o-O--o-O-- : chain
+%We have two orbitals in one unit cell
+% o-o-o-o- : chain
 
-tb = tightbinding(1,a1);% Start with dimension and primitive vectors
-tb.set_unit_cell('A',[-a0/4 0],'B',[a0/4 0]); %give unit cell atoms and their locations
-tb.set_orbital(1);
+tb = tightbinding(1,a1);% Start with name and primitive vectors
+tb.set_unit_cell('A',[0 0]); %give unit cell atoms and their locations
+tb.set_orbital('s');
 
-tb.add_hopping(Eo,1,1,[0]);
-tb.add_hopping(Eo,2,2,[0]);
-tb.add_hopping(-t,1,2,[0]);
-%tb.add_hopping(-t,2,1,[0]);
-
-tb.add_hopping(-t,2,1,[1]);
-%tb.add_hopping(-t,1,2,[-1]);
+tb.add_hopping(Eo,'A','A',[0],'3s','3px');
+tb.add_hopping(-t,'A','A',[1],'3s','3px');
+%tb.add_hopping(-t,1,1,[-1]);
 
 if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
-atoma = gp.draw('circle blue',0,0,0.25,'Visible','off');
-%atomb = gp.draw('circle red',0,0,0.1,'Visible','off');
-atomb = gp.draw('point',0,0,'Visible','off');
-bond = gp.draw('line black',0,0,0,0,'Visible','off');
+atoma = gp.draw('circle red',0,0,0.25,'Visible','off');
+bond = gp.draw('line black',0,0,0,0,'Visible','off','LineWidth',1);
 bonds = {bond};
-atoms = {atoma,atomb};
+atoms = {atoma};
 tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms);
 end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if(1)
@@ -44,7 +37,13 @@ k = tb.set_kvector(-range,range,precision);
 fig_band = figure("Name","Energy Band Figure");
 surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
 
+% rp = lattice_drawer(fig_band);
+% lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
+% tb.plot_brillouin_zone(rp,'plot points','plot lines',lin);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 fig_hsym = figure("Name","High Symmetry Points Figure");
 f2 = tb.plot_high_symmetry_points(fig_hsym,[0 0 0],[3.2/a 0 0]);
 end

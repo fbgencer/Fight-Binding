@@ -32,7 +32,7 @@ a2 = [a*sqrt(3)/2, -a/2, 0];
 %a2 = [a/2,a/2*sqrt(3),0];
 
 
-tb = tightbinding('graphene',a1,a2);% Start with name and primitive vectors
+tb = tightbinding(2,a1,a2);% Start with name and primitive vectors
 tb.set_unit_cell('A',[-a0/2 0],'B',[a0/2 0]); %give unit cell atoms and their locations
 %tb.set_unit_cell('A',[0, -a0/2],'B',[0, a0/2]); %give unit cell atoms and their locations
 
@@ -43,16 +43,16 @@ tb.add_hopping(Eo,1,1,[0 0]);  % 0 to 0
 tb.add_hopping(Eo,2,2,[0 0]);  % 0 to 0
 
 tb.add_hopping(-t,1,2,[0 0]);  % 0 to 0
-tb.add_hopping(-t,2,1,[0 0]);  % 0 to 0
+%tb.add_hopping(-t,2,1,[0 0]);  % 0 to 0 % No need to include this anymore!
 
 tb.add_hopping(-t,1,2,[-1 0]);  % 0 to 1 with -a1 vector
 tb.add_hopping(-t,2,1,[1 0]);   % 0 to 2 with a1 vector
 tb.add_hopping(-t,1,2,[0 -1]);  % 0 to 3
-tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
+%tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 
 %Do this, just make sure to get symmetric hamiltonian
 %tb.hermitian_hamiltonian();
-if(1)
+if(0)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
 atoma = gp.draw('circle rgb:0066cc',0,0,0.3,'Visible','off');
@@ -79,10 +79,9 @@ surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
 
 rp = lattice_drawer(fig_band);
 lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
-tb.plot_brillouin_zone(rp,'plot points','plot lines',lin);
+tb.plot_brillouin_zone(rp,'plot points','plot lines');
 
-%surfaces.negative_surface.Visible = 'off';
-%surfaces.positive_surface.Visible = 'off';
+%surfaces{1}.Visible = 'off';
 
 view(0,90);
 
@@ -93,11 +92,11 @@ M = [2*pi / (sqrt(3)*a), 0, 0];
 K2 = [2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
-f2 = tb.plot_high_symmetry_points(fig_hsym,K1,Gamma,M,K2);
-title(f2.CurrentAxes,'High Symmetry Points','Interpreter','Latex');
-xlabel(f2.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
-xticks(f2.CurrentAxes,0:precision:precision*4);
-xticklabels(f2.CurrentAxes,{'K','\Gamma','M','K'});
+tb.plot_high_symmetry_points(fig_hsym,K1,Gamma,M,K2);
+title(fig_hsym.CurrentAxes,'High Symmetry Points','Interpreter','Latex');
+xlabel(fig_hsym.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
+xticks(fig_hsym.CurrentAxes,0:precision:precision*4);
+xticklabels(fig_hsym.CurrentAxes,{'K','\Gamma','M','K'});
 
 
 band_dw = lattice_drawer(fig_band); 

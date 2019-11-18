@@ -1,7 +1,8 @@
 classdef tightbinding < handle
    properties
-      name = 0; %model name
       dim = 0; % dimension
+      orbitals = {};
+      no_orbital = 1;
       pvec = 0; %primitive vectors
       recip_vec = 0; %reciprocal vectors
       no_primvec = 0; %number of primitive vectors
@@ -10,7 +11,6 @@ classdef tightbinding < handle
       bonds = {};
       kvec = {};
       E = 0; % without calculation it is just zero
-      En = 0;
    end
    methods
        %selfect constructor
@@ -18,9 +18,16 @@ classdef tightbinding < handle
        %dim: Dimension of the model, 1d-2d-3d
        %unit_cell atom no
        %primvec: primitive vectors
-       function tb = tightbinding(name,a1,varargin)
-         tb.name = name;
-         tb.set_primitive_vectors(a1,varargin{:});
+       function tb = tightbinding(dim,a1,varargin)
+          if(isnumeric(dim) == 0)
+            error('Problem dimension must be numeric')
+          end
+          dim = int8(dim); %convert to integer..
+          if(dim > 3)
+            error('Dimension cannot be bigger than 3')
+          end
+          tb.dim = dim;
+          tb.set_primitive_vectors(a1,varargin{:});
        end
        %%
        function set_unit_cell(self,varargin)
@@ -34,6 +41,15 @@ classdef tightbinding < handle
             end
        end
        %%
+       function set_orbital(self,varargin)
+          for i = 1:size(varargin,2)
+            if(isstring(varargin{i}) | ischar(varargin{i}))
+              self.orbitals{end+1} = varargin{i};
+            end
+          end
+          self.no_orbital = size(self.orbitals,2);
+       end
+       %%
         function set_primitive_vectors(self,a1,varargin)
           primvec = [a1];
           if(nargin > 2)%include self,a1 and a2
@@ -45,7 +61,6 @@ classdef tightbinding < handle
             end
           end
           self.pvec = primvec;
-          self.dim = size(primvec,1); % dimension of the lattice
           self.no_primvec = size(primvec,1); % number of primitive vectors 
           
         end
@@ -89,16 +104,92 @@ classdef tightbinding < handle
 %add_hopping(t,2,1,[0 1]);  % 0 -> 3
 %add_hopping(t,1,2,[0 -1]);  % 0 -> 4
       
-      function add_hopping(self,amp,index1,index2,trans_vec)
+      function add_hopping(self,amp,index1,index2,trans_vec,varargin)
+        %varargin part for orbitals, size must be 2
+        if(size(varargin) ~= 0 & size(varargin,2) ~= 2)
+          error('two orbitals are needed')
+        end
+
+        orbital1 = 1;
+        orbital2 = 1;
+
+        if(size(varargin,2) == 2)
+          for i = 1:size(self.orbitals,2)
+            if(varargin{1} == self.orbitals{i})
+                orbital1 = i;
+            end
+            if(varargin{2} == self.orbitals{i})
+                orbital2 = i;
+            end            
+          end
+        end
+
+        shifting_factor1 = (orbital1-1) * size(self.unit_cell,2);
+        shifting_factor2 = (orbital2-1) * size(self.unit_cell,2);
+
+        %disp(orbital1)
+
+        %convert string indexes to numerical values
+        if( isstring(index1) | ischar(index1) | isstring(index2) | ischar(index2))
+          for i = 1:size(self.unit_cell,2)
+            atom = self.unit_cell{i};
+            if(index1 == atom.name)
+              index1 = i;
+            end
+            if(index2 == atom.name)
+              index2 = i;
+            end
+          end
+        end
+
+
+        if( isstring(index1) | ischar(index1) | isstring(index2) | ischar(index2)  )
+          error('Undefined atom name');
+        end        
+        
+
+        index1 = index1 + shifting_factor1;
+        index2 = index2 + shifting_factor2;
+
         if(index1 > 0 && index2 > 0)
             %Here we will hold a struct that contains i,j locations,
             %amplitude of the given hopping and phase value
-            
+
+            %First check the translation vector (trans_vec) and number of primitive vectors
+            if(size(trans_vec,2) ~= size(self.pvec,1) )
+              error('Problem dimension and translation vector size does not match!');
+            end
+
+            %Also check that maybe user is trying add same elements, we should not add more bonds, we will quietly return
+            for iter = 1:size(self.bonds,2)
+              temp_bond = self.bonds{iter};
+              if(temp_bond.i == index2 & temp_bond.j == index1 & temp_bond.phase == -trans_vec)
+                return; 
+              end
+            end
+
+            %Here we will create hermitian matrix so without expecting from user we can add hermitian conjugate here
             bond.phase =  trans_vec;
             bond.i = index1;
             bond.j = index2;
             bond.amp = amp;
             self.bonds{end+1} = bond;
+
+
+            %We can give user some options to close this flag, LATER ADD this
+            flag_create_hermitian_conj = 1;
+            %Add only Non-Diagonal elements
+            
+            if(index1 ~= index2 & flag_create_hermitian_conj)
+              bond.phase = -trans_vec;
+              bond.i = index2;
+              bond.j = index1;
+              bond.amp = amp;
+              self.bonds{end+1} = bond;
+            end
+
+
+
         else
             disp('Atom indexes must be bigger than zero.');
         end
@@ -111,43 +202,49 @@ classdef tightbinding < handle
         ky = kvec{2};
         kz = kvec{3};
         
-        [self.E,self.En] = calc_band_internal(self,kx,ky,kz);
+        self.E= calc_band_internal(self,kx,ky,kz);
         
       end
-      function [Energy,negEnergy] = calc_band_internal(self,kx,ky,kz)
+      function Energy_cell = calc_band_internal(self,kx,ky,kz)
         %assume they have equal sizes
         alen = size(kx,1);
         blen = size(kx,2);
         clen = size(kx,3);
 
-        Energy = zeros(alen,blen,clen);
-        negEnergy = Energy;
+        %We have NxN matrix and N determines the number of bands
+        %Size of the matrix is number of atoms inside the unit cell and number of orbitals
+        matrix_row_size = size(self.unit_cell,2)*self.no_orbital;
+        
+        Energy_cell = cell(1,matrix_row_size);
+        for i = 1:matrix_row_size
+          Energy_cell{i} = zeros(alen,blen,clen);
+        end
+       
         bonding_no = size(self.bonds,2);
         if(size(self.unit_cell,2) == 0)
-          error(message('Unit cell is undefined !'));
+          error('Unit cell is undefined !');
         end
 
          for a = 1:alen
             for b = 1:blen
               for c = 1:clen
-                  eig_matrix = zeros(size(self.unit_cell,2));
+
+                  eig_matrix = zeros(matrix_row_size,matrix_row_size);
+
                   k = [kx(a,b,c),ky(a,b,c),kz(a,b,c)];
                   for ob_iter = 1:bonding_no
                       bond = self.bonds{ob_iter};
                       q = exp(1i*dot(k,bond.phase*self.pvec));
-
                       eig_matrix(bond.i,bond.j) = eig_matrix(bond.i,bond.j) +  (bond.amp * q);
                   end
                   eigens = eig(eig_matrix);
-                  Energy(a,b,c) = real(eigens(1));
-
-                  if(size(eigens,1) == 2)
-                    negEnergy(a,b,c) = real(eigens(2));
+                  for iter_eig = 1:size(eigens,1)
+                    Energy_cell{iter_eig}(a,b,c) = real(eigens(iter_eig));
                   end
+
                 end
             end
          end
-        
       end
       %%
       function kvec = set_kvector(self,from,to,len)
@@ -166,61 +263,54 @@ classdef tightbinding < handle
         end    
       end
       %%
-      function s = plot_energy_band(self,fig,kvec,plot_type,varargin)
+      function surfaces = plot_energy_band(self,fig,kvec,plot_type,varargin)
 
         kx = kvec{1};
         ky = kvec{2};
         kz = kvec{3};
 
-        [Ep,En] = calc_band_internal(self,kx,ky,kz);
+        E = calc_band_internal(self,kx,ky,kz);
         f = fig();
-        s.positive_surface = 0;
-        s.negative_surface = 0;
+        surfaces = {};
 
         if(plot_type == 'surface')  
-          if(self.no_primvec == 3)
-              s.positive_surface = surf(kx(:,:,1),ky(:,:,1),Ep(:,:,1),varargin{:});
-              if(En ~= 0)
-                  hold on;
-                  s.negative_surface = surf(kx(:,:,1),ky(:,:,1),En(:,:,1),varargin{:});
-              end
-              
-          elseif(self.no_primvec == 2)
-              s.positive_surface = surf(kx,ky,Ep,varargin{:});
-              if(En ~= 0)
-                  hold on;
-                  s.negative_surface = surf(kx,ky,En,varargin{:});
-              end
-          elseif(self.no_primvec == 1)
-              s.positive_surface = surf(kx,Ep,varargin{:});
-          else
-            error(message('Before plotting, define primitive vectors'));
+          hold on;
+          for i = 1:size(E,2)
+            if(self.no_primvec == 3) 
+              surfaces{end+1} = surf(kx(:,:,1),ky(:,:,1),E{i}(:,:,1),varargin{:});
+            elseif(self.no_primvec == 2)
+              surfaces{end+1} = surf(kx,ky,E{i},varargin{:});
+            elseif(self.no_primvec == 1)
+                surfaces{end+1}= surf(kx,E{i},varargin{:});
+            else
+              error('Before plotting, define primitive vectors');
+            end
+            f.UserData = surfaces;
           end
-          f.UserData = s;
-
         elseif(plot_type == 'contour')
-          if(self.no_primvec == 3)
-              s.positive_surface = surf(kx(:,:,1),ky(:,:,1),Ep(:,:,1),varargin{:});
-              
-          elseif(self.no_primvec == 2)
-              s.positive_contour = contour(kx,ky,Ep,varargin{:});
-              if(En ~= 0)
-                hold on;
-                s.positive_contour = contour(kx,ky,En,varargin{:});
-              end
-          elseif(self.no_primvec == 1)
-              s.positive_contour = contour(kx,Ep,varargin{:});
-          else
-            error(message('Before plotting, define primitive vectors'));
+          hold on;
+          for i = 1:size(E,2)
+            if(self.no_primvec == 3)
+              error('no contour plot fr 3dim ')
+              %s.positive_surface = surf(kx(:,:,1),ky(:,:,1),Ep(:,:,1),varargin{:});  
+            elseif(self.no_primvec == 2)
+              surfaces{end+1} = contour(kx,ky,E{i},varargin{:});
+            elseif(self.no_primvec == 1)
+              surfaces{end+1}= contour(kx,E{i},varargin{:});
+            else
+              error(message('Before plotting, define primitive vectors'));
+            end
           end
-          f.UserData = s;          
+          f.UserData = surfaces;          
         end
 
+        hold off;
       end
       %%
-      function f = plot_high_symmetry_points(self,fig,varargin)
+      function plots = plot_high_symmetry_points(self,fig,varargin)
 
         f = fig();
+        plots = {};
         
         if(nargin < 2)
             disp('In order to plot at least two high symmetry points are required.');
@@ -237,13 +327,13 @@ classdef tightbinding < handle
             kz = [kz,linspace(varargin{i}(3),varargin{i+1}(3),precision)];
         end
 
-        [Ep,En] = calc_band_internal(self,kx,ky,kz);
-        p.positive_plot = plot(Ep);
-        if(En ~= 0)
-            hold on;
-            p.negative_plot = plot(En);
+        E = calc_band_internal(self,kx,ky,kz);
+        hold on;
+        for i = 1:size(E,2)
+          plots{end+1} = plot(E{i});
         end
-        f.UserData = p;
+        hold off;
+        f.UserData = plots;
       end
       %%
       function plot_only_atoms(self,gp,varargin)
@@ -394,6 +484,7 @@ classdef tightbinding < handle
         gp.yaxis_symmetric();
         gp.zaxis_symmetric();
 
+
         i = 1;
         while(i <= size(varargin,2))
           st = string(varargin{i});
@@ -430,10 +521,11 @@ classdef tightbinding < handle
           end
         end
 
-        if(self.dim == 1)
-          lattice_fill_factory = 1;
-        end
 
+        %Bununla ilgili bir sorun var, lattice factoru  = 1 yapınca tek boyutlu zinciri çizmiyor 
+        %if(self.dim == 1)
+        %  lattice_fill_factory = 1;
+        %end
 
         
         normalize = 1e10;
@@ -452,7 +544,7 @@ classdef tightbinding < handle
 
         cx = 0;
         cy = 0;
-        
+
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%BOND plottign
         old_x = 0;
         old_y = 0;
@@ -470,7 +562,6 @@ classdef tightbinding < handle
             if(bond.phase == 0 & bond.i == bond.j)
               continue;
             end
-
             % tvec translates our unitcell to new unitcells
             tvector = a1 .* bond.phase(1);
             if(size(bond.phase,2) > 1)
@@ -495,10 +586,12 @@ classdef tightbinding < handle
               z = z+tz;
             end
 
+
             
             if(x == old_x & y == old_y & z == old_z)
               continue;
             end
+
             if(x(1) == x(2) & y(1) == y(2) &  z(1) == z(2))
               continue;
             end
@@ -507,7 +600,7 @@ classdef tightbinding < handle
                z > lattice_fill_factorz(1) | z < lattice_fill_factorz(end) )
               continue;
             end
-
+            
             gp.copy_to(line_object,x(1),y(1),z(1),x(2),y(2),z(2),'Visible','on');
 
             old_x = x;
@@ -607,6 +700,7 @@ classdef tightbinding < handle
         end
 
 
+
         b = self.get_reciprocal_vectors();
         %Create closest points using recip vectors
         %assumption is we can create brillouin zone with the -1,0,1 indices of recp vectors
@@ -668,6 +762,7 @@ classdef tightbinding < handle
           vpx1 = vpx1(I);
           vpy1 = vpy1(I);
 
+            
           if(plot_points)
             for i = 1:size(vpx1,2)
               gp.copy_to(point_obj,vpx1(i),vpy1(i),'Visible','on');

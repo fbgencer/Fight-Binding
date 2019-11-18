@@ -11,39 +11,41 @@ a1 = [a, 0, 0];
 %We have two orbitals in one unit cell
 % o-o-o-o- : chain
 
-tb = tightbinding('1D-Chain',a1);% Start with name and primitive vectors
+tb = tightbinding(1,a1);% Start with name and primitive vectors
 tb.set_unit_cell('A',[0 0]); %give unit cell atoms and their locations
+tb.set_orbital('s');
 
-
-tb.add_hopping(Eo,1,1,[0]);
+tb.add_hopping(Eo,'A','A',[0],'s','s'); %hem A hem de 1 çalışıyor, bazı orbitalleri böyle verebiliyoruz
 tb.add_hopping(-t,1,1,[1]);
-tb.add_hopping(-t,1,1,[-1]);
+%tb.add_hopping(-t,1,1,[-1]);
 
-if(1)
-lat_f = figure(3);
-gp = lattice_drawer(lat_f,10,10);
+if(0)
+lat_f = figure("Name","Lattice Figure");
+gp = lattice_drawer(lat_f,20,20);
 atoma = gp.draw('circle red',0,0,0.25,'Visible','off');
-bond = gp.draw('line black',0,0,0,0,'Visible','off');
-type_struct.bonds = {bond};
-type_struct.atoms = {atoma};
-%tb.plot_lattice(gp,type_struct);
-tb.plot_only_atoms(gp,type_struct);
+bond = gp.draw('line black',0,0,0,0,'Visible','off','LineWidth',1);
+bonds = {bond};
+atoms = {atoma};
+tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if(0)
-range = 2*pi/a;
-len = 80;
-tb.set_kvector(-range,range,len);
-tb.calculate_band();
-fig_band = figure(1);
-tb.plot_band(fig_band);
+if(1)
+range = 2*pi/a; 
+precision = 100;
+k = tb.set_kvector(-range,range,precision);
+fig_band = figure("Name","Energy Band Figure");
+surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
+
+% rp = lattice_drawer(fig_band);
+% lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
+% tb.plot_brillouin_zone(rp,'plot points','plot lines',lin);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-k_fig = figure(2);
-f2 = tb.plot_high_symmetry_points(k_fig,[0 0 0],[3.2/a 0 0]);
+fig_hsym = figure("Name","High Symmetry Points Figure");
+f2 = tb.plot_high_symmetry_points(fig_hsym,[0 0 0],[3.2/a 0 0]);
 end
 
 %Hand solution

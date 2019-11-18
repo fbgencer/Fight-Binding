@@ -9,7 +9,7 @@ a = a0;
 a1 = [a, 0, 0];
 a2 = [0, a, 0];
 
-tb = tightbinding('Square Lattice',a1,a2);
+tb = tightbinding(2,a1,a2);
 tb.set_unit_cell('A',[0 0]); %give unit cell atoms and their locations
 
 
@@ -25,9 +25,9 @@ fig_lat = figure("Name","Lattice Figure");
 gp = lattice_drawer(fig_lat,10,10);
 atoma = gp.draw('crect blue',0,0,0.3,0.3,'Visible','off');
 bond = gp.draw('line red',0,0,0,0,'Visible','off');
-type_struct.bonds = {bond};
-type_struct.atoms = {atoma};
-tb.plot_lattice(gp,type_struct);
+bonds = {bond};
+atoms = {atoma};
+tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms);
 
 
 range = 2*pi/a;
