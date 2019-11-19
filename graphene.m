@@ -52,7 +52,7 @@ tb.add_hopping(-t,1,2,[0 -1]);  % 0 to 3
 
 %Do this, just make sure to get symmetric hamiltonian
 %tb.hermitian_hamiltonian();
-if(0)
+if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
 atoma = gp.draw('circle rgb:0066cc',0,0,0.3,'Visible','off');
@@ -69,7 +69,7 @@ uc_rect{4} = gp.draw('line',0,-1,-2,0,'Color','red','LineWidth',2);
 end
 
 
-if(1)
+if(0)
 
 range = 2*pi/a; 
 precision = 100;

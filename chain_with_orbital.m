@@ -2,7 +2,7 @@
 clear; clc; close all;
 %Chain consts
 Eo = 0;
-t = 0.5;
+t = 1;
 a0 = 1.42*1e-10;
 a = a0;
 
@@ -13,10 +13,19 @@ a1 = [a, 0, 0];
 
 tb = tightbinding(1,a1);% Start with name and primitive vectors
 tb.set_unit_cell('A',[0 0]); %give unit cell atoms and their locations
-tb.set_orbital('s');
+tb.set_orbital('s','p');
 
-tb.add_hopping(Eo,'A','A',[0],'3s','3px');
-tb.add_hopping(-t,'A','A',[1],'3s','3px');
+tb.add_hopping(Eo,'A','A',[0],'s','s');
+tb.add_hopping(Eo,'A','A',[0],'p','p');
+
+tb.add_hopping(-t,'A','A',[1],'s','s');
+tb.add_hopping(t,'A','A',[1],'p','p');
+tb.add_hopping(0,'A','A',[1],'p','s');
+tb.add_hopping(0,'A','A',[1],'s','p');
+
+%tb.symbolic_hamiltonian('exact')
+
+
 %tb.add_hopping(-t,1,1,[-1]);
 
 if(1)

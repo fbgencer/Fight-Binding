@@ -106,19 +106,32 @@ classdef tightbinding < handle
       
       function add_hopping(self,amp,index1,index2,trans_vec,varargin)
         %varargin part for orbitals, size must be 2
-        if(size(varargin) ~= 0 & size(varargin,2) ~= 2)
-          error('two orbitals are needed')
-        end
 
         orbital1 = 1;
         orbital2 = 1;
 
-        if(size(varargin,2) == 2)
+        where = find(strcmp(varargin,'sym'));
+        if(where)
+          symbolic_amp = str2sym(varargin{where+1});
+          if(where == 1)
+            where = 3;
+          elseif(where == 3)
+            where = 1;
+          end
+
+        else
+          symbolic_amp = 'None';
+          where = 1;
+        end
+        
+        %Check whether given is orbital string or symbolic entry
+        if(size(varargin,2) > 2 | (size(varargin,2) == 2 & symbolic_amp == 0))
+          
           for i = 1:size(self.orbitals,2)
-            if(varargin{1} == self.orbitals{i})
+            if(varargin{where} == self.orbitals{i})
                 orbital1 = i;
             end
-            if(varargin{2} == self.orbitals{i})
+            if(varargin{where+1} == self.orbitals{i})
                 orbital2 = i;
             end            
           end
@@ -127,7 +140,8 @@ classdef tightbinding < handle
         shifting_factor1 = (orbital1-1) * size(self.unit_cell,2);
         shifting_factor2 = (orbital2-1) * size(self.unit_cell,2);
 
-        %disp(orbital1)
+        %disp("fac1:"+shifting_factor1)
+        %disp("fac2:"+shifting_factor2)
 
         %convert string indexes to numerical values
         if( isstring(index1) | ischar(index1) | isstring(index2) | ischar(index2))
@@ -164,6 +178,9 @@ classdef tightbinding < handle
             for iter = 1:size(self.bonds,2)
               temp_bond = self.bonds{iter};
               if(temp_bond.i == index2 & temp_bond.j == index1 & temp_bond.phase == -trans_vec)
+                %disp(temp_bond)
+                %disp('do not add the same')
+                %disp(trans_vec)
                 return; 
               end
             end
@@ -173,25 +190,24 @@ classdef tightbinding < handle
             bond.i = index1;
             bond.j = index2;
             bond.amp = amp;
+            bond.symbolic_amp = symbolic_amp;
             self.bonds{end+1} = bond;
 
-
+            %fprintf('index %d %d\n',index1,index2 );
             %We can give user some options to close this flag, LATER ADD this
             flag_create_hermitian_conj = 1;
             %Add only Non-Diagonal elements
-            
-            if(index1 ~= index2 & flag_create_hermitian_conj)
+            if((index1 ~= index2 | any(bond.phase ~= -trans_vec)) )
               bond.phase = -trans_vec;
               bond.i = index2;
               bond.j = index1;
               bond.amp = amp;
+              bond.symbolic_amp = symbolic_amp;
               self.bonds{end+1} = bond;
             end
-
-
-
+            
         else
-            disp('Atom indexes must be bigger than zero.');
+            error('Atom indexes must be bigger than zero.');
         end
         
       end
@@ -206,6 +222,7 @@ classdef tightbinding < handle
         
       end
       function Energy_cell = calc_band_internal(self,kx,ky,kz)
+        %User should not use this, it returns cell of all energy bands for a given k vectors
         %assume they have equal sizes
         alen = size(kx,1);
         blen = size(kx,2);
@@ -504,7 +521,7 @@ classdef tightbinding < handle
               lattice_fill_factorz = varargin{i}; 
               %gp.change_axis_limits("z",lattice_fill_factorz(1),lattice_fill_factorz(end));        
             otherwise
-              disp('eRRor');
+              error('Undefined entry valid entries [atoms,bonds,x,y,z]');
               return;
           end
           i = i+1;
@@ -549,7 +566,28 @@ classdef tightbinding < handle
         old_x = 0;
         old_y = 0;
         old_z = 0;
-        for i = 1:size(self.bonds,2)
+
+        %we cannot run from 1 to size of bonds because orbital creates bond even if they cant bee seen in the lattic
+        %just try we will catch how many different phases that we have
+        phases = {self.bonds{1}.phase};
+
+        for i = 2:size(self.bonds,2)
+          dummy_bond = self.bonds{i};
+          push_flag = 0;
+          for iphs = 1:size(phases,2)
+            if(phases{iphs} ~= dummy_bond.phase)
+              push_flag = 1;
+              break;
+            end
+          end
+          if(push_flag)
+            phases{end+1} = dummy_bond.phase;
+          end
+        end
+
+        %size(phases,2)
+        for i = 1 : size(self.bonds,2)
+
           for e1 = lattice_fill_factorx
           for e2 = lattice_fill_factory
           for e3 = lattice_fill_factorz
@@ -586,8 +624,6 @@ classdef tightbinding < handle
               z = z+tz;
             end
 
-
-            
             if(x == old_x & y == old_y & z == old_z)
               continue;
             end
@@ -596,12 +632,16 @@ classdef tightbinding < handle
               continue;
             end
 
-            if(x < lattice_fill_factorx(1) | x > lattice_fill_factorx(end) | y < lattice_fill_factory(1) | y > lattice_fill_factory(end) | ...
-               z > lattice_fill_factorz(1) | z < lattice_fill_factorz(end) )
+            %disp(x)
+
+            if(any(x < lattice_fill_factorx(1)) | any(x > lattice_fill_factorx(end)) | any(y < lattice_fill_factory(1)) | any(y > lattice_fill_factory(end)) | ...
+              any(z < lattice_fill_factorz(1)) | any(z > lattice_fill_factorz(end)) )
+              
               continue;
             end
             
             gp.copy_to(line_object,x(1),y(1),z(1),x(2),y(2),z(2),'Visible','on');
+            %disp('lla')
 
             old_x = x;
             old_y = y;
@@ -650,7 +690,7 @@ classdef tightbinding < handle
                 end
 
                 if(x < lattice_fill_factorx(1) | x > lattice_fill_factorx(end) | y < lattice_fill_factory(1) | y > lattice_fill_factory(end) | ...
-                   z > lattice_fill_factorz(1) | z < lattice_fill_factorz(end) )
+                   z < lattice_fill_factorz(1) | z > lattice_fill_factorz(end) )
                   continue;
                 end
 
@@ -668,7 +708,68 @@ classdef tightbinding < handle
           end
         end
       end
-        %%
+      %%
+      function str_hamiltonian = symbolic_hamiltonian(self,varargin)
+        %Create hamiltonian matrix
+
+        %if use_exact == 1, we will use numerical values of amplitudes
+        if(find(strcmp(varargin,'exact')))
+          use_exact = 1;
+        else
+          use_exact = 0;
+        end
+
+        matrix_row_size = size(self.unit_cell,2)*self.no_orbital;
+        
+        H = sym(zeros(matrix_row_size, matrix_row_size));
+
+        k = sym('k'); 
+        a = sym('a_%d',[1 3]);
+        img = sym('i');
+
+        bond_amp = sym('A_%d',[matrix_row_size,matrix_row_size]);
+
+        acoef = 0;
+
+        bonding_no = size(self.bonds,2);
+        for ob_iter = 1:bonding_no
+          bond = self.bonds{ob_iter};
+          phase = bond.phase;
+          
+          if(size(phase,2) == 1) 
+            acoef = [phase(1) 0 0];
+          elseif(size(phase,2) == 2) 
+            acoef = [phase(1) phase(2) 0];
+          elseif(size(phase,2) == 3)
+            acoef = phase;
+          end
+
+          if(bond.symbolic_amp ~= 'None') 
+            if(use_exact == 1)
+              symbolic_amp = sym(bond.amp);
+            else
+              symbolic_amp = bond.symbolic_amp;
+            end
+          else
+            if(use_exact == 1)
+              symbolic_amp = sym(bond.amp);
+            else
+              symbolic_amp = bond_amp(bond.i,bond.j);
+            end  
+          end
+          %disp(acoef)
+          q = exp(sym('-1')*img*k*(a(1)*acoef(1)+a(2)*acoef(2)+a(3)*acoef(3)) );
+          
+          %if( isequal(H(bond.i,bond.j), ) )
+          H(bond.i,bond.j) = H(bond.i,bond.j) + (symbolic_amp * q);
+          %disp(H);
+        end
+
+        str_hamiltonian = simplify(H);
+
+
+      end
+      %%
       function ln = plot_brillouin_zone(self,gp,varargin)
         %ln is line of the brillouin zone, so user can change its properties later
 

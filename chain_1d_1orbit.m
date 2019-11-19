@@ -15,11 +15,13 @@ tb = tightbinding(1,a1);% Start with name and primitive vectors
 tb.set_unit_cell('A',[0 0]); %give unit cell atoms and their locations
 tb.set_orbital('s');
 
-tb.add_hopping(Eo,'A','A',[0],'s','s'); %hem A hem de 1 çalışıyor, bazı orbitalleri böyle verebiliyoruz
-tb.add_hopping(-t,1,1,[1]);
+tb.add_hopping(Eo,'A','A',[0],'sym','Eo'); %hem A hem de 1 çalışıyor, bazı orbitalleri böyle verebiliyoruz
+tb.add_hopping(-t,1,1,[1],'sym','-t');
 %tb.add_hopping(-t,1,1,[-1]);
 
-if(0)
+tb.symbolic_hamiltonian()
+
+if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
 atoma = gp.draw('circle red',0,0,0.25,'Visible','off');
@@ -30,7 +32,7 @@ tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if(1)
+if(0)
 range = 2*pi/a; 
 precision = 100;
 k = tb.set_kvector(-range,range,precision);
