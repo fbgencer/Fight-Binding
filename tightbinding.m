@@ -333,7 +333,10 @@ classdef tightbinding < handle
             disp('In order to plot at least two high symmetry points are required.');
             return;
         end
+        
         precision = 100;
+
+
         kx = [];
         ky = [];
         kz = [];
@@ -575,8 +578,13 @@ classdef tightbinding < handle
           dummy_bond = self.bonds{i};
           push_flag = 0;
           for iphs = 1:size(phases,2)
-            if(phases{iphs} ~= dummy_bond.phase)
+            %disp('Compare')
+            %disp(phases{iphs});
+            %disp(dummy_bond.phase);
+            if(any(phases{iphs} ~= dummy_bond.phase))
               push_flag = 1;
+              %disp('Catched');
+              %disp(dummy_bond);
               break;
             end
           end
@@ -585,8 +593,11 @@ classdef tightbinding < handle
           end
         end
 
+        %disp(phases)
         %size(phases,2)
-        for i = 1 : size(self.bonds,2)
+        for i = 1 : size(phases,2)
+        %size(self.bonds,2)
+        %size(phases,2)
 
           for e1 = lattice_fill_factorx
           for e2 = lattice_fill_factory
@@ -758,7 +769,13 @@ classdef tightbinding < handle
             end  
           end
           %disp(acoef)
-          q = exp(sym('-1')*img*k*(a(1)*acoef(1)+a(2)*acoef(2)+a(3)*acoef(3)) );
+
+          exponent = img*k*(a(1)*acoef(1)+a(2)*acoef(2)+a(3)*acoef(3));
+          exponent = simplify(exponent);
+          if(sign(exponent) == -1)
+            disp('Text');
+          end
+          q = exp(exponent);
           
           %if( isequal(H(bond.i,bond.j), ) )
           H(bond.i,bond.j) = H(bond.i,bond.j) + (symbolic_amp * q);

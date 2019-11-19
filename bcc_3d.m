@@ -42,14 +42,13 @@ tb.add_hopping(-t,1,1,[1 1 1]);
 %tb.add_hopping(-t,1,9,[0 0 0]);
 
 
-if(0)
+if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,6,6,6);
 atoma = gp.draw('point red',0,0,0.25,'Visible','off');
-atomb = gp.draw('point black',0,0,0.15,'Visible','off');
 bond = gp.draw('line black',0,0,0,0,'Visible','off');
 bonds = {bond};
-atoms = {atoma,atomb};
+atoms = {atoma};
 tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",-3:3,"y",-1:1,"z",-1:1);
 end
 
