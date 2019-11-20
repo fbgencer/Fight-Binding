@@ -1,6 +1,6 @@
 % Gaas
 
-clear; clc; %close all;
+clear; clc; close all;
 tic;
 
 %Chain consts
@@ -16,6 +16,12 @@ Exy=5.0779;
 Esapc=4.4800;
 Epasc=5.7839;
 Eseapc=4.8422;
+Epasec=4.8077;
+
+
+%Esa=-8.3431;Epa=1.0414;Esc=-2.6569;Epc=3.6686;Esea=8.5914;Esec=6.7386;
+%Vss=-6.4513;Vxx=1.9546;Vxy=5.0779;Vsapc=4.4800;Vpasc=5.7839;Vseapc=4.8422;
+%Vpasec=4.8077;
 
 a = 1;
 
@@ -24,6 +30,15 @@ a1 = (a/2).*[0, 1, 1];
 a2 = (a/2).*[1, 0, 1];
 a3 = (a/2).*[1, 1, 0];
 
+g0 = [1; 1; 1; 1]
+g1 = [1; 1;-1;-1];
+g2 = [1;-1; 1;-1];
+g3 = [1;-1;-1; 1];
+
+d0 = [0 0 0]; % phase terms
+d1 = [1 0 0];
+d2 = [0 1 0];
+d3 = [0 0 1];
 
 tb = tightbinding(3,a1,a2,a3);% Start with name and primitive vectors
 
@@ -42,11 +57,14 @@ tb.add_hopping(Epc,'c','c',[0 0 0],'pz','pz','sym','E_pc');
 tb.add_hopping(Esea,'a','a',[0 0 0],'s*','s*','sym','E_s*a');
 tb.add_hopping(Esec,'c','c',[0 0 0],'s*','s*','sym','E_s*c');
 
+
+
 %%first row
 tb.add_hopping(Ess,'a','c',[0 0 0],'s','s','sym','E_ss');
 tb.add_hopping(Ess,'a','c',[1 0 0],'s','s','sym','E_ss');
 tb.add_hopping(Ess,'a','c',[0 1 0],'s','s','sym','E_ss');
 tb.add_hopping(Ess,'a','c',[0 0 1],'s','s','sym','E_ss');
+
 
 tb.add_hopping(0,'a','a',[0 0 0],'s','px','sym','0');
 tb.add_hopping(0,'a','a',[0 0 0],'s','py','sym','0');
@@ -71,20 +89,22 @@ tb.add_hopping(0,'a','a',[0 0 0],'s','s*','sym','0');
 tb.add_hopping(0,'a','c',[0 0 0],'s','s*','sym','0');
 
 %2nd row
-tb.add_hopping(Epasc,'c','a',[0 0 0],'s','px','sym','E_pasc');
-tb.add_hopping(Epasc,'c','a',[-1 0 0],'s','px','sym','E_pasc');
-tb.add_hopping(-Epasc,'c','a',[0 -1 0],'s','px','sym','E_pasc');
-tb.add_hopping(-Epasc,'c','a',[0 0 -1],'s','px','sym','E_pasc');
+%Here Epasc = -Epasc
 
-tb.add_hopping(Epasc,'c','a',[0 0 0],'s','py','sym','E_pasc');
-tb.add_hopping(-Epasc,'c','a',[-1 0 0],'s','py','sym','E_pasc');
-tb.add_hopping(+Epasc,'c','a',[0 -1 0],'s','py','sym','E_pasc');
-tb.add_hopping(-Epasc,'c','a',[0 0 -1],'s','py','sym','E_pasc');
+tb.add_hopping(-Epasc,'c','a',[0 0 0],'s','px','sym','E_pasc');
+tb.add_hopping(-Epasc,'c','a',[-1 0 0],'s','px','sym','E_pasc');
+tb.add_hopping(Epasc,'c','a',[0 -1 0],'s','px','sym','E_pasc');
+tb.add_hopping(Epasc,'c','a',[0 0 -1],'s','px','sym','E_pasc');
 
-tb.add_hopping(Epasc,'c','a',[0 0 0],'s','pz','sym','E_pasc');
-tb.add_hopping(-Epasc,'c','a',[-1 0 0],'s','pz','sym','E_pasc');
-tb.add_hopping(-Epasc,'c','a',[0 -1 0],'s','pz','sym','E_pasc');
-tb.add_hopping(Epasc,'c','a',[0 0 -1],'s','pz','sym','E_pasc');
+tb.add_hopping(-Epasc,'c','a',[0 0 0],'s','py','sym','E_pasc');
+tb.add_hopping(Epasc,'c','a',[-1 0 0],'s','py','sym','E_pasc');
+tb.add_hopping(-Epasc,'c','a',[0 -1 0],'s','py','sym','E_pasc');
+tb.add_hopping(Epasc,'c','a',[0 0 -1],'s','py','sym','E_pasc');
+
+tb.add_hopping(-Epasc,'c','a',[0 0 0],'s','pz','sym','E_pasc');
+tb.add_hopping(Epasc,'c','a',[-1 0 0],'s','pz','sym','E_pasc');
+tb.add_hopping(Epasc,'c','a',[0 -1 0],'s','pz','sym','E_pasc');
+tb.add_hopping(-Epasc,'c','a',[0 0 -1],'s','pz','sym','E_pasc');
 
 tb.add_hopping(0,'c','c',[0 0 0],'s','px','sym','0');
 tb.add_hopping(0,'c','c',[0 0 0],'s','py','sym','0');
@@ -114,10 +134,11 @@ tb.add_hopping(-Exy,'a','c',[0 0 1],'px','pz','sym','E_xy');
 
 tb.add_hopping(0,'a','a',[0 0 0],'px','s*','sym','0');
 
-tb.add_hopping(Epasc,'a','c',[0 0 0],'px','s*','sym','E_pasc');
-tb.add_hopping(Epasc,'a','c',[1 0 0],'px','s*','sym','E_pasc');
-tb.add_hopping(Epasc,'a','c',[0 1 0],'px','s*','sym','E_pasc');
-tb.add_hopping(Epasc,'a','c',[0 0 1],'px','s*','sym','E_pasc');
+%-Epasec
+tb.add_hopping(-Epasec,'a','c',[0 0 0],'px','s*','sym','E_pasc');
+tb.add_hopping(-Epasec,'a','c',[1 0 0],'px','s*','sym','E_pasc');
+tb.add_hopping(Epasec,'a','c',[0 1 0],'px','s*','sym','E_pasc');
+tb.add_hopping(Epasec,'a','c',[0 0 1],'px','s*','sym','E_pasc');
 
 %4th row
 tb.add_hopping(0,'a','a',[0 0 0],'py','pz','sym','0');
@@ -139,10 +160,11 @@ tb.add_hopping(-Exy,'a','c',[0 0 1],'py','pz','sym','E_xy');
 
 tb.add_hopping(0,'a','a',[0 0 0],'py','s*','sym','0');
 
-tb.add_hopping(Epasc,'a','c',[0 0 0],'py','s*','sym','E_pasc');
-tb.add_hopping(-Epasc,'a','c',[1 0 0],'py','s*','sym','E_pasc');
-tb.add_hopping(Epasc,'a','c',[0 1 0],'py','s*','sym','E_pasc');
-tb.add_hopping(-Epasc,'a','c',[0 0 1],'py','s*','sym','E_pasc');
+%-Epasec
+tb.add_hopping(-Epasec,'a','c',[0 0 0],'py','s*','sym','E_pasc');
+tb.add_hopping(Epasec,'a','c',[1 0 0],'py','s*','sym','E_pasc');
+tb.add_hopping(-Epasec,'a','c',[0 1 0],'py','s*','sym','E_pasc');
+tb.add_hopping(Epasec,'a','c',[0 0 1],'py','s*','sym','E_pasc');
 
 %5th row
 tb.add_hopping(Exy,'a','c',[0 0 0],'pz','px','sym','E_xy');
@@ -162,10 +184,11 @@ tb.add_hopping(Exx,'a','c',[0 0 1],'pz','pz','sym','E_xx');
 
 tb.add_hopping(0,'a','a',[0 0 0],'pz','s*','sym','0');
 
-tb.add_hopping(Epasc,'a','c',[0 0 0],'pz','s*','sym','E_pasc');
-tb.add_hopping(-Epasc,'a','c',[1 0 0],'pz','s*','sym','E_pasc');
-tb.add_hopping(-Epasc,'a','c',[0 1 0],'pz','s*','sym','E_pasc');
-tb.add_hopping(Epasc,'a','c',[0 0 1],'pz','s*','sym','E_pasc');
+%-Epasec
+tb.add_hopping(-Epasec,'a','c',[0 0 0],'pz','s*','sym','E_pasc');
+tb.add_hopping(Epasec,'a','c',[1 0 0],'pz','s*','sym','E_pasc');
+tb.add_hopping(Epasec,'a','c',[0 1 0],'pz','s*','sym','E_pasc');
+tb.add_hopping(-Epasec,'a','c',[0 0 1],'pz','s*','sym','E_pasc');
 
 %6th row
 
@@ -173,9 +196,9 @@ tb.add_hopping(0,'c','c',[0 0 0],'px','py','sym','0');
 tb.add_hopping(0,'c','c',[0 0 0],'px','pz','sym','0');
 
 tb.add_hopping(Eseapc,'c','a',[0 0 0],'px','s*','sym','E_s*apc');
-tb.add_hopping(Eseapc,'c','a',[-1 0 0],'px','s*','sym','E_s*apc');
-tb.add_hopping(-Eseapc,'c','a',[0 -1 0],'px','s*','sym','E_s*apc');
-tb.add_hopping(-Eseapc,'c','a',[0 0 -1],'px','s*','sym','E_s*apc');
+tb.add_hopping(Eseapc,'c','a',[1 0 0],'px','s*','sym','E_s*apc');
+tb.add_hopping(-Eseapc,'c','a',[0 1 0],'px','s*','sym','E_s*apc');
+tb.add_hopping(-Eseapc,'c','a',[0 0 1],'px','s*','sym','E_s*apc');
 
 tb.add_hopping(0,'c','c',[0 0 0],'px','s*','sym','0');
 
@@ -183,22 +206,25 @@ tb.add_hopping(0,'c','c',[0 0 0],'px','s*','sym','0');
 tb.add_hopping(0,'c','c',[0 0 0],'py','pz','sym','0');
 
 tb.add_hopping(Eseapc,'c','a',[0 0 0],'py','s*','sym','E_s*apc');
-tb.add_hopping(-Eseapc,'c','a',[-1 0 0],'py','s*','sym','E_s*apc');
-tb.add_hopping(Eseapc,'c','a',[0 -1 0],'py','s*','sym','E_s*apc');
-tb.add_hopping(-Eseapc,'c','a',[0 0 -1],'py','s*','sym','E_s*apc');
+tb.add_hopping(-Eseapc,'c','a',[1 0 0],'py','s*','sym','E_s*apc');
+tb.add_hopping(Eseapc,'c','a',[0 1 0],'py','s*','sym','E_s*apc');
+tb.add_hopping(-Eseapc,'c','a',[0 0 1],'py','s*','sym','E_s*apc');
 
 tb.add_hopping(0,'c','c',[0 0 0],'py','s*','sym','0');
 
 %8th row
 tb.add_hopping(Eseapc,'c','a',[0 0 0],'pz','s*','sym','E_s*apc');
-tb.add_hopping(-Eseapc,'c','a',[-1 0 0],'pz','s*','sym','E_s*apc');
-tb.add_hopping(-Eseapc,'c','a',[0 -1 0],'pz','s*','sym','E_s*apc');
-tb.add_hopping(Eseapc,'c','a',[0 0 -1],'pz','s*','sym','E_s*apc');
+tb.add_hopping(-Eseapc,'c','a',[1 0 0],'pz','s*','sym','E_s*apc');
+tb.add_hopping(-Eseapc,'c','a',[0 1 0],'pz','s*','sym','E_s*apc');
+tb.add_hopping(Eseapc,'c','a',[0 0 1],'pz','s*','sym','E_s*apc');
 
 tb.add_hopping(0,'c','c',[0 0 0],'pz','s*','sym','0');
 
 %9th row
 tb.add_hopping(0,'a','c',[0 0 0],'s*','s*','sym','0');
+
+
+%sym_ham = tb.symbolic_hamiltonian();
 
 if(0)
 lat_f = figure("Name","Lattice Figure");
@@ -241,7 +267,8 @@ end
 
 toc;
 
-if(0)
+if(1)
+fig = figure("Name","Datta");
 
 Esa=-8.3431;Epa=1.0414;Esc=-2.6569;Epc=3.6686;Esea=8.5914;Esec=6.7386;
 Vss=-6.4513;Vxx=1.9546;Vxy=5.0779;Vsapc=4.4800;Vpasc=5.7839;Vseapc=4.8422;
@@ -249,46 +276,61 @@ Vpasec=4.8077;
 
 %Either of the following choices for d1,d2,d3 and d4 should give the same result.
 %d1=[1 1 1]/4;d2=[1 -1 -1]/4;d3=[-1 1 -1]/4;d4=[-1 -1 1]/4;
-d1=[0 0 0]/2;d2=[0 -1 -1]/2;d3=[-1 0 -1]/2;d4=[-1 -1 0]/2;
+%d1=[0 0 0]/2;d2=[0 -1 -1]/2;d3=[-1 0 -1]/2;d4=[-1 -1 0]/2;
+d0=[0 0 0]/2;d1=[0 1 1]/2;d2=[1 0 1]/2;d3=[1 1 0]/2;
 
+
+for iter = 1:2
+
+if(iter == 1)
 l=1;m=1;n=1;kmax=pi;Nt=21;%L-direction
-%l=1;m=0;n=0;kmax=2*pi;Nt=21;%X-direction
+else
+l=1;m=0;n=0;kmax=2*pi;Nt=21;%X-direction
+end
 
 for Nk=1:Nt
 k=[l m n]*kmax*(Nk-1)/(Nt-1);
-	p1=exp(i*sum(k.*d1));p2=exp(i*sum(k.*d2));
-	p3=exp(i*sum(k.*d3));p4=exp(i*sum(k.*d4));
+	p1 = 1; p2=exp(-i*sum(k.*d1));
+	p3=exp(-i*sum(k.*d2));p4=exp(-i*sum(k.*d3));
 		g0=(p1+p2+p3+p4)/4;g1=(p1+p2-p3-p4)/4;
 		g2=(p1-p2+p3-p4)/4;g3=(p1-p2-p3+p4)/4;
 
-h=[Esa/2 Vss*g0 0 0 0 Vsapc*g1 Vsapc*g2 Vsapc*g3 0 0;
-      0	Esc/2	-Vpasc*conj(g1)	-Vpasc*conj(g2)	-Vpasc*conj(g3)     0 0 0 0 0;
-      0	0	Epa/2	0	0	Vxx*g0 Vxy*g3	Vxy*g2  0  -Vpasec*g1;
-      0	0	0	Epa/2	0	Vxy*g3 Vxx*g0	Vxy*g1  0  -Vpasec*g2;
-      0	0	0	0	Epa/2	Vxy*g2 Vxy*g1	Vxx*g0  0  -Vpasec*g3;
-      0	0	0	0	0	Epc/2	0	0	Vseapc*(g1)	0;
-      0	0	0	0	0	0	Epc/2	0	Vseapc*(g2)	0;
-      0	0	0	0	0	0	0	Epc/2	Vseapc*(g3)	0;
-      0	0	0	0	0	0	0	0	Esea/2	0;
-      0	0	0	0	0	0	0	0	0	Esec/2];
+h=[	Esa/2 	Vss*g0 	0 		0 0 Vsapc*g1 Vsapc*g2 Vsapc*g3 0 0;
+    0		Esc/2	-Vpasc*conj(g1)	-Vpasc*conj(g2)	-Vpasc*conj(g3)     0 0 0 0 0;
+    0		0		Epa/2	0	0	Vxx*g0 Vxy*g3	Vxy*g2  0  -Vpasec*g1;
+    0		0		0		Epa/2	0	Vxy*g3 Vxx*g0	Vxy*g1  0  -Vpasec*g2;
+    0		0		0			0	Epa/2	Vxy*g2 Vxy*g1	Vxx*g0  0  -Vpasec*g3;
+    0		0		0				0	0	Epc/2	0	0	Vseapc*(g1)	0;
+    0		0		0					0	0	0	Epc/2	0	Vseapc*(g2)	0;
+    0		0		0						0	0	0	0	Epc/2	Vseapc*(g3)	0;
+    0		0		0							0	0	0	0	0	Esea/2	0;
+    0		0		0								0	0	0	0	0	0	Esec/2];
 H=h+h';
 [V,D]=eig(H);
         eiglst = sum(D);
-        E(Nk,:) = sort(real(eiglst));
-		X(Nk)=-(Nk-1)/(Nt-1);%L-direction
-		X1(Nk)=(Nk-1)/(Nt-1);%X-direction
+        E(Nk,:) = (real(eiglst));
+        
+        if(iter == 1)
+			X(Nk)=-(Nk-1)/(Nt-1);%L-direction
+		else
+			X1(Nk)=(Nk-1)/(Nt-1);%X-direction
+		end
 end
 
 hold on
-h = plot(X,E,'b');
-%h = plot(X1,E,'b');
-set(h,'linewidth',[1])
+if(iter == 1)
+	plt = plot(X,E);
+else
+	plt = plot(X1,E);
+end
+set(plt,'linewidth',[1])
 set(gca,'Fontsize',[12])
 xlabel('k (as fraction of maximum value)--->')
 ylabel('Energy (eV) ---> ')
 grid on
 %Note: X-axis from 0 to +1 represents the -X direction
 %while the section from 0 to –1 represents the -L direction
+end
 
 end
 

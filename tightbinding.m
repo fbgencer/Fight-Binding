@@ -333,7 +333,7 @@ classdef tightbinding < handle
             disp('In order to plot at least two high symmetry points are required.');
             return;
         end
-        
+
         precision = 100;
 
 
@@ -770,7 +770,7 @@ classdef tightbinding < handle
           end
           %disp(acoef)
 
-          exponent = img*k*(a(1)*acoef(1)+a(2)*acoef(2)+a(3)*acoef(3));
+          exponent = -img*k*(a(1)*acoef(1)+a(2)*acoef(2)+a(3)*acoef(3));
           exponent = simplify(exponent);
           if(sign(exponent) == -1)
             disp('Text');
