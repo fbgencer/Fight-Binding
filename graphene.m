@@ -69,7 +69,7 @@ uc_rect{4} = gp.draw('line',0,-1,-2,0,'Color','red','LineWidth',2);
 end
 
 
-if(0)
+if(1)
 
 range = 2*pi/a; 
 precision = 100;

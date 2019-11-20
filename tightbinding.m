@@ -174,36 +174,45 @@ classdef tightbinding < handle
               error('Problem dimension and translation vector size does not match!');
             end
 
-            %Also check that maybe user is trying add same elements, we should not add more bonds, we will quietly return
-            for iter = 1:size(self.bonds,2)
-              temp_bond = self.bonds{iter};
-              if(temp_bond.i == index2 & temp_bond.j == index1 & temp_bond.phase == -trans_vec)
-                %disp(temp_bond)
-                %disp('do not add the same')
-                %disp(trans_vec)
-                return; 
+            multiple_entry_flag = (size(amp,1) > 1 & size(amp,1) == size(trans_vec,1));
+
+            for ientry = 1:size(amp,1)
+
+              %Also check that maybe user is trying add same elements, we should not add more bonds, we will quietly return
+              for iter = 1:size(self.bonds,2)
+                temp_bond = self.bonds{iter};
+                if(temp_bond.i == index2 & temp_bond.j == index1 & temp_bond.phase == -trans_vec(ientry,:))
+                  %disp(temp_bond)
+                  %disp('do not add the same')
+                  %disp(trans_vec)
+                  return; 
+                end
               end
-            end
 
-            %Here we will create hermitian matrix so without expecting from user we can add hermitian conjugate here
-            bond.phase =  trans_vec;
-            bond.i = index1;
-            bond.j = index2;
-            bond.amp = amp;
-            bond.symbolic_amp = symbolic_amp;
-            self.bonds{end+1} = bond;
 
-            %fprintf('index %d %d\n',index1,index2 );
-            %We can give user some options to close this flag, LATER ADD this
-            flag_create_hermitian_conj = 1;
-            %Add only Non-Diagonal elements
-            if((index1 ~= index2 | any(bond.phase ~= -trans_vec)) )
-              bond.phase = -trans_vec;
-              bond.i = index2;
-              bond.j = index1;
-              bond.amp = amp;
+
+
+              %Here we will create hermitian matrix so without expecting from user we can add hermitian conjugate here
+              bond.phase = trans_vec(ientry,:);
+              bond.i = index1;
+              bond.j = index2;
+              bond.amp = amp(ientry,1);
               bond.symbolic_amp = symbolic_amp;
               self.bonds{end+1} = bond;
+
+              %fprintf('index %d %d\n',index1,index2 );
+              %We can give user some options to close this flag, LATER ADD this
+              flag_create_hermitian_conj = 1;
+              %Add only Non-Diagonal elements
+              if((index1 ~= index2 | any(bond.phase ~= -trans_vec(ientry,:))) )
+                bond.phase = -trans_vec(ientry,:);
+                bond.i = index2;
+                bond.j = index1;
+                bond.amp = amp(ientry,1);
+                bond.symbolic_amp = symbolic_amp;
+                self.bonds{end+1} = bond;
+              end
+
             end
             
         else
