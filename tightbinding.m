@@ -187,7 +187,7 @@ classdef tightbinding < handle
           end
         end
        
-        fprintf("Offset [%d,%d]\n",offset1,offset2);
+        %fprintf("Offset [%d,%d]\n",offset1,offset2);
         index1 = offset1;
         index2 = offset2;
        
@@ -309,6 +309,7 @@ classdef tightbinding < handle
                 end
             end
          end
+         
       end
       %%
       function kvec = set_kvector(self,from,to,len)
@@ -789,6 +790,7 @@ classdef tightbinding < handle
 
         acoef = 0;
 
+
         bonding_no = size(self.bonds,2);
         for ob_iter = 1:bonding_no
           bond = self.bonds{ob_iter};
@@ -804,13 +806,13 @@ classdef tightbinding < handle
 
           if(bond.symbolic_amp ~= 'None') 
             if(use_exact == 1)
-              symbolic_amp = sym(bond.amp);
+              symbolic_amp = bond.amp;
             else
               symbolic_amp = bond.symbolic_amp;
             end
           else
             if(use_exact == 1)
-              symbolic_amp = sym(bond.amp);
+              symbolic_amp = bond.amp;
             else
               symbolic_amp = bond_amp(bond.i,bond.j);
             end  
@@ -819,16 +821,13 @@ classdef tightbinding < handle
 
           exponent = -img*k*(a(1)*acoef(1)+a(2)*acoef(2)+a(3)*acoef(3));
           exponent = simplify(exponent);
-          if(sign(exponent) == -1)
-            disp('Text');
-          end
+
           q = exp(exponent);
           
           %if( isequal(H(bond.i,bond.j), ) )
           H(bond.i,bond.j) = H(bond.i,bond.j) + (symbolic_amp * q);
           %disp(H);
         end
-
         str_hamiltonian = simplify(H);
 
 
