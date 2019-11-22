@@ -42,12 +42,19 @@ classdef tightbinding < handle
        end
        %%
        function set_orbital(self,varargin)
+
+          self.no_orbital = 0;
+
           for i = 1:size(varargin,2)
             if(isstring(varargin{i}) | ischar(varargin{i}))
-              self.orbitals{end+1} = varargin{i};
+              orb_cell = split(varargin{i},',');
+              self.orbitals{end+1} = orb_cell;
+              self.no_orbital = self.no_orbital + numel(orb_cell);
+            else
+              error('Orbital names must be string');
             end
           end
-          self.no_orbital = size(self.orbitals,2);
+          %self.no_orbital = size(self.orbitals,2);
        end
        %%
         function set_primitive_vectors(self,a1,varargin)
@@ -107,7 +114,7 @@ classdef tightbinding < handle
       function add_hopping(self,amp,index1,index2,trans_vec,varargin)
         %varargin part for orbitals, size must be 2
 
-        orbital1 = 1;
+        orbital1 = 1; %start with s orbitals
         orbital2 = 1;
 
         where = find(strcmp(varargin,'sym'));
@@ -123,25 +130,8 @@ classdef tightbinding < handle
           symbolic_amp = 'None';
           where = 1;
         end
-        
-        %Check whether given is orbital string or symbolic entry
-        if(size(varargin,2) > 2 | (size(varargin,2) == 2 & symbolic_amp == 0))
-          
-          for i = 1:size(self.orbitals,2)
-            if(varargin{where} == self.orbitals{i})
-                orbital1 = i;
-            end
-            if(varargin{where+1} == self.orbitals{i})
-                orbital2 = i;
-            end            
-          end
-        end
 
-        shifting_factor1 = (orbital1-1) * size(self.unit_cell,2);
-        shifting_factor2 = (orbital2-1) * size(self.unit_cell,2);
 
-        %disp("fac1:"+shifting_factor1)
-        %disp("fac2:"+shifting_factor2)
 
         %convert string indexes to numerical values
         if( isstring(index1) | ischar(index1) | isstring(index2) | ischar(index2))
@@ -159,13 +149,61 @@ classdef tightbinding < handle
 
         if( isstring(index1) | ischar(index1) | isstring(index2) | ischar(index2)  )
           error('Undefined atom name');
-        end        
+        end   
         
+        shifting_factor1 = 1;
+        shifting_factor2 = 1;
 
-        index1 = index1 + shifting_factor1;
-        index2 = index2 + shifting_factor2;
+        offset1 = 0;
+        offset2 = 0;
+        orbital1 = 0;
+        orbital2 = 0;
 
-        if(index1 > 0 && index2 > 0)
+        %Check whether given is orbital string or symbolic entry
+        if(size(varargin,2) > 2 | (size(varargin,2) == 2 & symbolic_amp == 0))
+          
+          for i = 1:size(self.orbitals,2)
+            for orb_iter = 1:numel(self.orbitals{i})
+              %disp(varargin{where});disp(self.orbitals{i}{orb_iter})
+                if(orbital1 == 0)
+                  if( strcmp(varargin{where},self.orbitals{i}{orb_iter}) )
+                    orbital1 = i;
+                    offset1 = offset1 + numel(self.orbitals{i})*(index1-1); 
+                    offset1 = offset1 + orb_iter;
+                  elseif(orb_iter == numel(self.orbitals{i}))
+                      offset1 = offset1 + size(self.unit_cell,2) * numel(self.orbitals{i});
+                  end
+                end
+                if(orbital2 == 0)
+                  if( strcmp(varargin{where+1},self.orbitals{i}{orb_iter}) )
+                    orbital2 = i;
+                    offset2 = offset2 + numel(self.orbitals{i})*(index2-1);
+                    offset2 = offset2 + orb_iter;
+                  elseif(orb_iter == numel(self.orbitals{i}))
+                      offset2 = offset2 + size(self.unit_cell,2) * numel(self.orbitals{i});
+                  end
+                end
+            end            
+          end
+        end
+       
+        fprintf("Offset [%d,%d]\n",offset1,offset2);
+        index1 = offset1;
+        index2 = offset2;
+       
+
+        %shifting_factor1 = (index1 - 1).*shifting_factor1 + index1;
+        %shifting_factor2 = (index2 - 1).*shifting_factor2 + index2;
+        %shifting_factor1 = (orbital1-1) * size(self.unit_cell,2);
+        %shifting_factor2 = (orbital2-1) * size(self.unit_cell,2);
+
+        %%disp("fac1:"+shifting_factor1)
+        %disp("fac2:"+shifting_factor2)        
+
+        %index1 = index1 + shifting_factor1;
+        %index2 = index2 + shifting_factor2;
+
+        if(index1 > 0 & index2 > 0)
             %Here we will hold a struct that contains i,j locations,
             %amplitude of the given hopping and phase value
 

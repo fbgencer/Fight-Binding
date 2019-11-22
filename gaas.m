@@ -45,110 +45,111 @@ d = [d0;d1;d2;d3];
 tb = tightbinding(3,a1,a2,a3);% Start with name and primitive vectors
 
 tb.set_unit_cell('a',[0 0 0],'c',[1 1 1].*a/4);
-tb.set_orbital('s','px','py','pz','s*');
+tb.set_orbital('3s','px,py,pz','4s','d1,d2,d3');
 
 %Diagonal terms
-tb.add_hopping(Esa,'a','a',d0,'s','s','sym','E_sa');
-tb.add_hopping(Esc,'c','c',d0,'s','s','sym','E_sc');
-tb.add_hopping(Epa,'a','a',d0,'px','px','sym','E_pa');
-tb.add_hopping(Epa,'a','a',d0,'py','py','sym','E_pa');
-tb.add_hopping(Epa,'a','a',d0,'pz','pz','sym','E_pa');
-tb.add_hopping(Epc,'c','c',d0,'px','px','sym','E_pc');
-tb.add_hopping(Epc,'c','c',d0,'py','py','sym','E_pc');
-tb.add_hopping(Epc,'c','c',d0,'pz','pz','sym','E_pc');
-tb.add_hopping(Esea,'a','a',d0,'s*','s*','sym','E_s*a');
-tb.add_hopping(Esec,'c','c',d0,'s*','s*','sym','E_s*c');
+%tb.add_hopping(Esa ,'a','a',d0,'3s','px','sym','E_sa');
+tb.add_hopping(Esc ,'a','c',d0,'3s','d3','sym','E_sc');
+tb.symbolic_hamiltonian()
+% tb.add_hopping(Epa ,'a','a',d0,'3px','3px','sym','E_pa');
+% tb.add_hopping(Epa ,'a','a',d0,'3py','3py','sym','E_pa');
+% tb.add_hopping(Epa ,'a','a',d0,'3pz','3pz','sym','E_pa');
+% tb.add_hopping(Epc ,'c','c',d0,'3px','3px','sym','E_pc');
+% tb.add_hopping(Epc ,'c','c',d0,'3py','3py','sym','E_pc');
+% tb.add_hopping(Epc ,'c','c',d0,'3pz','3pz','sym','E_pc');
+% tb.add_hopping(Esea,'a','a',d0,'4s','4s','sym','E_s*a');
+% tb.add_hopping(Esec,'c','c',d0,'4s','4s','sym','E_s*c');
 
 
-%%first row
-%Vss*g0 0 0 0 Vsapc*g1 Vsapc*g2 Vsapc*g3 0 0;
-tb.add_hopping(Ess.*g0,'a','c',d,'s','s','sym','E_ss');
+% %%first row
+% %Vss*g0 0 0 0 Vsapc*g1 Vsapc*g2 Vsapc*g3 0 0;
+% tb.add_hopping(Ess.*g0,'a','c',d,'s','s','sym','E_ss');
 
-tb.add_hopping(0,'a','a',d0,'s','px','sym','0');
-tb.add_hopping(0,'a','a',d0,'s','py','sym','0');
-tb.add_hopping(0,'a','a',d0,'s','pz','sym','0');
+% tb.add_hopping(0,'a','a',d0,'s','px','sym','0');
+% tb.add_hopping(0,'a','a',d0,'s','py','sym','0');
+% tb.add_hopping(0,'a','a',d0,'s','pz','sym','0');
 
-tb.add_hopping(Esapc.*(g1),'a','c',d,'s','px','sym','E_sapc');
-tb.add_hopping(Esapc.*(g2),'a','c',d,'s','px','sym','E_sapc');
-tb.add_hopping(Esapc.*(g3),'a','c',d,'s','px','sym','E_sapc');
+% tb.add_hopping(Esapc.*(g1),'a','c',d,'s','px','sym','E_sapc');
+% tb.add_hopping(Esapc.*(g2),'a','c',d,'s','px','sym','E_sapc');
+% tb.add_hopping(Esapc.*(g3),'a','c',d,'s','px','sym','E_sapc');
 
-tb.add_hopping(0,'a','a',d0,'s','s*','sym','0');
-tb.add_hopping(0,'a','c',d0,'s','s*','sym','0');
+% tb.add_hopping(0,'a','a',d0,'s','s*','sym','0');
+% tb.add_hopping(0,'a','c',d0,'s','s*','sym','0');
 
-%2nd row
-%-Vpasc*conj(g1)	-Vpasc*conj(g2)	-Vpasc*conj(g3) 0 0 0 0 0;
-tb.add_hopping(-Epasc.*(-g1),'c','a',d,'s','px','sym','E_pasc');
-tb.add_hopping(-Epasc.*(-g2),'c','a',d,'s','py','sym','E_pasc');
-tb.add_hopping(-Epasc.*(-g3),'c','a',d,'s','pz','sym','E_pasc');
+% %2nd row
+% %-Vpasc*conj(g1)	-Vpasc*conj(g2)	-Vpasc*conj(g3) 0 0 0 0 0;
+% tb.add_hopping(-Epasc.*(-g1),'c','a',d,'s','px','sym','E_pasc');
+% tb.add_hopping(-Epasc.*(-g2),'c','a',d,'s','py','sym','E_pasc');
+% tb.add_hopping(-Epasc.*(-g3),'c','a',d,'s','pz','sym','E_pasc');
 
-tb.add_hopping(0,'c','c',d0,'s','px','sym','0');
-tb.add_hopping(0,'c','c',d0,'s','py','sym','0');
-tb.add_hopping(0,'c','c',d0,'s','pz','sym','0');
+% tb.add_hopping(0,'c','c',d0,'s','px','sym','0');
+% tb.add_hopping(0,'c','c',d0,'s','py','sym','0');
+% tb.add_hopping(0,'c','c',d0,'s','pz','sym','0');
 
-tb.add_hopping(0,'c','a',d0,'s','s*','sym','0');
-tb.add_hopping(0,'c','c',d0,'s','s*','sym','0');
+% tb.add_hopping(0,'c','a',d0,'s','s*','sym','0');
+% tb.add_hopping(0,'c','c',d0,'s','s*','sym','0');
 
-%3rd row
-%0	0	Vxx*g0 Vxy*g3	Vxy*g2  0  -Vpasec*g1;
-tb.add_hopping(0,'a','a',d0,'px','py','sym','0');
-tb.add_hopping(0,'a','a',d0,'px','pz','sym','0');
+% %3rd row
+% %0	0	Vxx*g0 Vxy*g3	Vxy*g2  0  -Vpasec*g1;
+% tb.add_hopping(0,'a','a',d0,'px','py','sym','0');
+% tb.add_hopping(0,'a','a',d0,'px','pz','sym','0');
 
-tb.add_hopping(Exx.*g0,'a','c',d,'px','px','sym','E_xx');
-tb.add_hopping(Exy.*g3,'a','c',d,'px','py','sym','E_xy');
-tb.add_hopping(Exy.*g2,'a','c',d,'px','pz','sym','E_xy');
+% tb.add_hopping(Exx.*g0,'a','c',d,'px','px','sym','E_xx');
+% tb.add_hopping(Exy.*g3,'a','c',d,'px','py','sym','E_xy');
+% tb.add_hopping(Exy.*g2,'a','c',d,'px','pz','sym','E_xy');
 
-tb.add_hopping(0,'a','a',d0,'px','s*','sym','0');
+% tb.add_hopping(0,'a','a',d0,'px','s*','sym','0');
 
-%-Epasec
-tb.add_hopping(-Epasec.*g1,'a','c',d,'px','s*','sym','E_pasc');
+% %-Epasec
+% tb.add_hopping(-Epasec.*g1,'a','c',d,'px','s*','sym','E_pasc');
 
-%4th row
-%0	Vxy*g3 Vxx*g0	Vxy*g1  0  -Vpasec*g2;
-tb.add_hopping(0,'a','a',d0,'py','pz','sym','0');
+% %4th row
+% %0	Vxy*g3 Vxx*g0	Vxy*g1  0  -Vpasec*g2;
+% tb.add_hopping(0,'a','a',d0,'py','pz','sym','0');
 
-tb.add_hopping(Exy.*g3,'a','c',d,'py','px','sym','E_xy');
-tb.add_hopping(Exx.*g0,'a','c',d,'py','py','sym','E_xx');
-tb.add_hopping(Exy.*g1,'a','c',d,'py','pz','sym','E_xy');
+% tb.add_hopping(Exy.*g3,'a','c',d,'py','px','sym','E_xy');
+% tb.add_hopping(Exx.*g0,'a','c',d,'py','py','sym','E_xx');
+% tb.add_hopping(Exy.*g1,'a','c',d,'py','pz','sym','E_xy');
 
-tb.add_hopping(0,'a','a',d0,'py','s*','sym','0');
+% tb.add_hopping(0,'a','a',d0,'py','s*','sym','0');
 
-%-Epasec
-tb.add_hopping(-Epasec.*g2,'a','c',d,'py','s*','sym','E_pasc');
+% %-Epasec
+% tb.add_hopping(-Epasec.*g2,'a','c',d,'py','s*','sym','E_pasc');
 
-%5th row
-%Vxy*g2 Vxy*g1	Vxx*g0  0  -Vpasec*g3;
-tb.add_hopping(Exy.*g2,'a','c',d,'pz','px','sym','E_xy');
-tb.add_hopping(Exy.*g1,'a','c',d,'pz','py','sym','E_xy');
-tb.add_hopping(Exx.*g0,'a','c',d,'pz','pz','sym','E_xx');
+% %5th row
+% %Vxy*g2 Vxy*g1	Vxx*g0  0  -Vpasec*g3;
+% tb.add_hopping(Exy.*g2,'a','c',d,'pz','px','sym','E_xy');
+% tb.add_hopping(Exy.*g1,'a','c',d,'pz','py','sym','E_xy');
+% tb.add_hopping(Exx.*g0,'a','c',d,'pz','pz','sym','E_xx');
 
-tb.add_hopping(0,'a','a',d0,'pz','s*','sym','0');
+% tb.add_hopping(0,'a','a',d0,'pz','s*','sym','0');
 
-%-Epasec
-tb.add_hopping(-Epasec.*g3,'a','c',d,'pz','s*','sym','E_pasc');
+% %-Epasec
+% tb.add_hopping(-Epasec.*g3,'a','c',d,'pz','s*','sym','E_pasc');
 
-% %6th row
-%0	0	Vseapc*(g1)	0;
-tb.add_hopping(0,'c','c',d0,'px','py','sym','0');
-tb.add_hopping(0,'c','c',d0,'px','pz','sym','0');
+% % %6th row
+% %0	0	Vseapc*(g1)	0;
+% tb.add_hopping(0,'c','c',d0,'px','py','sym','0');
+% tb.add_hopping(0,'c','c',d0,'px','pz','sym','0');
 
-tb.add_hopping(Eseapc.*g1,'c','a',d,'px','s*','sym','E_s*apc');
+% tb.add_hopping(Eseapc.*g1,'c','a',d,'px','s*','sym','E_s*apc');
 
-tb.add_hopping(0,'c','c',d0,'px','s*','sym','0');
+% tb.add_hopping(0,'c','c',d0,'px','s*','sym','0');
 
-%7th row
-%0	Vseapc*(g2)	0;
-tb.add_hopping(0,'c','c',d0,'py','pz','sym','0');
-tb.add_hopping(Eseapc.*g2,'c','a',d,'px','s*','sym','E_s*apc');
-tb.add_hopping(0,'c','c',d0,'py','s*','sym','0');
+% %7th row
+% %0	Vseapc*(g2)	0;
+% tb.add_hopping(0,'c','c',d0,'py','pz','sym','0');
+% tb.add_hopping(Eseapc.*g2,'c','a',d,'px','s*','sym','E_s*apc');
+% tb.add_hopping(0,'c','c',d0,'py','s*','sym','0');
 
-%8th row
-%Vseapc*(g3)	0;
-tb.add_hopping(Eseapc.*g3,'c','a',d,'px','s*','sym','E_s*apc');
-tb.add_hopping(0,'c','c',d0,'pz','s*','sym','0');
+% %8th row
+% %Vseapc*(g3)	0;
+% tb.add_hopping(Eseapc.*g3,'c','a',d,'px','s*','sym','E_s*apc');
+% tb.add_hopping(0,'c','c',d0,'pz','s*','sym','0');
 
-%9th row
-%0
-tb.add_hopping(0,'a','c',d0,'s*','s*','sym','0');
+% %9th row
+% %0
+% tb.add_hopping(0,'a','c',d0,'s*','s*','sym','0');
 
 
 %sym_ham = tb.symbolic_hamiltonian();
@@ -173,7 +174,7 @@ surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
 end
 
 
-if(1)
+if(0)
 Gamma = [0 0 0];
 X = [2*pi/a 0 0];
 L = [pi/a pi/a pi/a];
@@ -194,7 +195,7 @@ end
 
 toc;
 
-if(1)
+if(0)
 fig = figure("Name","Datta");
 
 Esa=-8.3431;Epa=1.0414;Esc=-2.6569;Epc=3.6686;Esea=8.5914;Esec=6.7386;
