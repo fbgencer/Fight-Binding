@@ -54,38 +54,69 @@
 %r1 = rectangle('Position',[0 0 10 10]);
 
 close all; clear; clc;
-gp = lattice_drawer(figure(1),30,30);
+gp = lattice_drawer(figure(1),10,10,10);
+gp.xaxis_symmetric();
+gp.yaxis_symmetric();
+gp.zaxis_symmetric();
+grid;
+
+
+a = 3;
+% gp.draw('line',0,0,0,a,0,0);
+% gp.draw('line',a,0,0,a,a,0);
+% gp.draw('line',a,a,0,0,a,0);
+% gp.draw('line',0,a,0,0,0,0);
+% gp.draw('line',0,0,0,0,0,a);
+% gp.draw('line',0,0,a,a,0,a);
+% gp.draw('line',a,0,a,a,a,a);
+% gp.draw('line',a,a,a,0,a,a);
+% gp.draw('line',0,a,a,0,0,a);
+% gp.draw('line',0,a,a,0,0,a);
+% gp.draw('line',a,0,0,a,0,a);
+% gp.draw('line',a,a,0,a,a,a);
+% gp.draw('line',0,a,0,0,a,a);
+
+
+
+
+cc = gp.draw('cuboid',0,0,0,a,a,a);
+
+
+
+
+
+
 
 %o1 = gp.draw('line',3,3,3,10);
 %o1 = gp.draw('line',3,10,25,20);
 %o1 = gp.draw('line',25,20,3,3);
 
-a = 3;
-a1 = [a*sqrt(3)/2, a/2,0];
-a2 = [a*sqrt(3)/2, -a/2,0];
+% a = 3;
+% a1 = [a*sqrt(3)/2, a/2,0];
+% a2 = [a*sqrt(3)/2, -a/2,0];
 
-gp.set_title('$Graphene\hspace{1mm}C_{6}$','Interpreter','latex');
-gp.set_xlabel('$X$','Interpreter','latex');
-%x = 5; y = 5;
+% gp.set_title('$Graphene\hspace{1mm}C_{6}$','Interpreter','latex');
+% gp.set_xlabel('$X$','Interpreter','latex');
+% %x = 5; y = 5;
 
-cx = 15; cy = 15;
+% cx = 15; cy = 15;
 
-for i =  0:1
-for j = 0:1
+% for i =  0:1
+% for j = 0:1
     
-    cx = i*a1(1)+j*a2(1)+cx;
-    cy = i*a1(2)+j*a2(2)+cy;
+%     cx = i*a1(1)+j*a2(1)+cx;
+%     cy = i*a1(2)+j*a2(2)+cy;
     
-    l1 = gp.draw('line black',cx-1,cy,cx+1,cy);
-    cr = gp.draw('circle red',cx-1,cy,0.5);
-    cb = gp.draw('circle blue',cx+1,cy,0.3,'Visible','off');
-    cx = 15; cy = 15;
-end
-end
+%     l1 = gp.draw('line black',cx-1,cy,cx+1,cy);
+%     cr = gp.draw('circle red',cx-1,cy,0.5);
+%     cb = gp.draw('circle blue',cx+1,cy,0.3,'Visible','off');
+%     cx = 15; cy = 15;
+% end
+% end
 
-dumy = gp.draw('rect',5,5,3,4,'FaceColor','blue','Visible','off');
-a = gp.copy_to(dumy,10,25);
-a.Visible = 'on';
+% dumy = gp.draw('rect',5,5,3,4,'FaceColor','blue','Visible','off');
+% a = gp.copy_to(dumy,10,25);
+% a.Visible = 'on';
 
 %o1 = gp.draw('circle black',5,5,3);
 %o2 = gp.copy_to(o1,25,25,1);

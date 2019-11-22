@@ -103,198 +103,198 @@ classdef lattice_drawer < handle
 					 nvargin = size(varargin,2);
 					 
 					 switch type
-					 			case 'crect'
-					 				%centered rectangle
-				 					w = varargin{3};
-									h = varargin{4};
-									r = rectangle('Position',[x-w/2,y-h/2,w,h],varargin{5:end});
-									if(isnumeric(color) | color ~= "None") r.FaceColor = color; end					 				
-								case 'rect'
-					 					w = varargin{3};
-										h = varargin{4};
-										r = rectangle('Position',[x,y,w,h],varargin{5:end});
-										if(isnumeric(color) | color ~= "None") r.FaceColor = color; end
-								case 'square'
-					 					w = varargin{3};
-										r = rectangle('Position',[x,y,w,w],varargin{5:end});
-										if(isnumeric(color) | color ~= "None") r.FaceColor = color; end
-								case 'circle'
+			 			case 'crect'
+			 				%centered rectangle
+		 					w = varargin{3};
+							h = varargin{4};
+							r = rectangle('Position',[x-w/2,y-h/2,w,h],varargin{5:end});
+							if(isnumeric(color) | color ~= "None") r.FaceColor = color; end					 				
+						case 'rect'
+			 					w = varargin{3};
+								h = varargin{4};
+								r = rectangle('Position',[x,y,w,h],varargin{5:end});
+								if(isnumeric(color) | color ~= "None") r.FaceColor = color; end
+						case 'square'
+			 					w = varargin{3};
+								r = rectangle('Position',[x,y,w,w],varargin{5:end});
+								if(isnumeric(color) | color ~= "None") r.FaceColor = color; end
+						case 'circle'
 
-					 					rad = varargin{3};
-										%shift the circle to make x and y as center coordinates
-										%default is edge coordinate of rectangle
-										%x-r : edge x
-										x = x-rad;
-										y = y-rad;
-										%y-r : edge y
-										r = rectangle('Position',[x,y,2*rad,2*rad],'Curvature',[1 1],varargin{4:end});
-										if(isnumeric(color) | color ~= "None") r.FaceColor = color; end
-							 case 'line'
-										
-							 			if( isscalar(varargin{1}) == 0 & isscalar(varargin{2}) == 0 )
-											x = varargin{1};
-											y = varargin{2};
-											if(isscalar(varargin{3}) == 0)
-												z = varargin{3};
-												varargin_start = 4;
-											else
-												varargin_start = 3;
-												z = zeros(1,size(x,2));
-											end
-										elseif(nvargin > 4 & isnumeric(varargin{5}))
-												%x1,y1,z1,x2,y2,z3;
-												x = [ varargin{1}, varargin{4} ];
-												y = [ varargin{2}, varargin{5} ];
-												z = [ varargin{3}, varargin{6} ];
-												varargin_start = 7;
-										else
-											%x1,y1,x2,y2
-											x = [ varargin{1}, varargin{3} ];
-											y = [ varargin{2}, varargin{4} ];
-											z = [ 0,0 ];
-											varargin_start = 5;
-										end
-
-										r = line(ax,x,y,z,varargin{varargin_start:end});
-
-										if(isnumeric(color) | color ~= "None") 
-											r.Color = color; 
-										end
-							 case 'tri'
-									 if(nargin ~= 8)
-											 error(message('Triangle requires 6 coordinates'));
-												return; 
-									 end
-									 %x1 y1 x2 y2 x3 y3
-									 r = line([varargin{1} varargin{3}],[varargin{2} varargin{4} ]); % x1 x2 y1 y2
-									 r2 = line([varargin{3} varargin{5}],[varargin{4} varargin{6}]); % x2 x3 y2 y3
-									 r3 = line([varargin{5} varargin{1}],[varargin{6} varargin{2}]); % x3 x1 y3 y1
-									 r.UserData = [r2 r3]; % we must get vertices from r.User Data
-									 if(isnumeric(color) | color ~= "None") 
-											 r.Color = color; 
-											 r2.Color = color;
-											 c3.Color = color;
-									 end
-							 case 'eqtri'
-									 % x and y are the center of equilateral triangle
-									 % w is one side of the triangle
-									 w = varargin{3};
-									 a = w;
-									 y1 = y-a/(2*sqrt(3));
-									 y3 = y1;
-									 y2 = y+a/sqrt(3);
-									 x1 = x-a/2;
-									 x3 = x+a/2;
-									 x2 = x;
-									 if(isnumeric(color) | color ~= "None")
-												r = self.draw('tri'+' '+color,x1,y1,x2,y2,x3,y3);
-									 else
-											 r = self.draw('tri',x1,y1,x2,y2,x3,y3);
-									 end
-							 case 'hexagon'
-									 a = varargin{3};
-									 x1 = x-a; y1 = y;
-									 x2 = x-a/2; y2 = y+a*sqrt(3)/2;
-									 x3 = x+a/2; y3 = y2;
-									 x4 = x+a; y4 = y;
-									 x5 = x3; y5 = y-a*sqrt(3)/2;
-									 x6 = x2; y6 = y5;
-									 
-									 tp = 'line';
-									 %if(isnumeric(color) | color ~= "None" ) tp = tp + ' ' + color; end
-									 r = self.draw(tp,x1,y1,x2,y2,'Color',color);
-									 n1 = self.draw(tp,x2,y2,x3,y3,'Color',color);
-									 n2 = self.draw(tp,x3,y3,x4,y4,'Color',color);
-									 n3 = self.draw(tp,x4,y4,x5,y5,'Color',color);
-									 n4 = self.draw(tp,x5,y5,x6,y6,'Color',color);
-									 n5 = self.draw(tp,x6,y6,x1,y1,'Color',color);
-									 r.UserData = [r n1 n2 n3 n4 n5];
-
-							 case 'vector'
-									x2 = varargin{3};
-									y2 = varargin{4};
-
-									hold on;
-
-									if(nvargin > 4)
-										if( isnumeric(varargin{5}) )
-											x = varargin{1};
-											y = varargin{2};
-											z = varargin{3};
-											x2 = varargin{4};
-											y2 = varargin{5};
-											z2 = varargin{6};
-											r = quiver3(ax,x,y,z,x2-x,y2-y,z2-z,varargin{7:end});
-										else
-											r = quiver(ax,x,y,x2-x,y2-y,varargin{5:end});
-										end
-									else
-											r = quiver(ax,x,y,x2-x,y2-y,varargin{5:end});
-									end
-
-									r.AutoScaleFactor = 1;
-									%r.MaxHeadSize = 5/sqrt((x2-x)^2+(y2-y)^2);
-										
-									if(isnumeric(color) | color ~= "None")
-										r.Color = color;
-									end
-
-								case 'cuboid'
-									x1 = varargin{1};
-									y1 = varargin{2};
-									z1 = varargin{3};
-									w = varargin{4};
-									l = varargin{5};
-									h = varargin{6};
-
-									vertx = [x1, x1, x1, x1, x1+w, x1+w, x1+w, x1+w];
-									verty = [y1, y1+l, y1+l, y1, y1, y1+l, y1+l, y1];
-									vertz = [z1, z1, z1+h, z1+h, z1, z1, z1+h, z1+h];
-									fac = [1 2 6 5;2 3 7 6;3 4 8 7;4 1 5 8;1 2 3 4;5 6 7 8];
-									r = patch(ax,vertx,verty,vertz,'red','Faces',fac,varargin{7:end});
-									if(isnumeric(color) | color ~= "None")
-										r.FaceColor = color;
-									end
-									view(ax,3);
-
-								case 'point'
-									z = 0;
-									varargin_start = 3;
-									if(nvargin > 2)
-										if(isnumeric(varargin{3}))
-											z = varargin{3};
-											varargin_start = 4;
-										end
-									end
-									hold on;
-									
-									r = scatter3(ax,x,y,z,varargin{varargin_start:end});
-
-									if(isnumeric(color) | color ~= "None")
-										r.MarkerFaceColor = color;
-										r.MarkerEdgeColor = color;
-									else
-										r.MarkerFaceColor = 'black';
-										r.MarkerEdgeColor = 'black';
-									end
-								case 'text'
+			 					rad = varargin{3};
+								%shift the circle to make x and y as center coordinates
+								%default is edge coordinate of rectangle
+								%x-r : edge x
+								x = x-rad;
+								y = y-rad;
+								%y-r : edge y
+								r = rectangle('Position',[x,y,2*rad,2*rad],'Curvature',[1 1],varargin{4:end});
+								if(isnumeric(color) | color ~= "None") r.FaceColor = color; end
+					 case 'line'
+								
+					 			if( isscalar(varargin{1}) == 0 & isscalar(varargin{2}) == 0 )
 									x = varargin{1};
 									y = varargin{2};
-									if(isnumeric(varargin{3}) == 0)
-										txt = varargin{3};
-										varargin_start = 4;
-										z = 0;
-									else 
+									if(isscalar(varargin{3}) == 0)
 										z = varargin{3};
-										txt = varargin{4};
-										varargin_start = 5;
+										varargin_start = 4;
+									else
+										varargin_start = 3;
+										z = zeros(1,size(x,2));
 									end
-									
-									r = text(ax,x,y,z,txt,varargin{varargin_start:end});
-								otherwise
-										disp('Draw function undefined type!');
-										r = 0;
-										return;
+								elseif(nvargin > 4 & isnumeric(varargin{5}))
+										%x1,y1,z1,x2,y2,z3;
+										x = [ varargin{1}, varargin{4} ];
+										y = [ varargin{2}, varargin{5} ];
+										z = [ varargin{3}, varargin{6} ];
+										varargin_start = 7;
+								else
+									%x1,y1,x2,y2
+									x = [ varargin{1}, varargin{3} ];
+									y = [ varargin{2}, varargin{4} ];
+									z = [ 0,0 ];
+									varargin_start = 5;
+								end
+
+								r = line(ax,x,y,z,varargin{varargin_start:end});
+
+								if(isnumeric(color) | color ~= "None") 
+									r.Color = color; 
+								end
+					 case 'tri'
+							 if(nargin ~= 8)
+									 error(message('Triangle requires 6 coordinates'));
+										return; 
+							 end
+							 %x1 y1 x2 y2 x3 y3
+							 r = line([varargin{1} varargin{3}],[varargin{2} varargin{4} ]); % x1 x2 y1 y2
+							 r2 = line([varargin{3} varargin{5}],[varargin{4} varargin{6}]); % x2 x3 y2 y3
+							 r3 = line([varargin{5} varargin{1}],[varargin{6} varargin{2}]); % x3 x1 y3 y1
+							 r.UserData = [r2 r3]; % we must get vertices from r.User Data
+							 if(isnumeric(color) | color ~= "None") 
+									 r.Color = color; 
+									 r2.Color = color;
+									 c3.Color = color;
+							 end
+					 case 'eqtri'
+							 % x and y are the center of equilateral triangle
+							 % w is one side of the triangle
+							 w = varargin{3};
+							 a = w;
+							 y1 = y-a/(2*sqrt(3));
+							 y3 = y1;
+							 y2 = y+a/sqrt(3);
+							 x1 = x-a/2;
+							 x3 = x+a/2;
+							 x2 = x;
+							 if(isnumeric(color) | color ~= "None")
+										r = self.draw('tri'+' '+color,x1,y1,x2,y2,x3,y3);
+							 else
+									 r = self.draw('tri',x1,y1,x2,y2,x3,y3);
+							 end
+					 case 'hexagon'
+							 a = varargin{3};
+							 x1 = x-a; y1 = y;
+							 x2 = x-a/2; y2 = y+a*sqrt(3)/2;
+							 x3 = x+a/2; y3 = y2;
+							 x4 = x+a; y4 = y;
+							 x5 = x3; y5 = y-a*sqrt(3)/2;
+							 x6 = x2; y6 = y5;
+							 
+							 tp = 'line';
+							 %if(isnumeric(color) | color ~= "None" ) tp = tp + ' ' + color; end
+							 r = self.draw(tp,x1,y1,x2,y2,'Color',color);
+							 n1 = self.draw(tp,x2,y2,x3,y3,'Color',color);
+							 n2 = self.draw(tp,x3,y3,x4,y4,'Color',color);
+							 n3 = self.draw(tp,x4,y4,x5,y5,'Color',color);
+							 n4 = self.draw(tp,x5,y5,x6,y6,'Color',color);
+							 n5 = self.draw(tp,x6,y6,x1,y1,'Color',color);
+							 r.UserData = [r n1 n2 n3 n4 n5];
+
+					 case 'vector'
+							x2 = varargin{3};
+							y2 = varargin{4};
+
+							hold on;
+
+							if(nvargin > 4)
+								if( isnumeric(varargin{5}) )
+									x = varargin{1};
+									y = varargin{2};
+									z = varargin{3};
+									x2 = varargin{4};
+									y2 = varargin{5};
+									z2 = varargin{6};
+									r = quiver3(ax,x,y,z,x2-x,y2-y,z2-z,varargin{7:end});
+								else
+									r = quiver(ax,x,y,x2-x,y2-y,varargin{5:end});
+								end
+							else
+									r = quiver(ax,x,y,x2-x,y2-y,varargin{5:end});
+							end
+
+							r.AutoScaleFactor = 1;
+							%r.MaxHeadSize = 5/sqrt((x2-x)^2+(y2-y)^2);
+								
+							if(isnumeric(color) | color ~= "None")
+								r.Color = color;
+							end
+
+						case 'cuboid'
+							x1 = varargin{1};
+							y1 = varargin{2};
+							z1 = varargin{3};
+							w = varargin{4};
+							l = varargin{5};
+							h = varargin{6};
+
+							vertx = [x1, x1, x1, x1, x1+w, x1+w, x1+w, x1+w];
+							verty = [y1, y1+l, y1+l, y1, y1, y1+l, y1+l, y1];
+							vertz = [z1, z1, z1+h, z1+h, z1, z1, z1+h, z1+h];
+							fac = [1 2 6 5;2 3 7 6;3 4 8 7;4 1 5 8;1 2 3 4;5 6 7 8];
+							r = patch(ax,vertx,verty,vertz,'red','Faces',fac,varargin{7:end});
+							if(isnumeric(color) | color ~= "None")
+								r.FaceColor = color;
+							end
+							view(ax,3);
+
+						case 'point'
+							z = 0;
+							varargin_start = 3;
+							if(nvargin > 2)
+								if(isnumeric(varargin{3}))
+									z = varargin{3};
+									varargin_start = 4;
+								end
+							end
+							hold on;
+							
+							r = scatter3(ax,x,y,z,varargin{varargin_start:end});
+
+							if(isnumeric(color) | color ~= "None")
+								r.MarkerFaceColor = color;
+								r.MarkerEdgeColor = color;
+							else
+								r.MarkerFaceColor = 'black';
+								r.MarkerEdgeColor = 'black';
+							end
+						case 'text'
+							x = varargin{1};
+							y = varargin{2};
+							if(isnumeric(varargin{3}) == 0)
+								txt = varargin{3};
+								varargin_start = 4;
+								z = 0;
+							else 
+								z = varargin{3};
+								txt = varargin{4};
+								varargin_start = 5;
+							end
+							
+							r = text(ax,x,y,z,txt,varargin{varargin_start:end});
+						otherwise
+								disp('Draw function undefined type!');
+								r = 0;
+								return;
 					 end
 					 
 					 r.Tag = type;
@@ -483,6 +483,10 @@ classdef lattice_drawer < handle
 			 function r = set_ylabel(self,text,varargin)
 						r = ylabel(self.fig.CurrentAxes,text,varargin{:});
 			 end
+			 %%
+			 function r = set_zlabel(self,text,varargin)
+						r = zlabel(self.fig.CurrentAxes,text,varargin{:});
+			 end			 
 			 %%
 			 function [rx,ry] = rotate(self,x,y,angle)
 				t  = angle*pi/180;

@@ -114,9 +114,6 @@ classdef tightbinding < handle
       function add_hopping(self,amp,index1,index2,trans_vec,varargin)
         %varargin part for orbitals, size must be 2
 
-        orbital1 = 1; %start with s orbitals
-        orbital2 = 1;
-
         where = find(strcmp(varargin,'sym'));
         if(where)
           symbolic_amp = str2sym(varargin{where+1});
@@ -132,15 +129,18 @@ classdef tightbinding < handle
         end
 
 
+        bond.atoms = {index1,index2};
 
         %convert string indexes to numerical values
         if( isstring(index1) | ischar(index1) | isstring(index2) | ischar(index2))
           for i = 1:size(self.unit_cell,2)
             atom = self.unit_cell{i};
             if(index1 == atom.name)
+              bond.atoms{1} = i;
               index1 = i;
             end
             if(index2 == atom.name)
+              bond.atoms{2} = i;
               index2 = i;
             end
           end
@@ -150,9 +150,8 @@ classdef tightbinding < handle
         if( isstring(index1) | ischar(index1) | isstring(index2) | ischar(index2)  )
           error('Undefined atom name');
         end   
-        
-        shifting_factor1 = 1;
-        shifting_factor2 = 1;
+  
+        bond.orbitals = {'s','s'};
 
         offset1 = 0;
         offset2 = 0;
@@ -167,18 +166,18 @@ classdef tightbinding < handle
               %disp(varargin{where});disp(self.orbitals{i}{orb_iter})
                 if(orbital1 == 0)
                   if( strcmp(varargin{where},self.orbitals{i}{orb_iter}) )
+                    bond.orbitals{1} = varargin{where};
                     orbital1 = i;
-                    offset1 = offset1 + numel(self.orbitals{i})*(index1-1); 
-                    offset1 = offset1 + orb_iter;
+                    index1 = offset1 + numel(self.orbitals{i})*(index1-1) + orb_iter;
                   elseif(orb_iter == numel(self.orbitals{i}))
                       offset1 = offset1 + size(self.unit_cell,2) * numel(self.orbitals{i});
                   end
                 end
                 if(orbital2 == 0)
                   if( strcmp(varargin{where+1},self.orbitals{i}{orb_iter}) )
+                    bond.orbitals{2} = varargin{where+1};
                     orbital2 = i;
-                    offset2 = offset2 + numel(self.orbitals{i})*(index2-1);
-                    offset2 = offset2 + orb_iter;
+                    index2 = offset2 + numel(self.orbitals{i})*(index2-1) + orb_iter;
                   elseif(orb_iter == numel(self.orbitals{i}))
                       offset2 = offset2 + size(self.unit_cell,2) * numel(self.orbitals{i});
                   end
@@ -186,22 +185,6 @@ classdef tightbinding < handle
             end            
           end
         end
-       
-        %fprintf("Offset [%d,%d]\n",offset1,offset2);
-        index1 = offset1;
-        index2 = offset2;
-       
-
-        %shifting_factor1 = (index1 - 1).*shifting_factor1 + index1;
-        %shifting_factor2 = (index2 - 1).*shifting_factor2 + index2;
-        %shifting_factor1 = (orbital1-1) * size(self.unit_cell,2);
-        %shifting_factor2 = (orbital2-1) * size(self.unit_cell,2);
-
-        %%disp("fac1:"+shifting_factor1)
-        %disp("fac2:"+shifting_factor2)        
-
-        %index1 = index1 + shifting_factor1;
-        %index2 = index2 + shifting_factor2;
 
         if(index1 > 0 & index2 > 0)
             %Here we will hold a struct that contains i,j locations,
@@ -248,6 +231,10 @@ classdef tightbinding < handle
                 bond.j = index1;
                 bond.amp = amp(ientry,1);
                 bond.symbolic_amp = symbolic_amp;
+                %now change the atoms as well
+                y = bond.atoms;
+                bond.atoms{1} = y{2};
+                bond.atoms{2} = y{1}; 
                 self.bonds{end+1} = bond;
               end
 
@@ -309,7 +296,7 @@ classdef tightbinding < handle
                 end
             end
          end
-         
+
       end
       %%
       function kvec = set_kvector(self,from,to,len)
@@ -538,20 +525,25 @@ classdef tightbinding < handle
 
       function plot_lattice(self,gp,varargin)
 
-        x_offset = 0;
-        y_offset = 0;
-        z_offset = 0;
-
         line_object = "None";
         atom_object = "None";
 
-        lattice_fill_factorx = -gp.canvas_x/2 : gp.canvas_x/2;
-        lattice_fill_factory = -gp.canvas_y/2 : gp.canvas_y/2;
-        lattice_fill_factorz = -gp.canvas_z/2 : gp.canvas_z/2;
-        gp.xaxis_symmetric();
-        gp.yaxis_symmetric();
-        gp.zaxis_symmetric();
+        %gp.fig.CurrentAxes.XLim
+        %[-self.canvas_x/2 self.canvas_x/2];
 
+        lattice_fill_factorx = gp.fig.CurrentAxes.XLim(1): gp.fig.CurrentAxes.XLim(2);
+        lattice_fill_factory = gp.fig.CurrentAxes.YLim(1): gp.fig.CurrentAxes.YLim(2);
+        lattice_fill_factorz = gp.fig.CurrentAxes.ZLim(1): gp.fig.CurrentAxes.ZLim(2);
+        %gp.xaxis_symmetric();
+        %gp.yaxis_symmetric();
+        %gp.zaxis_symmetric();
+
+        plot_atoms = 1;
+        plot_bonds = 1;
+
+        constraint_x = lattice_fill_factorx;
+        constraint_y = lattice_fill_factory;
+        constraint_z = lattice_fill_factorz;
 
         i = 1;
         while(i <= size(varargin,2))
@@ -563,17 +555,25 @@ classdef tightbinding < handle
             case 'bonds'
               line_object = varargin{i}{1};
             case 'x'
-              lattice_fill_factorx = varargin{i};
+              %lattice_fill_factorx = varargin{i};
+              constraint_x = varargin{i};
               %gp.change_axis_limits("x",lattice_fill_factorx(1),lattice_fill_factorx(end));
             case 'y'
-              lattice_fill_factory = varargin{i};
+              %lattice_fill_factory = varargin{i};
+              constraint_y = varargin{i};
               %gp.change_axis_limits("y",lattice_fill_factory(1),lattice_fill_factory(end));
             case 'z'
-              lattice_fill_factorz = varargin{i}; 
-              %gp.change_axis_limits("z",lattice_fill_factorz(1),lattice_fill_factorz(end));        
+              %lattice_fill_factorz = varargin{i}; 
+              constraint_z = varargin{i};
+              %gp.change_axis_limits("z",lattice_fill_factorz(1),lattice_fill_factorz(end));
+            case 'only atoms'
+              plot_bonds = 0; 
+              i = i -1;
+            case 'only bonds'
+              plot_atoms = 0;
+              i = i -1;                    
             otherwise
               error('Undefined entry valid entries [atoms,bonds,x,y,z]');
-              return;
           end
           i = i+1;
         end
@@ -612,146 +612,126 @@ classdef tightbinding < handle
 
         cx = 0;
         cy = 0;
+        cz = 0;
 
+        if(plot_bonds)
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%BOND plottign
         old_x = 0;
         old_y = 0;
         old_z = 0;
 
-        %we cannot run from 1 to size of bonds because orbital creates bond even if they cant bee seen in the lattic
-        %just try we will catch how many different phases that we have
-        phases = {self.bonds{1}.phase};
-
-        for i = 2:size(self.bonds,2)
-          dummy_bond = self.bonds{i};
-          push_flag = 0;
-          for iphs = 1:size(phases,2)
-            %disp('Compare')
-            %disp(phases{iphs});
-            %disp(dummy_bond.phase);
-            if(any(phases{iphs} ~= dummy_bond.phase))
-              push_flag = 1;
-              %disp('Catched');
-              %disp(dummy_bond);
-              break;
-            end
-          end
-          if(push_flag)
-            phases{end+1} = dummy_bond.phase;
-          end
-        end
-
-        %disp(phases)
-        %size(phases,2)
-        for i = 1 : size(phases,2)
+        
+        for i = 1 : size(self.bonds,2)
         %size(self.bonds,2)
         %size(phases,2)
+        bond = self.bonds{i};
+
+        if(all(bond.phase == 0) && bond.i == bond.j)
+         continue;
+        end
+
+          % tvec translates our unitcell to new unitcells
+          tvector = a1 .* bond.phase(1);
+          if(size(bond.phase,2) > 1)
+            tvector = tvector + a2 .* bond.phase(2);
+            if(size(bond.phase,2) > 2)
+              tvector = tvector + a3 .* bond.phase(3);
+            end
+          end 
+          
+          atom1 = self.unit_cell{bond.atoms{1}};
+          atom2 = self.unit_cell{bond.atoms{2}};
 
           for e1 = lattice_fill_factorx
           for e2 = lattice_fill_factory
           for e3 = lattice_fill_factorz
-            tx = e1 * a1(1) + e2 * a2(1) + e3 * a3(1);
-            ty = e1 * a1(2) + e2 * a2(2) + e3 * a3(2);
-            tz = e1 * a1(3) + e2 * a2(3) + e3 * a3(3);
+
+            txyz = e1.*a1 + e2.*a2 + e3.*a3;
+
+            x = [atom1.pos(1)*normalize, tvector(1) + atom2.pos(1)*normalize] + txyz(1);
+            if(any(x < constraint_x(1)) || any(x > constraint_x(end))), continue, end
+
+            y = [atom1.pos(2) * normalize, tvector(2) + atom2.pos(2) * normalize]+ txyz(2);
+            if( any(y < constraint_y(1)) || any(y > constraint_y(end))), continue, end
+
+            if(self.dim > 2)
+              z = [atom1.pos(3) * normalize, tvector(3) + atom2.pos(3) * normalize]+txyz(3);
+            else 
+              z = [0 0];
+            end
+            if(any(z < constraint_z(1)) || any(z > constraint_z(end)) ),continue, end 
+
+            if(all(x == old_x) && all(y == old_y) && all(z == old_z))
+              continue;
+            end
+
+            if(x(1) == x(2) && y(1) == y(2) &&  z(1) == z(2))
+              continue;
+            end
+   
+            gp.copy_to(line_object,x,y,z,'Visible','on');
           
-            bond = self.bonds{i};
-            
-            if(bond.phase == 0 & bond.i == bond.j)
-              continue;
-            end
-            % tvec translates our unitcell to new unitcells
-            tvector = a1 .* bond.phase(1);
-            if(size(bond.phase,2) > 1)
-              tvector = tvector + a2 .* bond.phase(2);
-              if(size(bond.phase,2) > 2)
-                tvector = tvector + a3 .* bond.phase(3);
-              end
-            end 
-            atom1 = self.unit_cell{bond.i};
-            atom2 = self.unit_cell{bond.j};
-            x(1) = x_offset + atom1.pos(1) * normalize;
-            y(1) = y_offset + atom1.pos(2) * normalize;
-            x(2) = x_offset + tvector(1) + atom2.pos(1) * normalize;
-            y(2) = y_offset + tvector(2) + atom2.pos(2) * normalize;
-            x = x+tx;
-            y = y+ty;
-            z = [0 0];
-
-            if(size(atom1.pos,2) > 2)
-              z(1) = z_offset + atom1.pos(3) * normalize;
-              z(2) = z_offset + tvector(3) + atom2.pos(3) * normalize;
-              z = z+tz;
-            end
-
-            if(x == old_x & y == old_y & z == old_z)
-              continue;
-            end
-
-            if(x(1) == x(2) & y(1) == y(2) &  z(1) == z(2))
-              continue;
-            end
-
-            %disp(x)
-
-            if(any(x < lattice_fill_factorx(1)) | any(x > lattice_fill_factorx(end)) | any(y < lattice_fill_factory(1)) | any(y > lattice_fill_factory(end)) | ...
-              any(z < lattice_fill_factorz(1)) | any(z > lattice_fill_factorz(end)) )
-              
-              continue;
-            end
-            
-            gp.copy_to(line_object,x(1),y(1),z(1),x(2),y(2),z(2),'Visible','on');
-            %disp('lla')
-
             old_x = x;
             old_y = y;
             old_z = z;
+          
           end
           end
           end
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %first get the atoms from the unitcell
-        cx = 0; % unitcell center value
-        cy = 0;
-        for i = 1:size(self.unit_cell,2)
-            atom = self.unit_cell{i}; %unit_cell{} contains atoms inside the unit cell
-            cx = cx+atom.pos(1)*normalize;
-            cy = cy+atom.pos(2)*normalize;
         end
 
+        if(plot_atoms)
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %first get the atoms from the unitcell
+        uc_size = numel(self.unit_cell);
+        % cx = 0; % unitcell center values
+        % cy = 0;
+        % cz = 0;
+        % for i = 1:uc_size
+        %     atom = self.unit_cell{i}; %unit_cell{} contains atoms inside the unit cell
+        %     cx = cx+atom.pos(1)*normalize;
+        %     cy = cy+atom.pos(2)*normalize;
+        %     if(self.dim > 2)
+        %       cz = cz + atom.pos(3)*normalize;
+        %     end
+        % end
+
+        % cx = cx/uc_size;
+        % cy = cy/uc_size;
+        % cz = cz/uc_size;
+        % fprintf("Center[%g,%g,%g]\n",cx,cy,cz);
+        % cx = 0;
+        % cy = 0;
+        % cz = 0;
         old_x = 0;
         old_y = 0;
         old_z = 0;
 
-        for i = 1:size(self.unit_cell,2)
+        for i = 1:uc_size
+          atom = self.unit_cell{i};
+
           for e1 = lattice_fill_factorx
             for e2 = lattice_fill_factory
               for e3 = lattice_fill_factorz
 
-                tx = e1 * a1(1) + e2 * a2(1) + e3 * a3(1);
-                ty = e1 * a1(2) + e2 * a2(2) + e3 * a3(2);
-                tz = e1 * a1(3) + e2 * a2(3) + e3 * a3(3);
+                txyz = e1.*a1 + e2.*a2 + e3.*a3;
 
-                atom = self.unit_cell{i};
-                x = tx + x_offset + cx + atom.pos(1)*normalize;
-                y = ty + y_offset + cy + atom.pos(2)*normalize;
+                x = txyz(1) + atom.pos(1)*normalize;
+                if(any(x < constraint_x(1)) || any(x > constraint_x(end))), continue, end
+
+                y = txyz(2) + atom.pos(2)*normalize;
+                if( any(y < constraint_y(1)) || any(y > constraint_y(end))), continue, end
                 z = 0;
 
-                if(size(atom.pos,2) > 2)
-                  z = atom.pos(3) * normalize;
-                  z = z+tz;
+                if(self.dim > 2)
+                  z = txyz(3) + atom.pos(3) * normalize;
                 end
+                
+                if(any(z < constraint_z(1)) || any(z > constraint_z(end)) ),continue, end
 
-                if(x == old_x & y == old_y & z == old_z)
-                  continue;
-                end
-
-                if(x < lattice_fill_factorx(1) | x > lattice_fill_factorx(end) | y < lattice_fill_factory(1) | y > lattice_fill_factory(end) | ...
-                   z < lattice_fill_factorz(1) | z > lattice_fill_factorz(end) )
-                  continue;
-                end
+                if(x == old_x & y == old_y & z == old_z) , continue, end
 
                 if(size(atom.pos,2) > 2)
                   gp.copy_to(atom_object{i},x,y,z,'Visible','on');
@@ -766,6 +746,9 @@ classdef tightbinding < handle
             end
           end
         end
+      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+        end
+      
       end
       %%
       function str_hamiltonian = symbolic_hamiltonian(self,varargin)
