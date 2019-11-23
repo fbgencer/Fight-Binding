@@ -55,21 +55,22 @@ tb.add_hopping(-t,1,2,[0 -1]);  % 0 to 3
 if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
+
+gp.xaxis_symmetric();
+gp.yaxis_symmetric();
+gp.zaxis_symmetric();
+
 atoma = gp.draw('circle rgb:0066cc',0,0,0.3,'Visible','off');
 atomb = gp.draw('circle rgb:fb7100',0,0,0.3,'Visible','off');
 bond = gp.draw('line black',0,0,0,0,'Visible','off','LineWidth',2);
 bonds = {bond};
 atoms = {atoma,atomb};
-tb.plot_lattice(gp,"x",-5:5,"y",-8:8,"bonds",bonds,"atoms",atoms);
+tb.plot_lattice(gp,"x",-6:6,"y",-8:8,"bonds",bonds,"atoms",atoms);
 
 uc_rect{1} = gp.draw('line',-2,0,0,1,'Color','red','LineWidth',2);
 uc_rect{2} = gp.draw('line',0,1,2,0,'Color','red','LineWidth',2);
 uc_rect{3} = gp.draw('line',2,0,0,-1,'Color','red','LineWidth',2);
 uc_rect{4} = gp.draw('line',0,-1,-2,0,'Color','red','LineWidth',2);
-
-gp.xaxis_symmetric();
-gp.yaxis_symmetric();
-gp.zaxis_symmetric();
 
 end
 

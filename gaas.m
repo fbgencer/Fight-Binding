@@ -135,9 +135,9 @@ lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,3,3,3);
 
 
-atoma = gp.draw('point blue',0,0,0.25,'Visible','off','LineWidth',5);
+atoma = gp.draw('sphere rgb:33FF33',0,0,0,0.1,'Visible','off');
 atomb = gp.draw('point black',0,0,0.1,'Visible','off');
-bond = gp.draw('line rgb:FF33FF',0,0,0,0,'Visible','off','LineWidth',0.05);
+bond = gp.draw('line rgb:FF55FF',0,0,0,0,'Visible','off','LineWidth',0.01,'LineStyle','--');
 bonds = {bond};
 atoms = {atoma,atomb};
 from_to = 1:2;

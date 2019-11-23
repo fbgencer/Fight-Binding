@@ -44,12 +44,20 @@ tb.add_hopping(-t,1,1,[1 1 1]);
 
 if(1)
 lat_f = figure("Name","Lattice Figure");
-gp = lattice_drawer(lat_f,6,6,6);
-atoma = gp.draw('point red',0,0,0.25,'Visible','off');
-bond = gp.draw('line black',0,0,0,0,'Visible','off');
+gp = lattice_drawer(lat_f,4,4,4);
+atoma = gp.draw('point blue',0,0,0.2,'Visible','off');
+bond = gp.draw('line rgb:FF1010',0,0,0,0,'Visible','off');
 bonds = {bond};
 atoms = {atoma};
-tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",-3:3,"y",-1:1,"z",-1:1);
+tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms);
+
+%gp.xaxis_symmetric();
+%gp.yaxis_symmetric();
+%gp.zaxis_symmetric();
+
+a= a*1e10;
+gp.draw('cuboid',a,a,a,a,a,a,'FaceColor','None','LineWidth',1);
+grid;
 end
 
 
@@ -65,7 +73,7 @@ colorbar;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if(1)
+if(0)
 Gamma = [0 0 0];
 P = [pi/a pi/a pi/a ];
 N = [0 pi/a pi/a];

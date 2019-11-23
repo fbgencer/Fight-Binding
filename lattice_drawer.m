@@ -277,6 +277,15 @@ classdef lattice_drawer < handle
 								r.MarkerFaceColor = 'black';
 								r.MarkerEdgeColor = 'black';
 							end
+						case 'sphere'
+		 					z = varargin{3};
+		 					rad = varargin{4};
+
+							[X,Y,Z] = sphere();
+							fvc = surf2patch(rad*X-x,rad*Y-y,rad*Z-z,z); 
+							r = patch(ax,fvc,'LineStyle','None',varargin{5:end}); 
+							if(isnumeric(color) | color ~= "None") r.FaceColor = color; end
+						
 						case 'text'
 							x = varargin{1};
 							y = varargin{2};
@@ -368,7 +377,7 @@ classdef lattice_drawer < handle
 						if(nargin > 4)
 							is_entry_numeric = (isstring(varargin{3}) == 0  && ischar(varargin{3}) == 0 );
 						end
-						nvargin = size(varargin,2);
+						nvargin = numel(varargin);
 
 
 						switch obj.Tag
@@ -460,6 +469,15 @@ classdef lattice_drawer < handle
 										r.ZData = varargin{3};
 										varargin_start = 4;
 									end
+									if(nvargin >= varargin_start)
+										set(r,varargin{varargin_start:end});
+									end
+								case 'sphere'
+									r.XData = obj.XData + varargin{1};
+									r.YData = obj.YData + varargin{2};
+									r.ZData = obj.ZData + varargin{3};
+									varargin_start = 4;
+
 									if(nvargin >= varargin_start)
 										set(r,varargin{varargin_start:end});
 									end

@@ -80,7 +80,15 @@ a = 3;
 
 
 cc = gp.draw('cuboid',0,0,0,a,a,a);
-
+%cc = gp.draw('cuboid',a,a,a,a,a,a);
+%sp = gp.draw('sphere',0,0,0,0.2);
+atoma = gp.draw('sphere blue',0,0,0,0.25,'Visible','off');
+atomc = gp.copy_to(atoma,0,a,a,'Visible','on');
+%hold on;
+%[x,y,z] = sphere();
+%fvc = surf2patch(2*x-2,2*y-3,2*z,z); 
+%p = patch(gp.fig.CurrentAxes,fvc,'LineStyle','None','FaceColor','blue'); 
+%shading faceted; 
 
 
 
