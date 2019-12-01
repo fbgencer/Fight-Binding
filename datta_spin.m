@@ -13,7 +13,7 @@
 % --------------------------------------------------------------------------------
 
 clear all
-close all;
+%close all;
 
 soa=.3787/3;soc=.0129/3;Esa=-8.3431;Epa=1.0414;Esc=-2.6569;Epc=3.6686;Esea=8.5914;
 Esec=6.7386;
@@ -47,21 +47,27 @@ h=[Esa/2 Vss*g0 0 0 0 Vsapc*g1 Vsapc*g2 Vsapc*g3 0 0;
       0	0	0	0	0	0	0	0	Esea/2	0;
       0	0	0	0	0	0	0	0	0	Esec/2];
 
-H=[h+h'	zeros(10);
+Ho=[h+h'	zeros(10);
      zeros(10)	h+h'];
 
 hso=zeros(20);
-hso(3,4)=-i*soa;hso(3,15)=soa;
+hso(3,4)=-i*soa;
+hso(3,15)=soa;
 hso(4,15)=-i*soa;
-hso(5,13)=-soa;hso(5,14)=i*soa;
-hso(6,7)=-i*soc;hso(6,18)=soc;
+hso(5,13)=-soa;
+hso(5,14)=i*soa;
+hso(6,7)=-i*soc;
+hso(6,18)=soc;
 hso(7,18)=-i*soc;
-hso(8,16)=-soc;hso(8,17)=i*soc;
+hso(8,16)=-soc;
+hso(8,17)=i*soc;
 hso(13,14)=i*soa;
 hso(16,17)=i*soc;
 Hso=hso+hso';
 
-eiglst = eig(H+Hso);
+H = Ho+Hso;
+
+eiglst = eig(H);
         E(Nk,:) = sort(real(eiglst));
 		X(Nk)=-(Nk-1)/(Nt-1);%L-direction
 		X1(Nk)=(Nk-1)/(Nt-1);%X-direction
@@ -69,9 +75,9 @@ end
 
 hold on
 if iter == 1
-h=plot(X,E);
+pl=plot(X,E);
 else
-h=plot(X1,E);
+pl=plot(X1,E);
 
 end
 axis([-1 1 -3 3])

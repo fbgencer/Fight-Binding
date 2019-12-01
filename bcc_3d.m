@@ -46,22 +46,26 @@ if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,4,4,4);
 atoma = gp.draw('point blue',0,0,0.2,'Visible','off');
-bond = gp.draw('line rgb:FF1010',0,0,0,0,'Visible','off');
+bond = gp.draw('line rgb:FF1010',0,0,0,0,'Visible','off','LineWidth',0.2);
 bonds = {bond};
 atoms = {atoma};
-tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms);
+from_to = 0:3;
+tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",from_to,"y",from_to,"z",from_to);
 
 %gp.xaxis_symmetric();
 %gp.yaxis_symmetric();
 %gp.zaxis_symmetric();
 
 a= a*1e10;
-gp.draw('cuboid',a,a,a,a,a,a,'FaceColor','None','LineWidth',1);
+gp.draw('cuboid',a,a,a,a,a,a,'FaceColor','None','LineWidth',2);
+gp.set_xlabel('X');
+gp.set_ylabel('Y');
+gp.set_zlabel('Z');
 grid;
 end
 
 
-if(0)
+if(1)
 
 range = 2*pi/a; 
 precision = 50;
@@ -69,11 +73,11 @@ k = tb.set_kvector(-range,range,precision);
 fig_band = figure("Name","Energy Band Figure");
 surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
 
-colorbar;
+%colorbar;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if(0)
+if(1)
 Gamma = [0 0 0];
 P = [pi/a pi/a pi/a ];
 N = [0 pi/a pi/a];
@@ -83,7 +87,7 @@ H = [0 0 2*pi/a];
 fig_hsym = figure("Name","High Symmetry Points Figure");
 tb.plot_high_symmetry_points(fig_hsym,P,Gamma,N,H,Gamma);
 xlabel(fig_hsym.CurrentAxes,'$$P \Gamma N H \Gamma $$','Interpreter','Latex');
-xticks(fig_hsym.CurrentAxes,[0 80 160 240 320]);
+xticks(fig_hsym.CurrentAxes,[0 100 200 300 400]);
 xticklabels(fig_hsym.CurrentAxes,{'P','\Gamma','N','H','\Gamma'});
 
 end

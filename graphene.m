@@ -18,7 +18,7 @@
 %add_hopping(t,2,1,[0 1]);  % 0 -> 3
 %add_hopping(t,1,2,[0 -1]);  % 0 -> 4
 
-clear; clc; close all;
+clear all; clc; close all;
 %graphene consts
 
 a0 = 1.42*1e-10;
@@ -39,20 +39,20 @@ tb.set_unit_cell('A',[-a0/2 0],'B',[a0/2 0]); %give unit cell atoms and their lo
 
 Eo = 0;
 t = 0.1;
-tb.add_hopping(Eo,1,1,[0 0]);  % 0 to 0
-tb.add_hopping(Eo,2,2,[0 0]);  % 0 to 0
+tb.add_hopping(Eo,'A','A',[0 0]);  % 0 to 0
+tb.add_hopping(Eo,'B','B',[0 0]);  % 0 to 0
 
-tb.add_hopping(-t,1,2,[0 0]);  % 0 to 0
+tb.add_hopping(-t,'A','B',[0 0]);  % 0 to 0
 %tb.add_hopping(-t,2,1,[0 0]);  % 0 to 0 % No need to include this anymore!
 
-tb.add_hopping(-t,1,2,[-1 0]);  % 0 to 1 with -a1 vector
-tb.add_hopping(-t,2,1,[1 0]);   % 0 to 2 with a1 vector
-tb.add_hopping(-t,1,2,[0 -1]);  % 0 to 3
+tb.add_hopping(-t,'A','B',[-1 0]);  % 0 to 1 with -a1 vector
+%tb.add_hopping(-t,2,1,[1 0]);   % 0 to 2 with a1 vector
+tb.add_hopping(-t,'A','B',[0 -1]);  % 0 to 3
 %tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 
 %Do this, just make sure to get symmetric hamiltonian
 %tb.hermitian_hamiltonian();
-if(1)
+if(0)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
 
@@ -74,11 +74,19 @@ uc_rect{4} = gp.draw('line',0,-1,-2,0,'Color','red','LineWidth',2);
 
 end
 
+if(1)
+range = 2*pi/a; 
+precision = 100;
+k = tb.set_kvector(-range,range,precision);
+fig_dos = figure("Name","Density of States");
+ce = tb.plot_dos(fig_dos,k);
+end
+
 
 if(0)
 
 range = 2*pi/a; 
-precision = 100;
+precision = 20;
 k = tb.set_kvector(-range,range,precision);
 fig_band = figure("Name","Energy Band Figure");
 surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
@@ -86,6 +94,8 @@ surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
 rp = lattice_drawer(fig_band);
 lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
 tb.plot_brillouin_zone(rp,'plot points','plot lines');
+
+
 
 %surfaces{1}.Visible = 'off';
 
@@ -103,7 +113,8 @@ title(fig_hsym.CurrentAxes,'High Symmetry Points','Interpreter','Latex');
 xlabel(fig_hsym.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
 xticks(fig_hsym.CurrentAxes,0:precision:precision*4);
 xticklabels(fig_hsym.CurrentAxes,{'K','\Gamma','M','K'});
-
+ylabel(fig_hsym.CurrentAxes,'$$Energy(eV)$$','Interpreter','Latex')
+grid;
 
 band_dw = lattice_drawer(fig_band); 
 band_dw.draw('vector red',K1(1),K1(2),0.5,Gamma(1),Gamma(2),0.5,'LineWidth',2,'MaxHeadSize',0.3);

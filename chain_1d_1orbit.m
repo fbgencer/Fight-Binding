@@ -19,13 +19,25 @@ tb.add_hopping(Eo,'A','A',[0],'sym','Eo'); %hem A hem de 1 çalışıyor, bazı 
 tb.add_hopping(-t,1,1,[1],'sym','-t');
 %tb.add_hopping(-t,1,1,[-1]);
 
-tb.symbolic_hamiltonian()
+%tb.symbolic_hamiltonian()
 
 if(1)
+range = 2*pi/a; 
+precision = 100;
+k = tb.set_kvector(-range,range,precision);
+fig_dos = figure("Name","Density of States");
+ce = tb.plot_dos(fig_dos,k);
+end
+
+
+if(0)
 lat_f = figure("Name","Lattice Figure");
-gp = lattice_drawer(lat_f,20,20);
-atoma = gp.draw('circle red',0,0,0.25,'Visible','off');
-bond = gp.draw('line black',0,0,0,0,'Visible','off','LineWidth',1);
+gp = lattice_drawer(lat_f,15,10);
+gp.xaxis_symmetric();
+gp.yaxis_symmetric();
+grid;
+atoma = gp.draw('circle red',0,0,0.3,'Visible','off');
+bond = gp.draw('line black',0,0,0,0,'Visible','off','LineWidth',2);
 bonds = {bond};
 atoms = {atoma};
 tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms);
@@ -47,7 +59,10 @@ surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
 
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
+grid;
 f2 = tb.plot_high_symmetry_points(fig_hsym,[0 0 0],[3.2/a 0 0]);
+ylabel(fig_hsym.CurrentAxes,'$$Energy(eV)$$','Interpreter','Latex')
+xlabel(fig_hsym.CurrentAxes,'$$k$$','Interpreter','Latex')
 end
 
 %Hand solution

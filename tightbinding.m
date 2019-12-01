@@ -11,6 +11,10 @@ classdef tightbinding < handle
       bonds = {};
       kvec = {};
       E = 0; % without calculation it is just zero
+
+      %% Spin orbit coupling - SOC
+      is_soc = 0; %we will open it after user calls add_soc
+
    end
    methods
        %selfect constructor
@@ -102,44 +106,63 @@ classdef tightbinding < handle
             end
         end
       end
+      %%
+      function spin_orbit_coupling(self,state)
+        if(strcmp('true',state) | state == 1)
+          self.is_soc = 1;
+        elseif(strcmp('false',state) | state == 0)
+          self.is_soc = 0;
+        end
+      end
        %%
-%add_hopping(amplitude,interaction between pairs,translation vec)
-%add_hopping(t,1,2,[0 0]);  % inside 0 A and B interaction interaction
-%between zero and one which A and B respectively.
-%add_hopping(t,1,2,[-1 0]);  % 0 -> 1
-%add_hopping(t,2,1,[1 0]);   % 0 -> 2
-%add_hopping(t,2,1,[0 1]);  % 0 -> 3
-%add_hopping(t,1,2,[0 -1]);  % 0 -> 4
-      
       function add_hopping(self,amp,index1,index2,trans_vec,varargin)
         %varargin part for orbitals, size must be 2
 
-        where = find(strcmp(varargin,'sym'));
-        if(where)
-          symbolic_amp = str2sym(varargin{where+1});
-          if(where == 1)
-            where = 3;
-          elseif(where == 3)
-            where = 1;
-          end
-
-        else
-          symbolic_amp = 'None';
-          where = 1;
-        end
-
 
         bond.atoms = {index1,index2};
+
+        spin1 = 0; %means undefined;
+        spin2 = 0; %means undefined;
+
+        % If user did not specify spin we will assume that term includes both spin terms, in the matrix we will write for both spin terms
+        % But for specific spin states it is gonna write to exact row-column
+        %check for spin up or down
+        %This looks so bad, we need to change..XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        if(self.is_soc)
+          where = strfind(index1,'+');
+          if(where > 1) 
+            index1 = index1(1:where-1);
+            spin1 = 1;
+          else
+            where = strfind(index1,'-');
+            if(where > 1)
+              spin1 = -1;
+              index1 = index1(1:where-1);
+            end
+          end
+          where = strfind(index2,'+');
+          if(where > 1) 
+            spin2 = 1;
+            index2 = index2(1:where-1);
+          else
+            where = strfind(index2,'-');
+            if(where > 1)
+              spin2 = -1;
+              index2 = index2(1:where-1);
+            end
+          end              
+        end
+
 
         %convert string indexes to numerical values
         if( isstring(index1) | ischar(index1) | isstring(index2) | ischar(index2))
           for i = 1:size(self.unit_cell,2)
             atom = self.unit_cell{i};
-            if(index1 == atom.name)
+            if(strcmp(index1,atom.name))
               bond.atoms{1} = i;
               index1 = i;
             end
-            if(index2 == atom.name)
+            if(strcmp(index2,atom.name))
               bond.atoms{2} = i;
               index2 = i;
             end
@@ -147,9 +170,39 @@ classdef tightbinding < handle
         end
 
 
+
+
         if( isstring(index1) | ischar(index1) | isstring(index2) | ischar(index2)  )
           error('Undefined atom name');
         end   
+
+
+        where = find(strcmp(varargin,'mode'));
+        overwrite = 0; append = 0;
+        if(where)
+          overwrite = find(strcmp(varargin,'overwrite'));
+          append = find(strcmp(varargin,'append'));
+          if(overwrite == where+1), overwrite = 1;
+          elseif(append == where+1), append = 1;
+          else, error('Undefined mode. Append or overwrite is available'); end
+        end
+
+        where = find(strcmp(varargin,'sym'));
+        if(where)
+          symbolic_amp = varargin{where+1};
+          if(isstring(symbolic_amp) | ischar(symbolic_amp))
+            symbolic_amp = str2sym(symbolic_amp);
+          end
+          if(where == 1)
+            where = 3;
+          elseif(where == 3)
+            where = 1;
+          end
+        else
+          symbolic_amp = 'None';
+          where = 1;
+        end
+
   
         bond.orbitals = {'s','s'};
 
@@ -168,7 +221,7 @@ classdef tightbinding < handle
                   if( strcmp(varargin{where},self.orbitals{i}{orb_iter}) )
                     bond.orbitals{1} = varargin{where};
                     orbital1 = i;
-                    index1 = offset1 + numel(self.orbitals{i})*(index1-1) + orb_iter;
+                    index1 = offset1 + numel(self.orbitals{i}) .* (index1-1) + orb_iter;
                   elseif(orb_iter == numel(self.orbitals{i}))
                       offset1 = offset1 + size(self.unit_cell,2) * numel(self.orbitals{i});
                   end
@@ -177,7 +230,7 @@ classdef tightbinding < handle
                   if( strcmp(varargin{where+1},self.orbitals{i}{orb_iter}) )
                     bond.orbitals{2} = varargin{where+1};
                     orbital2 = i;
-                    index2 = offset2 + numel(self.orbitals{i})*(index2-1) + orb_iter;
+                    index2 = offset2 + numel(self.orbitals{i}) .* (index2-1) + orb_iter;
                   elseif(orb_iter == numel(self.orbitals{i}))
                       offset2 = offset2 + size(self.unit_cell,2) * numel(self.orbitals{i});
                   end
@@ -185,66 +238,99 @@ classdef tightbinding < handle
             end            
           end
         end
+        
+        %Index shifting due to soc
+        if(self.is_soc)
+          matrix_row_size = size(self.unit_cell,2)*self.no_orbital; %both spin up + spin down states
+          if(spin1 == 0)
+            index1 = [index1, index1 + matrix_row_size];
+          end
+          if(spin2 == 0)
+            index2 = [index2, index2 + matrix_row_size];
+          end
+          if(spin1 < 0), index1 = index1 + matrix_row_size; end
+          if(spin2 < 0), index2 = index2 + matrix_row_size; end
+        end
 
-        if(index1 > 0 & index2 > 0)
-            %Here we will hold a struct that contains i,j locations,
-            %amplitude of the given hopping and phase value
+        %index1
+        %index2
 
-            %First check the translation vector (trans_vec) and number of primitive vectors
-            if(size(trans_vec,2) ~= size(self.pvec,1) )
-              error('Problem dimension and translation vector size does not match!');
-            end
+        for i1 = 1:numel(index1)
+          if(any(index1) > 0 && any(index2 > 0) )
+              %Here we will hold a struct that contains i,j locations,
+              %amplitude of the given hopping and phase value
 
-            multiple_entry_flag = (size(amp,1) > 1 & size(amp,1) == size(trans_vec,1));
-
-            for ientry = 1:size(amp,1)
-
-              %Also check that maybe user is trying add same elements, we should not add more bonds, we will quietly return
-              for iter = 1:size(self.bonds,2)
-                temp_bond = self.bonds{iter};
-                if(temp_bond.i == index2 & temp_bond.j == index1 & temp_bond.phase == -trans_vec(ientry,:))
-                  %disp(temp_bond)
-                  %disp('do not add the same')
-                  %disp(trans_vec)
-                  return; 
-                end
+              %First check the translation vector (trans_vec) and number of primitive vectors
+              if(size(trans_vec,2) ~= size(self.pvec,1) )
+                error('Problem dimension and translation vector size does not match!');
               end
 
+              multiple_entry_flag = (size(amp,1) > 1 & size(amp,1) == size(trans_vec,1));
+             
+              for ientry = 1:size(amp,1)
+                where = size(self.bonds,2)+1;
 
+                %Also check that maybe user is trying add same elements, we should not add more bonds, we will quietly return
+                for iter = 1:size(self.bonds,2)
+                  temp_bond = self.bonds{iter};
+                  if(temp_bond.i == index1(i1) & temp_bond.j == index2(i1) & temp_bond.phase == trans_vec(ientry,:))
+                    %disp(any(append));
+                    %disp(iter)
+                    if(append == 0 && overwrite == 0)
+                      continue;
+                    end
+                    if(any(append) == 1)
+                      amp = self.bonds{iter}.amp + amp;
+                      %amp
+                      if(symbolic_amp == 'None'), symbolic_amp = self.bonds{iter}.symbolic_amp;
+                      else, symbolic_amp = self.bonds{iter}.symbolic_amp + symbolic_amp; end
 
+                      where = iter;
+                      %where
+                    end
+                  end
+                end
 
-              %Here we will create hermitian matrix so without expecting from user we can add hermitian conjugate here
-              bond.phase = trans_vec(ientry,:);
-              bond.i = index1;
-              bond.j = index2;
-              bond.amp = amp(ientry,1);
-              bond.symbolic_amp = symbolic_amp;
-              self.bonds{end+1} = bond;
-
-              %fprintf('index %d %d\n',index1,index2 );
-              %We can give user some options to close this flag, LATER ADD this
-              flag_create_hermitian_conj = 1;
-              %Add only Non-Diagonal elements
-              if((index1 ~= index2 | any(bond.phase ~= -trans_vec(ientry,:))) )
-                bond.phase = -trans_vec(ientry,:);
-                bond.i = index2;
-                bond.j = index1;
+                %Here we will create hermitian matrix so without expecting from user, we can add hermitian conjugate here
+                bond.phase = trans_vec(ientry,:);
+                bond.i = index1(i1);
+                bond.j = index2(i1);
                 bond.amp = amp(ientry,1);
                 bond.symbolic_amp = symbolic_amp;
-                %now change the atoms as well
-                y = bond.atoms;
-                bond.atoms{1} = y{2};
-                bond.atoms{2} = y{1}; 
-                self.bonds{end+1} = bond;
-              end
+                self.bonds{where} = bond;
+                where = where + 1;
 
-            end
-            
-        else
-            error('Atom indexes must be bigger than zero.');
+                %fprintf('index %d %d\n',index1,index2 );
+                %We can give user some options to close this flag, LATER ADD this
+                flag_create_hermitian_conj = 1;
+                %Add only Non-Diagonal elements
+                if((all(index1 ~= index2) | any(bond.phase ~= -trans_vec(ientry,:))) )
+                  bond.phase = -trans_vec(ientry,:);
+                  bond.i = index2(i1);
+                  bond.j = index1(i1);
+                  bond.amp = conj(amp(ientry,1));
+                  bond.symbolic_amp = conj(symbolic_amp);
+                  %now change the atoms as well
+                  y = bond.atoms;
+                  bond.atoms{1} = y{2};
+                  bond.atoms{2} = y{1}; 
+                  self.bonds{where} = bond;
+                end
+
+              end
+              
+          else
+              error('Atom indexes must be bigger than zero.');
+          end
         end
         
       end
+      %%
+      function add_soc(self,amp,index1,index2,varargin)
+        if(self.is_soc)
+          self.add_hopping(amp,index1,index2,[0 0 0],varargin{:},'mode','append');
+        end
+      end  
       %%
       function calculate_band(self,kvec)
         
@@ -264,8 +350,10 @@ classdef tightbinding < handle
 
         %We have NxN matrix and N determines the number of bands
         %Size of the matrix is number of atoms inside the unit cell and number of orbitals
-        matrix_row_size = size(self.unit_cell,2)*self.no_orbital;
-        
+        matrix_row_size = size(self.unit_cell,2) * self.no_orbital; % if there is soc we have 2 times bigger matrix
+        if(self.is_soc), matrix_row_size = matrix_row_size * 2; end
+
+
         Energy_cell = cell(1,matrix_row_size);
         for i = 1:matrix_row_size
           Energy_cell{i} = zeros(alen,blen,clen);
@@ -322,6 +410,9 @@ classdef tightbinding < handle
         kz = kvec{3};
 
         E = calc_band_internal(self,kx,ky,kz);
+        
+        self.E = E;
+
         f = fig();
         surfaces = {};
 
@@ -365,7 +456,7 @@ classdef tightbinding < handle
         plots = {};
         
         if(nargin < 2)
-            disp('In order to plot at least two high symmetry points are required.');
+            error('In order to plot at least two high symmetry points are required.');
             return;
         end
 
@@ -383,12 +474,60 @@ classdef tightbinding < handle
         end
 
         E = calc_band_internal(self,kx,ky,kz);
+        
         hold on;
         for i = 1:size(E,2)
           plots{end+1} = plot(E{i});
         end
         hold off;
         f.UserData = plots;
+      end
+      %%
+      function h = plot_dos(self,fig,kvec)
+
+        kx = kvec{1};
+        ky = kvec{2};
+        kz = kvec{3};
+
+        fig();
+        hold on;
+        E = self.E;
+        if(E == 0)
+          E = calc_band_internal(self,kx,ky,kz);
+        end
+
+        %make vector from E matrix
+        energy_vector = [];
+        for i = 1:size(E,2)
+          VE = E{i}(:,:,1);
+          VE = VE';
+          VE = VE(:)';
+          energy_vector = [energy_vector,VE];
+        end
+
+        h = histogram(energy_vector,size(kx,2),'Visible','on');
+        counts = h.BinCounts;
+        x = linspace(h.BinLimits(1),h.BinLimits(2),size(counts,2));
+        %h = histfit(energy_vector,size(kx,2),'kernel');
+        c = conv(h.BinEdges, [0.5 0.5], 'valid');
+        plot(c,h.BinCounts,'r -.')
+        hold on;
+        i = 1;        
+        % while( i <= numel(counts))
+        %   if(counts(i) <= 1e-3)
+        %     %disp("Evet ?")
+        %     %disp(counts(i))
+        %     counts(i) = [];
+        %     x(i) = [];
+        %     continue;
+        %   end
+        %   i = i+1;
+        % end
+        A = smoothdata(counts,'Gaussian','SmoothingFactor',0.01);
+        %A = smoothdata(A,'Gaussian');
+        plot(fig.CurrentAxes,x,A,'-');
+        %fig.CurrentAxes.YLim(1) = 0;
+
       end
       %%
       function plot_only_atoms(self,gp,varargin)
@@ -762,6 +901,7 @@ classdef tightbinding < handle
         end
 
         matrix_row_size = size(self.unit_cell,2)*self.no_orbital;
+        if(self.is_soc), matrix_row_size = 2*matrix_row_size; end
         
         H = sym(zeros(matrix_row_size, matrix_row_size));
 
@@ -772,7 +912,6 @@ classdef tightbinding < handle
         bond_amp = sym('A_%d',[matrix_row_size,matrix_row_size]);
 
         acoef = 0;
-
 
         bonding_no = size(self.bonds,2);
         for ob_iter = 1:bonding_no

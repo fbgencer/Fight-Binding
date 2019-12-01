@@ -1,5 +1,5 @@
 clear all
-close all;
+%close all;
 
 Esa=-8.3431;Epa=1.0414;Esc=-2.6569;Epc=3.6686;Esea=8.5914;Esec=6.7386;
 Vss=-6.4513;Vxx=1.9546;Vxy=5.0779;Vsapc=4.4800;Vpasc=5.7839;Vseapc=4.8422;
@@ -48,7 +48,7 @@ p = plot(X,E);%L-direction
 else
 p = plot(X1,E);%X-direction
 end
-%axis([-1 1 -3 3])
+axis([-1 1 -3 3])
 %set(h,'linewidth',[2.0])
 %set(gca,'Fontsize',[25])
 xlabel('k (as fraction of maximum value)--->')
