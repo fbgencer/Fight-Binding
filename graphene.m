@@ -52,7 +52,7 @@ tb.add_hopping(-t,'A','B',[0 -1]);  % 0 to 3
 
 %Do this, just make sure to get symmetric hamiltonian
 %tb.hermitian_hamiltonian();
-if(0)
+if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
 

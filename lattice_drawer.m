@@ -53,22 +53,28 @@ classdef lattice_drawer < handle
 			 end
 			 %%
 			 function xaxis_symmetric(self)
-			 		self.fig.CurrentAxes.XLim = [-self.canvas_x/2 self.canvas_x/2];
+			 		%self.fig.CurrentAxes.XLim = [-self.canvas_x/2 self.canvas_x/2];
+			 		ax = get(self.fig,'currentaxes');
+			 		set(ax,'xlim',[-self.canvas_x/2 self.canvas_x/2]);
 			 end
 			 %%
 			 function yaxis_symmetric(self)
-			 		self.fig.CurrentAxes.YLim = [-self.canvas_y/2 self.canvas_y/2];
+			 		%self.fig.CurrentAxes.YLim = [-self.canvas_y/2 self.canvas_y/2];
+			 		ax = get(self.fig,'currentaxes');
+			 		set(ax,'ylim',[-self.canvas_y/2 self.canvas_y/2]);
 			 end
 			 %%
 			 function zaxis_symmetric(self)
 			 	if(self.canvas_z > 0)
-			 		self.fig.CurrentAxes.ZLim = [-self.canvas_z/2 self.canvas_z/2];
+			 		%self.fig.CurrentAxes.ZLim = [-self.canvas_z/2 self.canvas_z/2];
+			 		ax = get(self.fig,'currentaxes');
+			 		set(ax,'zlim',[-self.canvas_z/2 self.canvas_z/2]);
 			 	end
 			 end			 
 			 %%
 			 function r = draw(self,type_string,varargin)
 					 self.fig();
-					 ax = self.fig.CurrentAxes;
+					 ax = get(self.fig,'currentaxes');
 					 if(nargin < 3)
 							 disp('Draw function takes at least 2 arguments'); 
 							 return;
@@ -81,7 +87,7 @@ classdef lattice_drawer < handle
 					 		color = splitted_str{2};
 					 		%you need to start with line rgb:00FF00 something like this
 					 		if(strfind(color,"rgb:") == 1) 
-					 			color = split(color,"rgb:"); 
+					 			color = strsplit(color,"rgb:"); 
 					 			color = cell2mat(color(2));
 								color = sscanf(color,'%2x%2x%2x',[1 3])/255;
 							end
@@ -108,16 +114,16 @@ classdef lattice_drawer < handle
 		 					w = varargin{3};
 							h = varargin{4};
 							r = rectangle('Position',[x-w/2,y-h/2,w,h],varargin{5:end});
-							if(isnumeric(color) | color ~= "None") r.FaceColor = color; end					 				
+							if(isnumeric(color) | color ~= "None") set(r,'facecolor',color); end					 				
 						case 'rect'
 			 					w = varargin{3};
 								h = varargin{4};
 								r = rectangle('Position',[x,y,w,h],varargin{5:end});
-								if(isnumeric(color) | color ~= "None") r.FaceColor = color; end
+								if(isnumeric(color) | color ~= "None") set(r,'facecolor',color); end
 						case 'square'
 			 					w = varargin{3};
 								r = rectangle('Position',[x,y,w,w],varargin{5:end});
-								if(isnumeric(color) | color ~= "None") r.FaceColor = color; end
+								if(isnumeric(color) | color ~= "None") set(r,'facecolor',color); end
 						case 'circle'
 
 			 					rad = varargin{3};
@@ -128,7 +134,8 @@ classdef lattice_drawer < handle
 								y = y-rad;
 								%y-r : edge y
 								r = rectangle('Position',[x,y,2*rad,2*rad],'Curvature',[1 1],varargin{4:end});
-								if(isnumeric(color) | color ~= "None") r.FaceColor = color; end
+								if(isnumeric(color) | strcmp(color,"None") == 0) set(r,'facecolor',color); end
+                
 					 case 'line'
 								
 					 			if( isscalar(varargin{1}) == 0 & isscalar(varargin{2}) == 0 )
@@ -158,7 +165,7 @@ classdef lattice_drawer < handle
 								r = line(ax,x,y,z,varargin{varargin_start:end});
 
 								if(isnumeric(color) | color ~= "None") 
-									r.Color = color; 
+									set(r,'color',color);
 								end
 					 case 'tri'
 							 if(nargin ~= 8)
@@ -171,9 +178,9 @@ classdef lattice_drawer < handle
 							 r3 = line([varargin{5} varargin{1}],[varargin{6} varargin{2}]); % x3 x1 y3 y1
 							 r.UserData = [r2 r3]; % we must get vertices from r.User Data
 							 if(isnumeric(color) | color ~= "None") 
-									 r.Color = color; 
-									 r2.Color = color;
-									 c3.Color = color;
+									 set(r,'color',color);
+									 set(r2,'color',color);
+									 set(r3,'color',color);
 							 end
 					 case 'eqtri'
 							 % x and y are the center of equilateral triangle
@@ -186,7 +193,7 @@ classdef lattice_drawer < handle
 							 x1 = x-a/2;
 							 x3 = x+a/2;
 							 x2 = x;
-							 if(isnumeric(color) | color ~= "None")
+							 if(isnumeric(color) | strcmp(color,"None") == 0)
 										r = self.draw('tri'+' '+color,x1,y1,x2,y2,x3,y3);
 							 else
 									 r = self.draw('tri',x1,y1,x2,y2,x3,y3);
@@ -208,7 +215,7 @@ classdef lattice_drawer < handle
 							 n3 = self.draw(tp,x4,y4,x5,y5,'Color',color);
 							 n4 = self.draw(tp,x5,y5,x6,y6,'Color',color);
 							 n5 = self.draw(tp,x6,y6,x1,y1,'Color',color);
-							 r.UserData = [r n1 n2 n3 n4 n5];
+							 set(r,'userdata',[r n1 n2 n3 n4 n5]);
 
 					 case 'vector'
 							x2 = varargin{3};
@@ -236,7 +243,7 @@ classdef lattice_drawer < handle
 							%r.MaxHeadSize = 5/sqrt((x2-x)^2+(y2-y)^2);
 								
 							if(isnumeric(color) | color ~= "None")
-								r.Color = color;
+								set(r,'color',color);
 							end
 
 						case 'cuboid'

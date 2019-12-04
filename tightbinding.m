@@ -15,6 +15,9 @@ classdef tightbinding < handle
       %% Spin orbit coupling - SOC
       is_soc = 0; %we will open it after user calls add_soc
 
+      %normalization unit for drawing lattices and k space
+      spatial_unit = 'nm';
+
    end
    methods
        %selfect constructor
@@ -51,7 +54,7 @@ classdef tightbinding < handle
 
           for i = 1:size(varargin,2)
             if(isstring(varargin{i}) | ischar(varargin{i}))
-              orb_cell = split(varargin{i},',');
+              orb_cell = strsplit(varargin{i},',');
               self.orbitals{end+1} = orb_cell;
               self.no_orbital = self.no_orbital + numel(orb_cell);
             else
@@ -309,7 +312,9 @@ classdef tightbinding < handle
                   bond.i = index2(i1);
                   bond.j = index1(i1);
                   bond.amp = conj(amp(ientry,1));
-                  bond.symbolic_amp = conj(symbolic_amp);
+                  if(isOctave == 0)
+                    bond.symbolic_amp = conj(symbolic_amp);
+                  end
                   %now change the atoms as well
                   y = bond.atoms;
                   bond.atoms{1} = y{2};
@@ -734,6 +739,9 @@ classdef tightbinding < handle
         %  lattice_fill_factory = 1;
         %end
 
+        if(strcmp(self.spatial_unit,'nm'))
+          unit_factor = 1e9;
+        end
         
         normalize = 1e10;
         a1 = self.pvec(1,:).*normalize;
@@ -1059,7 +1067,7 @@ classdef tightbinding < handle
             for i = 1:size(vpx1,2)
               x = fix(vpx1(i));
               y = fix(vpy1(i));
-              txt = pp(x,2) + "," + pp(y,2);
+              txt = pretty_print_scientific(x,2) + "," + pretty_print_scientific(y,2);
               %txt = sprintf("$$%g,%g$$",x,y);
               
 
@@ -1082,21 +1090,4 @@ classdef tightbinding < handle
 
       end
    end
-end
-
-function s=pp(x,n)
-% pretty-print a value in scientific notation
-% usage: s=pp(x,n)
-% where: x a floating-point value
-%        n is the number of decimal places desired
-%        s is the string representation of x with n decimal places, and
-%          exponent k
-if(x ~= 0)
-  exponent=floor(log10(abs(x))); %to accomodate for negative values
-  mantissa=x/(10^exponent);
-  s=sprintf('$%*.*f \\times 10^{%d}$',n+3,n,mantissa,exponent);
-else
-  s = sprintf('0');
-end
-% returns something like '$1.42 \times 10^{-1}$'
 end

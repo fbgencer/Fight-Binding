@@ -3,7 +3,7 @@ clear; clc; close all;
 %Chain consts
 Eo = 0;
 t = 0.5;
-a0 = 1.42*1e-10;
+a0 = 0.142*1e-9; %nm
 a = a0;
 
 %primitive vectors
@@ -15,13 +15,13 @@ tb = tightbinding(1,a1);% Start with name and primitive vectors
 tb.set_unit_cell('A',[0 0]); %give unit cell atoms and their locations
 tb.set_orbital('s');
 
-tb.add_hopping(Eo,'A','A',[0],'sym','Eo'); %hem A hem de 1 çalışıyor, bazı orbitalleri böyle verebiliyoruz
-tb.add_hopping(-t,1,1,[1],'sym','-t');
+tb.add_hopping(Eo,'A','A',[0]); %hem A hem de 1 çalışıyor, bazı orbitalleri böyle verebiliyoruz
+tb.add_hopping(-t,1,1,[1]);
 %tb.add_hopping(-t,1,1,[-1]);
 
 %tb.symbolic_hamiltonian()
 
-if(1)
+if(0)
 range = 2*pi/a; 
 precision = 100;
 k = tb.set_kvector(-range,range,precision);
@@ -30,17 +30,17 @@ ce = tb.plot_dos(fig_dos,k);
 end
 
 
-if(0)
+if(1)
 lat_f = figure("Name","Lattice Figure");
-gp = lattice_drawer(lat_f,15,10);
+gp = lattice_drawer(lat_f,6,3);
 gp.xaxis_symmetric();
 gp.yaxis_symmetric();
 grid;
-atoma = gp.draw('circle red',0,0,0.3,'Visible','off');
+atoma = gp.draw('circle blue',0,0,0.3,'Visible','off');
 bond = gp.draw('line black',0,0,0,0,'Visible','off','LineWidth',2);
 bonds = {bond};
 atoms = {atoma};
-tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms);
+tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",-3:3);
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
