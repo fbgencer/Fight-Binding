@@ -1,10 +1,10 @@
-function bonds = read_hr_file(file_name)
+function [bonds,deg_points] = read_hr_file(file_name)
 
 f = fopen(file_name,'r');
 
 %skip the comment line
 fgetl(f);
-no_wannier = str2double(fgetl(f));
+matrix_row = str2double(fgetl(f)); % Number of wannier functions
 nrpts = str2double(fgetl(f));
 
 %read denegeracy points, number of degeneracy pts = nrpts
@@ -23,18 +23,36 @@ while(i <= nrpts)
 	end 
 end
 
+%We know that matrix is square, we have matrix_row*matrix_row matrix and for each of them we will have an entry from
+%hr file. So the size of bonds are already determined. But for each occurence of the same row and column we will make
+%a matrix, for our tight binding class specification
 
-bonds = {};
+bonds = cell(matrix_row);
+bond = struct('phase',[],'i',0,'j',0,'amp',[]);
+
+
+for i=1:numel(bonds)
+	bonds{i} = bond;
+end
+
+iter = 1;
+
+w = 0;
 while( ~ feof(f) )
 	s = fscanf(f,'    %d    %d    %d   %d   %d    %f    %f',7);
 	if(numel(s) ~= 7), continue, end
-
-	bond.phase = [s(1) s(2) s(3)];
-	bond.i = s(4);
-	bond.j = s(5);
-	bond.amp = s(6) + 1j*s(7);
 	
-	bonds{end+1} = bond;
+	if(iter == numel(bonds)+1)
+		iter = 1;
+	end
+
+	bonds{iter}.phase(end+1,:) = [s(1) s(2) s(3)];
+	bonds{iter}.i = s(4);
+	bonds{iter}.j = s(5);
+	bonds{iter}.amp(end+1,1) = s(6) + 1j*s(7);
+	
+	iter = iter + 1;
+
 end
 
 

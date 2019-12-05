@@ -195,7 +195,7 @@ L = [pi/a pi/a pi/a];
 
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
-plts = tb.plot_high_symmetry_points(fig_hsym,L,Gamma,X);
+plts = tb.plot_high_symmetry_points(fig_hsym,100,L,Gamma,X);
 xlabel(fig_hsym.CurrentAxes,'$$L \Gamma X$$','Interpreter','Latex');
 xticks(fig_hsym.CurrentAxes,[0 100 200]);
 xticklabels(fig_hsym.CurrentAxes,{'L','\Gamma','X'});

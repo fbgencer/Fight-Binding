@@ -129,7 +129,7 @@ tb.add_hopping(0,'a','c',d0,'4s','4s','sym','0');
 
 %sym_ham = tb.symbolic_hamiltonian();
 
-if(1)
+if(0)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,3,3,3);
 
@@ -166,12 +166,12 @@ if(1)
 Gamma = [0 0 0];
 X = [2*pi/a 0 0];
 L = [pi/a pi/a pi/a];
-
+precision =  20;
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
-tb.plot_high_symmetry_points(fig_hsym,L,Gamma,X);
+tb.plot_high_symmetry_points(fig_hsym,precision,L,Gamma,X);
 xlabel(fig_hsym.CurrentAxes,'$$L \Gamma X$$','Interpreter','Latex');
-xticks(fig_hsym.CurrentAxes,[0 100 200]);
+xticks(fig_hsym.CurrentAxes,0:precision:2*precision);
 xticklabels(fig_hsym.CurrentAxes,{'L','\Gamma','X'});
 ylabel(fig_hsym.CurrentAxes,'$$Energy(eV)$$','Interpreter','Latex')
 grid();

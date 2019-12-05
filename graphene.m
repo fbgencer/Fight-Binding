@@ -83,7 +83,7 @@ ce = tb.plot_dos(fig_dos,k);
 end
 
 
-if(0)
+if(1)
 
 range = 2*pi/a; 
 precision = 20;
@@ -101,14 +101,14 @@ tb.plot_brillouin_zone(rp,'plot points','plot lines');
 
 view(0,90);
 
-
+precision = 3;
 Gamma = [0, 0,0];
 K1 = [-2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 M = [2*pi / (sqrt(3)*a), 0, 0];
 K2 = [2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
-tb.plot_high_symmetry_points(fig_hsym,K1,Gamma,M,K2);
+tb.plot_high_symmetry_points(fig_hsym,precision,K1,Gamma,M,K2);
 title(fig_hsym.CurrentAxes,'High Symmetry Points','Interpreter','Latex');
 xlabel(fig_hsym.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
 xticks(fig_hsym.CurrentAxes,0:precision:precision*4);
