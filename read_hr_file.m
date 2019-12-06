@@ -27,36 +27,66 @@ end
 %hr file. So the size of bonds are already determined. But for each occurence of the same row and column we will make
 %a matrix, for our tight binding class specification
 
-bonds = cell(matrix_row);
-bond = struct('phase',[],'i',0,'j',0,'amp',[]);
+% bonds = cell(matrix_row);
 
+% for i = 1:numel(bonds)
+% 	bonds{i} = {zeros(nrpts,3),zeros(nrpts,1)};
+% end 
 
-for i=1:numel(bonds)
-	bonds{i} = bond;
-end
+% bond = struct('phase',zeros(nrpts,3) ,'i',0,'j',0,'amp',zeros(nrpts,1));
+% for i=1:numel(bonds)
+% 	bonds{i} = bond;
+% end
 
 iter = 1;
 
-w = 0;
-while( ~ feof(f) )
-	s = fscanf(f,'    %d    %d    %d   %d   %d    %f    %f',7);
-	if(numel(s) ~= 7), continue, end
-	
-	if(iter == numel(bonds)+1)
-		iter = 1;
-	end
+tic;
+bonds = textscan(f,'%f %f %f %d %d %f %f');
+bonds{6} = bonds{6} + 1i*bonds{7};
+bonds{7} = [];
+%R1 = c{1};
+%R2 = c{2};
+%R3 = c{3};
+%ar = c{6};
+%ai = c{7};
 
-	bonds{iter}.phase(end+1,:) = [s(1) s(2) s(3)];
-	bonds{iter}.i = s(4);
-	bonds{iter}.j = s(5);
-	bonds{iter}.amp(end+1,1) = s(6) + 1j*s(7);
-	
-	iter = iter + 1;
+%w = 1;
 
-end
+%Matlab holds in row order as the file hr.dat so instead holding m,n values we are putting them inside a cell at m,n
+%1st one is R vector, second is amplitude.
+% for i = 1:numel(ar)
+% 	%yeni kod
+% 	if(iter == numel(bonds)+1)
+% 		iter = 1;
+% 		w = w + 1;
+% 	end
+% 	bonds{iter}{1}(w,:) = [R1(i), R2(i), R3(i)];
+% 	bonds{iter}{2}(w,1) = ar(i) + 1j*ai(i);	
+
+% 	iter = iter + 1;
+
+% 	% if(iter == numel(bonds)+1)
+% 	% 	iter = 1;
+% 	% 	w = w + 1;
+% 	% end
+% 	% bond = bonds{iter};
+
+% 	% bond.phase(w,:) = [R1(i), R2(i), R3(i)];
+% 	% bond.i = m(i);
+% 	% bond.j = n(i);
+% 	% bond.amp(w,1) = ar(i) + 1j*ai(i);	
+
+% 	% bonds{iter} = bond;
+
+% 	% iter = iter + 1;
 
 
-%fscanf(f,'    %d    %d    %d    %d    %d    %f    %f',1)
+
+
+
+
+% end
+toc;
 
 fclose(f);
 

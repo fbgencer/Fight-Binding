@@ -1,17 +1,17 @@
 clear all;
 clc; close all;
 
-a1 = [-2.069  -3.583614  0.000000]*1e-10;
-a2 = [2.069  -3.583614  0.000000]*1e-10;
-a3 = [0.000   2.389075  9.546667]*1e-10;
+a1 = [-2.069  -3.583614  0.000000];
+a2 = [2.069  -3.583614  0.000000];
+a3 = [0.000   2.389075  9.546667];
 
 tb = tightbinding(3,a1,a2,a3);% Start with dimension and primitive vectors
 
-pos_bi1 = [0.3990    0.3990    0.6970]*1e-10;
-pos_bi2 = [0.6010    0.6010    0.3030]*1e-10;
-pos_se1 = [0.0000    0.0000    0.5000]*1e-10;
-pos_se2 = [0.2060    0.2060    0.1180]*1e-10;
-pos_se3 = [0.7940    0.7940    0.8820]*1e-10;
+pos_bi1 = [0.3990    0.3990    0.6970];
+pos_bi2 = [0.6010    0.6010    0.3030];
+pos_se1 = [0.0000    0.0000    0.5000];
+pos_se2 = [0.2060    0.2060    0.1180];
+pos_se3 = [0.7940    0.7940    0.8820];
 
 
 tb.set_unit_cell('Bi1',pos_bi1,'Bi2',pos_bi2,'Se1',pos_se1,'Se2',pos_se3,'Se3',pos_se3); %give unit cell atoms and their locations
@@ -26,12 +26,12 @@ tb.add_hrfile('bi2se3_hr.dat');
 % G 0.00000 0.00000 0.0000 L 0.50000 0.00000 0.0000
 
 if(1)
-G = [0 0 0]*1e10;
-Z = [0 0 0.5]*1e10;
-F = [0.5 0.5 0]*1e10;
-L = [0.5 0 0]*1e10;
+G = [0 0 0];
+Z = [0 0 0.5];
+F = [0.5 0.5 0];
+L = [0.5 0 0];
 
-precision = 21;
+precision = 11;
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
 plts = tb.plot_high_symmetry_points(fig_hsym,precision,G,Z,F,G,L);
@@ -68,7 +68,7 @@ gp.set_ylabel('Y');
 gp.set_zlabel('Z');
 grid;
 
-an = a*1e10;
+an = a;
 gp.draw('cuboid',an,an,an,an,an,an,'FaceColor','None','LineWidth',1);
 end
 
