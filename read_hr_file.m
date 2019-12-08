@@ -1,4 +1,4 @@
-function [bonds,deg_points] = read_hr_file(file_name)
+function [bonds] = read_hr_file(file_name)
 
 f = fopen(file_name,'r');
 
@@ -27,23 +27,48 @@ end
 %hr file. So the size of bonds are already determined. But for each occurence of the same row and column we will make
 %a matrix, for our tight binding class specification
 
-% bonds = cell(matrix_row);
+%hr File Format
+%R(1) R(2) R(3) i j Amp_real Amp_imag
 
-% for i = 1:numel(bonds)
-% 	bonds{i} = {zeros(nrpts,3),zeros(nrpts,1)};
-% end 
 
-% bond = struct('phase',zeros(nrpts,3) ,'i',0,'j',0,'amp',zeros(nrpts,1));
-% for i=1:numel(bonds)
-% 	bonds{i} = bond;
-% end
+matrix_row2 = matrix_row*matrix_row;
 
-iter = 1;
+R = zeros(nrpts,3);
+matrix = zeros(matrix_row,matrix_row,nrpts);
 
 tic;
-bonds = textscan(f,'%f %f %f %d %d %f %f');
-bonds{6} = bonds{6} + 1i*bonds{7};
-bonds{7} = [];
+
+c = textscan(f,'%f %f %f %d %d %f %f');
+R1 = c{1};
+R2 = c{2};
+R3 = c{3};
+m  = c{4};
+n  = c{5};
+ar = c{6};
+ai = c{7};
+
+iter = 0;
+
+for i = 1:numel(c{1})
+
+	if(mod(i,matrix_row2) == 1)
+		%We have new R values completed NxN matrix
+		iter = iter+1;
+		R(iter,1) = R1(i);
+		R(iter,2) = R2(i);
+		R(iter,3) = R3(i);
+	end
+
+	matrix(m(i),n(i),iter) = complex(ar(i),ai(i))/deg_points(iter);
+
+end
+
+bonds.R = R;
+bonds.matrix = matrix;
+
+
+%bonds{6} = bonds{6} + 1i*bonds{7};
+%bonds{7} = [];
 %R1 = c{1};
 %R2 = c{2};
 %R3 = c{3};

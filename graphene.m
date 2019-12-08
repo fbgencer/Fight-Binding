@@ -32,9 +32,8 @@ a2 = [a*sqrt(3)/2, -a/2, 0];
 %a2 = [a/2,a/2*sqrt(3),0];
 
 
-tb = tightbinding(2,a1,a2);% Start with name and primitive vectors
+tb = tightbinding(2,a1,a2);% Start with dimension and primitive vectors
 tb.set_unit_cell('A',[-a0/2 0],'B',[a0/2 0]); %give unit cell atoms and their locations
-%tb.set_unit_cell('A',[0, -a0/2],'B',[0, a0/2]); %give unit cell atoms and their locations
 
 
 Eo = 0;
@@ -95,7 +94,9 @@ rp = lattice_drawer(fig_band);
 lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
 tb.plot_brillouin_zone(rp,'plot points','plot lines');
 
+end
 
+if(1)
 
 %surfaces{1}.Visible = 'off';
 
@@ -107,6 +108,7 @@ K1 = [-2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 M = [2*pi / (sqrt(3)*a), 0, 0];
 K2 = [2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 
+
 fig_hsym = figure("Name","High Symmetry Points Figure");
 tb.plot_high_symmetry_points(fig_hsym,precision,K1,Gamma,M,K2);
 title(fig_hsym.CurrentAxes,'High Symmetry Points','Interpreter','Latex');
@@ -116,16 +118,16 @@ xticklabels(fig_hsym.CurrentAxes,{'K','\Gamma','M','K'});
 ylabel(fig_hsym.CurrentAxes,'$$Energy(eV)$$','Interpreter','Latex')
 grid;
 
-band_dw = lattice_drawer(fig_band); 
-band_dw.draw('vector red',K1(1),K1(2),0.5,Gamma(1),Gamma(2),0.5,'LineWidth',2,'MaxHeadSize',0.3);
-band_dw.draw('vector black',Gamma(1),Gamma(2),0.5,M(1),M(2),0.5,'LineWidth',2,'MaxHeadSize',0.3);
-band_dw.draw('vector green',M(1),M(2),0.5,K2(1),K2(2),0.5,'LineWidth',2,'MaxHeadSize',0.5);
-l = band_dw.draw('vector black',K2(1),K2(2),0.5,K1(1),K1(2),0.5,'LineWidth',2,'MaxHeadSize',0.3);
+% band_dw = lattice_drawer(fig_band); 
+% band_dw.draw('vector red',K1(1),K1(2),0.5,Gamma(1),Gamma(2),0.5,'LineWidth',2,'MaxHeadSize',0.3);
+% band_dw.draw('vector black',Gamma(1),Gamma(2),0.5,M(1),M(2),0.5,'LineWidth',2,'MaxHeadSize',0.3);
+% band_dw.draw('vector green',M(1),M(2),0.5,K2(1),K2(2),0.5,'LineWidth',2,'MaxHeadSize',0.5);
+% l = band_dw.draw('vector black',K2(1),K2(2),0.5,K1(1),K1(2),0.5,'LineWidth',2,'MaxHeadSize',0.3);
 
-t = band_dw.draw('text',K1(1),K1(2),0.6,'K','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
-band_dw.draw('text',Gamma(1),Gamma(2),0.6,'$$\Gamma$$','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
-band_dw.draw('text',M(1),M(2),0.6,'M','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
-band_dw.draw('text',K2(1),K2(2),0.6,'K','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
+% t = band_dw.draw('text',K1(1),K1(2),0.6,'K','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
+% band_dw.draw('text',Gamma(1),Gamma(2),0.6,'$$\Gamma$$','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
+% band_dw.draw('text',M(1),M(2),0.6,'M','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
+% band_dw.draw('text',K2(1),K2(2),0.6,'K','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
 end
 
 

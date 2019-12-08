@@ -20,6 +20,11 @@ classdef tightbinding < handle
 
       deg_points = [];
 
+      Efermi = 0;
+
+
+      hr_file = '';
+
    end
    methods
        %selfect constructor
@@ -81,6 +86,10 @@ classdef tightbinding < handle
           
         end
        %%
+       function set_fermi_level(self,ef)
+          self.Efermi = ef;
+       end
+       %%
        function r = get_primitive_vectors(self)
         r{1} = self.pvec(1,:);
         r{2} = 0;
@@ -125,8 +134,8 @@ classdef tightbinding < handle
         if(isempty(self.bonds))
           tic;
           disp('Reading hr file...')
-          [self.bonds, self.deg_points] = read_hr_file(filename);
-          
+            self.hr_file = filename;
+            self.bonds = read_hr_file(filename);
           disp('hr file is read succesfully.')
           toc;
         end
@@ -366,7 +375,7 @@ classdef tightbinding < handle
         ky = kvec{2};
         kz = kvec{3};
         
-        self.E= calc_band_internal(self,kx,ky,kz);
+        self.E= calc_band_internal2(self,kvec);
         
       end
       function Energy_cell = calc_band_internal(self,kx,ky,kz)
@@ -423,119 +432,53 @@ classdef tightbinding < handle
 
         toc;
       end
-
-      %%
-      function Energy_cell = calc_band_internalHR(self,k)
+      function Energy_cell = calc_band_internalHR(self,kx,ky,kz)
 
         matrix_row_size = size(self.unit_cell,2) * self.no_orbital; % if there is soc we have 2 times bigger matrix
         if(self.is_soc), matrix_row_size = matrix_row_size * 2; end
+
+
         Energy_cell = cell(1,matrix_row_size);
-        
         for i = 1:matrix_row_size
-          Energy_cell{i} = zeros(size(k,1),1);
+          %Energy_cell{i} = zeros(size(k,1),1);
+          Energy_cell{i} = zeros(size(kx,1),size(kx,2),size(kx,3));
         end
         
         tic;
         disp('Starting diagonalization..');
-        hr = self.bonds;
-        R1 = hr{1};
-        R2 = hr{2};
-        R3 = hr{3};
-        row  = hr{4};
-        col = hr{5};
-        amp = hr{6};
-
-
-        z = 1i;
-
-        dpt = self.deg_points;
-        ef = 4.4195;
-
-        dummy_amp = 0;
-
+        R = self.bonds.R;
+        matrix = self.bonds.matrix;
         matrix_row_size2 = matrix_row_size*matrix_row_size;
 
-          for kiter = 1:size(k,1)
-                  %disp(k(kiter,:))
-                  eig_matrix = zeros(matrix_row_size);
+          for a = 1:size(kx,1)
+            for b = 1:size(kx,2)
+              for c = 1:size(kx,3)
 
-                  idpt = 1;
-                  iR = 1;
-                  for iter = 1:numel(row)
-                    %kdotr = k(1)*R1(iter) + k(2)*R2(iter)+ k(3)*R3(iter);
-                    
-                    R = [R1(iter),R2(iter),R3(iter)]* self.pvec; 
-                    kdotr = k(kiter,1)*R(1)+k(kiter,2)*R(2)+k(kiter,3)*R(3);
-                    q = exp(1i*kdotr)./dpt(idpt);
-                    
-
-                    %q = exp(z*dot( k, R * self.pvec));
-                    % if(row(iter) == col(iter) && all(R == 0))
-                    %   %fprintf("Case is iter %d, row(iter) = %d,%d\n",iter,row(iter),col(iter));
-                    %  % dummy_amp = amp(iter) - ef;
-                    % else
-                    %   %dummy_amp = amp(iter);
-                    % end
-
-                    dummy_amp = amp(iter);
-
-                    eig_matrix(row(iter),col(iter)) = eig_matrix(row(iter),col(iter)) + dummy_amp .* q; 
-
-                    if(mod(iter,matrix_row_size2) == 0)
-                      %fprintf("iter %d\n",iter);
-
-                    % fprintf("[%d]Factor:%g\n",idpt,q);
-                    %   R
-                    %   kdotr
-                    %   q
-
-                      idpt = idpt+1;
-
-                    end
-
-                    % fprintf("[%d]\n",iR);
-                    % fprintf("R = %g %g %g\n",R);
-                    % fprintf("[1,1] = %g%+gj\n",real(eig_matrix(1,1)),imag(eig_matrix(1,1)));
-
-                    %iR = iR + 1;
-                    %disp('=======================')
-                  end
-                  %for ob_iter = 1:bonding_no
-                  %    bond = self.bonds{ob_iter};
-                  %    for iter_amp = 1:numel(bond.amp)
-                  %      q = exp(2*pi*1i*dot( k, bond.phase(iter_amp,:)*self.pvec))./self.deg_points(iter_amp);
-                  %      eig_matrix(bond.i,bond.j) = eig_matrix(bond.i,bond.j) +  (bond.amp(iter_amp,1) * q);
-                  %    end
-                  %end
-
-                  % for im1 = 1:size(eig_matrix,1)
-                  %   for im2 = 1:size(eig_matrix,2)
-                  %       fprintf("[%d,%d] = %g %+gj\n",im1,im2,real(eig_matrix(im1,im2)) ,imag(eig_matrix(im1,im2)));
-                  %   end
-                  % end
-
-                  eigens = sort(real(eig(eig_matrix)));
-                  %eigens
-                  for iter_eig = 1:size(eigens,1)
-                    %For some cases there are imaginary values around 1e-20 level so we will cut them with real
-                    Energy_cell{iter_eig}(kiter) = eigens(iter_eig) -ef;
-                    %real(eigens(iter_eig))
-                  end
-
-%                  fprintf("+++++++\n");
-                  %return;
-
-                 %return;
+                eig_matrix = zeros(matrix_row_size);
+                idpt = 1;
+                for iter = 1:size(R,1)
+                  Rp = R(iter,:)*self.pvec;
+                  kdotr = kx(a,b,c)*Rp(1) + ky(a,b,c)*Rp(2) + kz(a,b,c)*Rp(3); 
+                  q = exp(1i*kdotr);
+                  eig_matrix(:,:) = eig_matrix(:,:) + matrix(:,:,iter) .* q; 
+                end
+                eigens = sort(real(eig(eig_matrix)));
+                for iter_eig = 1:size(eigens,1)
+                  %For some cases there are imaginary values around 1e-20 level so we will cut them with real
+                  Energy_cell{iter_eig}(a,b,c) = eigens(iter_eig) - self.Efermi;
+              end
+            end
+          end
         end
 
       toc;
-      end
+      end %function end
 
       %%
       function kvec = set_kvector(self,from,to,len)
         k = linspace(from,to,len);
         if(self.no_primvec == 3)
-            [kx,ky,kz] = meshgrid(k)
+            [kx,ky,kz] = meshgrid(k);
         elseif(self.no_primvec == 2)
             [kx,ky] = meshgrid(k);
             kz = zeros(size(kx,1),size(kx,2));
@@ -547,16 +490,6 @@ classdef tightbinding < handle
 
         kvec = {kx,ky,kz};
 
-        k = [];
-
-        for a = 1:size(kx,1)
-          for b = 1:size(kx,2)
-            for c = 1:size(kx,3)
-              k(end+1,:) = [kx(a,b,c),ky(a,b,c),kz(a,b,c)];
-            end
-          end
-        end
-
 
       end
       %%
@@ -566,8 +499,12 @@ classdef tightbinding < handle
         ky = kvec{2};
         kz = kvec{3};
 
-        E = calc_band_internal(self,kx,ky,kz);
-        
+        if(isempty(self.hr_file))
+          E = calc_band_internal(self,kx,ky,kz);
+        else
+          E = calc_band_internalHR(self,kx,ky,kz);
+        end
+
         self.E = E;
 
         f = fig();
@@ -591,7 +528,7 @@ classdef tightbinding < handle
           hold on;
           for i = 1:size(E,2)
             if(self.no_primvec == 3)
-              error('no contour plot fr 3dim ')
+              error('no contour plot for 3dim ')
               %s.positive_surface = surf(kx(:,:,1),ky(:,:,1),Ep(:,:,1),varargin{:});  
             elseif(self.no_primvec == 2)
               surfaces{end+1} = contour(kx,ky,E{i},varargin{:});
@@ -629,25 +566,20 @@ classdef tightbinding < handle
             kz = [kz,linspace(varargin{i}(3),varargin{i+1}(3),precision)];
         end
         
-        k = [];
 
-        for a = 1:size(kx,1)
-          for b = 1:size(kx,2)
-            for c = 1:size(kx,3)
-              k(end+1,:) = [kx(a,b,c),ky(a,b,c),kz(a,b,c)];
-            end
-          end
+        if(isempty(self.hr_file))
+          E = calc_band_internal(self,kx,ky,kz);
+        else
+          E = calc_band_internalHR(self,kx,ky,kz);
         end
 
-        %E = calc_band_internal(self,kx,ky,kz);
-        E = calc_band_internalHR(self,k);
         hold on;
         for i = 1:size(E,2)
           plots{end+1} = plot(E{i});
         end
         hold off;
         f.UserData = plots;
-        self.E = E;
+        %self.Epath = E;
       end
       %%
       function h = plot_dos(self,fig,kvec)
@@ -660,7 +592,11 @@ classdef tightbinding < handle
         hold on;
         E = self.E;
         if(E == 0)
-          E = calc_band_internal(self,kx,ky,kz);
+          if(isempty(self.hr_file) )
+            E = calc_band_internal(self,kx,ky,kz);
+          else
+            E = calc_band_internalHR(self,kx,ky,kz);
+          end
         end
 
         %make vector from E matrix

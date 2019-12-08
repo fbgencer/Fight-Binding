@@ -18,6 +18,7 @@ tb.set_unit_cell('Bi1',pos_bi1,'Bi2',pos_bi2,'Se1',pos_se1,'Se2',pos_se3,'Se3',p
 tb.set_orbital('px,py,pz');
 tb.spin_orbit_coupling('true');
 tb.add_hrfile('bi2se3_hr.dat');
+tb.set_fermi_level(4.4195);
 
 
 % G 0.00000 0.00000 0.0000 Z 0.00000 0.00000 0.5000
@@ -25,13 +26,13 @@ tb.add_hrfile('bi2se3_hr.dat');
 % F 0.50000 0.50000 0.0000 G 0.00000 0.00000 0.0000
 % G 0.00000 0.00000 0.0000 L 0.50000 0.00000 0.0000
 
-if(1)
+if(0)
 G = [0 0 0];
 Z = [0 0 0.5];
 F = [0.5 0.5 0];
 L = [0.5 0 0];
 
-precision = 11;
+precision = 71;
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
 plts = tb.plot_high_symmetry_points(fig_hsym,precision,G,Z,F,G,L);
@@ -46,6 +47,14 @@ grid();
 %for ix = 1:numel(plts), plts{ix}.Color = 'red'; end
 end
 
+
+if(1)
+range = 2*pi; 
+precision = 21;
+k = tb.set_kvector(-range,range,precision);
+fig_dos = figure("Name","Density of States");
+ce = tb.plot_dos(fig_dos,k);
+end
 
 
 
