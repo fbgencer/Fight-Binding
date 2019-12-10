@@ -51,7 +51,7 @@ tb.add_hopping(-t,'A','B',[0 -1]);  % 0 to 3
 
 %Do this, just make sure to get symmetric hamiltonian
 %tb.hermitian_hamiltonian();
-if(1)
+if(0)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
 
@@ -82,7 +82,7 @@ ce = tb.plot_dos(fig_dos,k);
 end
 
 
-if(1)
+if(0)
 
 range = 2*pi/a; 
 precision = 20;
@@ -96,7 +96,7 @@ tb.plot_brillouin_zone(rp,'plot points','plot lines');
 
 end
 
-if(1)
+if(0)
 
 %surfaces{1}.Visible = 'off';
 

@@ -449,17 +449,18 @@ classdef tightbinding < handle
         R = self.bonds.R;
         matrix = self.bonds.matrix;
         matrix_row_size2 = matrix_row_size*matrix_row_size;
-
+        Zeros = zeros(matrix_row_size);
+        z = 2*pi*1i;
           for a = 1:size(kx,1)
             for b = 1:size(kx,2)
               for c = 1:size(kx,3)
 
-                eig_matrix = zeros(matrix_row_size);
+                eig_matrix = Zeros;
                 idpt = 1;
                 for iter = 1:size(R,1)
-                  Rp = R(iter,:)*self.pvec;
+                  Rp = R(iter,:);%*self.pvec;
                   kdotr = kx(a,b,c)*Rp(1) + ky(a,b,c)*Rp(2) + kz(a,b,c)*Rp(3); 
-                  q = exp(1i*kdotr);
+                  q = exp(z*kdotr);
                   eig_matrix(:,:) = eig_matrix(:,:) + matrix(:,:,iter) .* q; 
                 end
                 eigens = sort(real(eig(eig_matrix)));
@@ -546,7 +547,6 @@ classdef tightbinding < handle
       %%
       function plots = plot_high_symmetry_points(self,fig,precision,varargin)
 
-        f = fig();
         plots = {};
         
         nvargin = nargin - 3;
@@ -582,15 +582,13 @@ classdef tightbinding < handle
         %self.Epath = E;
       end
       %%
-      function h = plot_dos(self,fig,kvec)
-
+      function ddd = plot_dos(self,fig,kvec)
         kx = kvec{1};
         ky = kvec{2};
         kz = kvec{3};
 
-        fig();
         hold on;
-        E = self.E;
+        E = 0;
         if(E == 0)
           if(isempty(self.hr_file) )
             E = calc_band_internal(self,kx,ky,kz);
@@ -598,6 +596,55 @@ classdef tightbinding < handle
             E = calc_band_internalHR(self,kx,ky,kz);
           end
         end
+
+        self.E = E;
+
+
+        omin = min(min(E{1}));
+        omax = max(max(E{size(E,2)}));
+        onum = 10*size(kx,1);
+        omega = linspace(omin,omax,onum);
+        %size(E,2)
+
+        sigma = (omax- omin)/onum*6;
+
+        dosE = zeros(1,onum);
+        for oiter = 1:numel(omega)
+          omg = omega(oiter);
+          sum_ = 0;
+          for band_iter = 1:size(E,2)
+            Eband = E{band_iter};
+            for a = 1:size(kx,1)
+              for b = 1:size(kx,2)
+                for c = 1:size(kx,3)
+                    %fprintf("Ome[%g],E(%d,%d,%d)[%g] => %g\n",omg,a,b,c,Eband(a,b,c),delta_gaussian(omg - Eband(a,b,c), sigma));
+                    sum_ = sum_ + delta_gaussian(omg - Eband(a,b,c), sigma);
+                end
+              end
+            end
+          end
+            dosE(oiter) = dosE(oiter) + sum_;
+        end
+
+        ddd = dosE;
+
+        plot(fig.CurrentAxes,omega(1,:),dosE(1,:));
+        f = figure(5);
+        %old dos
+        % kx = kvec{1};
+        % ky = kvec{2};
+        % kz = kvec{3};
+
+        % fig();
+        % hold on;
+        % E = self.E;
+        % if(E == 0)
+        %   if(isempty(self.hr_file) )
+        %     E = calc_band_internal(self,kx,ky,kz);
+        %   else
+        %     E = calc_band_internalHR(self,kx,ky,kz);
+        %   end
+        % end
 
         %make vector from E matrix
         energy_vector = [];
@@ -613,7 +660,7 @@ classdef tightbinding < handle
         x = linspace(h.BinLimits(1),h.BinLimits(2),size(counts,2));
         %h = histfit(energy_vector,size(kx,2),'kernel');
         c = conv(h.BinEdges, [0.5 0.5], 'valid');
-        plot(c,h.BinCounts,'r -.')
+        plot(f.CurrentAxes,c,h.BinCounts,'r -.')
         hold on;
         i = 1;        
         % while( i <= numel(counts))
@@ -628,8 +675,11 @@ classdef tightbinding < handle
         % end
         A = smoothdata(counts,'Gaussian','SmoothingFactor',0.01);
         %A = smoothdata(A,'Gaussian');
-        plot(fig.CurrentAxes,x,A,'-');
+        plot(f.CurrentAxes,x,A,'-');
         %fig.CurrentAxes.YLim(1) = 0;
+
+
+
 
       end
       %%
@@ -1188,4 +1238,11 @@ classdef tightbinding < handle
 
       end
    end
+end
+
+
+function res = delta_gaussian(x,sigma)
+  A = 1/sqrt(2*pi)/sigma;
+  pow = (x.^2)./(2*sigma*sigma);
+  res = A*exp(-pow);
 end

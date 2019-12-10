@@ -49,8 +49,8 @@ end
 
 
 if(1)
-range = 2*pi; 
-precision = 21;
+range = pi; 
+precision = 10;
 k = tb.set_kvector(-range,range,precision);
 fig_dos = figure("Name","Density of States");
 ce = tb.plot_dos(fig_dos,k);
