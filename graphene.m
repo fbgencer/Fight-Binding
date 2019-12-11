@@ -94,13 +94,14 @@ rp = lattice_drawer(fig_band);
 lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
 tb.plot_brillouin_zone(rp,'plot points','plot lines');
 
+view(43,27);
 end
 
-if(0)
+if(1)
 
 %surfaces{1}.Visible = 'off';
 
-view(0,90);
+%view(0,90);
 
 precision = 3;
 Gamma = [0, 0,0];

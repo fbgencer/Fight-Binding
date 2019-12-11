@@ -132,12 +132,12 @@ classdef tightbinding < handle
        function add_hrfile(self,filename,varargin)
         %Do not try to read again and again unless user specifically makes self.bonds = {}
         if(isempty(self.bonds))
+          disp('Reading hr file...');
           tic;
-          disp('Reading hr file...')
             self.hr_file = filename;
             self.bonds = read_hr_file(filename);
+            toc;
           disp('hr file is read succesfully.')
-          toc;
         end
        end
        %%
@@ -375,15 +375,10 @@ classdef tightbinding < handle
         ky = kvec{2};
         kz = kvec{3};
         
-        self.E= calc_band_internal2(self,kvec);
+        self.E= calc_band_internal(self,kvec);
         
       end
-      function Energy_cell = calc_band_internal(self,kx,ky,kz)
-        %User should not use this, it returns cell of all energy bands for a given k vectors
-        %assume they have equal sizes
-        alen = size(kx,1);
-        blen = size(kx,2);
-        clen = size(kx,3);
+      function Energy_cell = calc_band_internal(self,k)
 
         %We have NxN matrix and N determines the number of bands
         %Size of the matrix is number of atoms inside the unit cell and number of orbitals
@@ -393,7 +388,8 @@ classdef tightbinding < handle
 
         Energy_cell = cell(1,matrix_row_size);
         for i = 1:matrix_row_size
-          Energy_cell{i} = zeros(alen,blen,clen);
+          Energy_cell{i} = zeros(size(k,1),1);
+          %zeros(%zeros(alen,blen,clen);
         end
        
         bonding_no = numel(self.bonds);
@@ -401,38 +397,33 @@ classdef tightbinding < handle
           error('Unit cell is undefined !');
         end
         tic;
-        disp('Starting diagonalization..');
+        disp('Starting diagonalization...');
 
-         for a = 1:alen
-            for b = 1:blen
-              for c = 1:clen
+        for kiter = 1:size(k,1)
+          eig_matrix = zeros(matrix_row_size,matrix_row_size);
 
-                  eig_matrix = zeros(matrix_row_size,matrix_row_size);
-
-                  k = [kx(a,b,c),ky(a,b,c),kz(a,b,c)];
-                  for ob_iter = 1:bonding_no
-                      bond = self.bonds{ob_iter};
-                      row = bond.i;
-                      col = bond.j;
-                      for iter_amp = 1:numel(bond.amp)
-                        R = bond.phase(iter_amp,:)*self.pvec;
-                        kdotr = k(1)*R(1) + k(2)*R(2) + k(3)*R(3);
-                        q = exp(1i*kdotr);
-                        eig_matrix(row,col) = eig_matrix(row,col) +  (bond.amp(iter_amp,1) * q);
-                      end
-                  end
-                  eigens = sort(real(eig(eig_matrix)));
-                  for iter_eig = 1:size(eigens,1)
-                    Energy_cell{iter_eig}(a,b,c) = (eigens(iter_eig));
-                  end
-
-                end
-            end
+          %k = [kx(a,b,c),ky(a,b,c),kz(a,b,c)];
+          for ob_iter = 1:bonding_no
+              bond = self.bonds{ob_iter};
+              row = bond.i;
+              col = bond.j;
+              kp = k(kiter,:);
+              for iter_amp = 1:numel(bond.amp)
+                R = bond.phase(iter_amp,:)*self.pvec;
+                kdotr = 1i*(kp(1)*R(1) + kp(2)*R(2) + kp(3)*R(3));
+                q = exp(kdotr);
+                eig_matrix(row,col) = eig_matrix(row,col) +  (bond.amp(iter_amp,1) * q);
+              end
+          end
+          eigens = sort(real(eig(eig_matrix)));
+          for iter_eig = 1:size(eigens,1)
+            Energy_cell{iter_eig}(kiter) = (eigens(iter_eig));
+          end
          end
 
         toc;
       end
-      function Energy_cell = calc_band_internalHR(self,kx,ky,kz)
+      function Energy_cell = calc_band_internalHR(self,k)
 
         matrix_row_size = size(self.unit_cell,2) * self.no_orbital; % if there is soc we have 2 times bigger matrix
         if(self.is_soc), matrix_row_size = matrix_row_size * 2; end
@@ -440,35 +431,36 @@ classdef tightbinding < handle
 
         Energy_cell = cell(1,matrix_row_size);
         for i = 1:matrix_row_size
-          %Energy_cell{i} = zeros(size(k,1),1);
-          Energy_cell{i} = zeros(size(kx,1),size(kx,2),size(kx,3));
+          Energy_cell{i} = zeros(size(k,1),1);
+          %Energy_cell{i} = zeros(size(kx,1),size(kx,2),size(kx,3));
         end
         
         tic;
         disp('Starting diagonalization..');
+        fprintf("K iteration number :%d\n",size(k,1));
+        
         R = self.bonds.R;
         matrix = self.bonds.matrix;
         matrix_row_size2 = matrix_row_size*matrix_row_size;
         Zeros = zeros(matrix_row_size);
         z = 2*pi*1i;
-          for a = 1:size(kx,1)
-            for b = 1:size(kx,2)
-              for c = 1:size(kx,3)
-
-                eig_matrix = Zeros;
-                idpt = 1;
-                for iter = 1:size(R,1)
-                  Rp = R(iter,:);%*self.pvec;
-                  kdotr = kx(a,b,c)*Rp(1) + ky(a,b,c)*Rp(2) + kz(a,b,c)*Rp(3); 
-                  q = exp(z*kdotr);
-                  eig_matrix(:,:) = eig_matrix(:,:) + matrix(:,:,iter) .* q; 
-                end
-                eigens = sort(real(eig(eig_matrix)));
-                for iter_eig = 1:size(eigens,1)
-                  %For some cases there are imaginary values around 1e-20 level so we will cut them with real
-                  Energy_cell{iter_eig}(a,b,c) = eigens(iter_eig) - self.Efermi;
-              end
-            end
+        for kiter = 1:size(k,1)
+          eig_matrix = Zeros;
+          idpt = 1;
+          kp = k(kiter,:);
+          for iter = 1:size(R,1)
+            Rp = R(iter,:);%*self.pvec;
+            kdotr = z * (kp(1)*Rp(1) + kp(2)*Rp(2) + kp(3)*Rp(3)); 
+            q = exp(kdotr);
+            eig_matrix(:,:) = eig_matrix(:,:) + matrix(:,:,iter) .* q; 
+          end
+          eigens = sort(real(eig(eig_matrix)));
+          for iter_eig = 1:size(eigens,1)
+            %For some cases there are imaginary values around 1e-20 level so we will cut them with real
+            Energy_cell{iter_eig}(kiter) = eigens(iter_eig) - self.Efermi;
+          end
+          if(mod(kiter,1000) == 0)
+            fprintf("K iteration:[%d]\n",kiter);
           end
         end
 
@@ -489,13 +481,24 @@ classdef tightbinding < handle
             kz = ky; 
         end    
 
-        kvec = {kx,ky,kz};
+        kk = [kx(:),ky(:),kz(:)];
+
+        % for a = 1:size(kx,1)
+        %   for b = 1:size(kx,2)
+        %     for c = 1:size(kx,3)
+        %       kk(end+1,:) = [kx(a,b,c),ky(a,b,c),kz(a,b,c)];
+        %     end
+        %   end
+        % end
+
+        kvec = {kx,ky,kz,kk};
 
 
       end
       %%
       function surfaces = plot_energy_band(self,fig,kvec,plot_type,varargin)
-
+        error('Dont call me we need to change k vector issue')
+        %
         kx = kvec{1};
         ky = kvec{2};
         kz = kvec{3};
@@ -565,12 +568,13 @@ classdef tightbinding < handle
             ky = [ky,linspace(varargin{i}(2),varargin{i+1}(2),precision)];
             kz = [kz,linspace(varargin{i}(3),varargin{i+1}(3),precision)];
         end
-        
+
+        k =[kx(:),ky(:),kz(:)]; 
 
         if(isempty(self.hr_file))
-          E = calc_band_internal(self,kx,ky,kz);
+          E = calc_band_internal(self,k);
         else
-          E = calc_band_internalHR(self,kx,ky,kz);
+          E = calc_band_internalHR(self,k);
         end
 
         hold on;
@@ -586,14 +590,15 @@ classdef tightbinding < handle
         kx = kvec{1};
         ky = kvec{2};
         kz = kvec{3};
+        k = kvec{4};
 
         hold on;
         E = 0;
         if(E == 0)
           if(isempty(self.hr_file) )
-            E = calc_band_internal(self,kx,ky,kz);
+            E = calc_band_internal(self,k);
           else
-            E = calc_band_internalHR(self,kx,ky,kz);
+            E = calc_band_internalHR(self,k);
           end
         end
 
@@ -614,13 +619,8 @@ classdef tightbinding < handle
           sum_ = 0;
           for band_iter = 1:size(E,2)
             Eband = E{band_iter};
-            for a = 1:size(kx,1)
-              for b = 1:size(kx,2)
-                for c = 1:size(kx,3)
-                    %fprintf("Ome[%g],E(%d,%d,%d)[%g] => %g\n",omg,a,b,c,Eband(a,b,c),delta_gaussian(omg - Eband(a,b,c), sigma));
-                    sum_ = sum_ + delta_gaussian(omg - Eband(a,b,c), sigma);
-                end
-              end
+            for kiter = 1:size(k,1)
+                sum_ = sum_ + delta_gaussian(omg - Eband(kiter), sigma);
             end
           end
             dosE(oiter) = dosE(oiter) + sum_;
@@ -629,57 +629,6 @@ classdef tightbinding < handle
         ddd = dosE;
 
         plot(fig.CurrentAxes,omega(1,:),dosE(1,:));
-        f = figure(5);
-        %old dos
-        % kx = kvec{1};
-        % ky = kvec{2};
-        % kz = kvec{3};
-
-        % fig();
-        % hold on;
-        % E = self.E;
-        % if(E == 0)
-        %   if(isempty(self.hr_file) )
-        %     E = calc_band_internal(self,kx,ky,kz);
-        %   else
-        %     E = calc_band_internalHR(self,kx,ky,kz);
-        %   end
-        % end
-
-        %make vector from E matrix
-        energy_vector = [];
-        for i = 1:size(E,2)
-          VE = E{i}(:,:,1);
-          VE = VE';
-          VE = VE(:)';
-          energy_vector = [energy_vector,VE];
-        end
-
-        h = histogram(energy_vector,size(kx,2),'Visible','on');
-        counts = h.BinCounts;
-        x = linspace(h.BinLimits(1),h.BinLimits(2),size(counts,2));
-        %h = histfit(energy_vector,size(kx,2),'kernel');
-        c = conv(h.BinEdges, [0.5 0.5], 'valid');
-        plot(f.CurrentAxes,c,h.BinCounts,'r -.')
-        hold on;
-        i = 1;        
-        % while( i <= numel(counts))
-        %   if(counts(i) <= 1e-3)
-        %     %disp("Evet ?")
-        %     %disp(counts(i))
-        %     counts(i) = [];
-        %     x(i) = [];
-        %     continue;
-        %   end
-        %   i = i+1;
-        % end
-        A = smoothdata(counts,'Gaussian','SmoothingFactor',0.01);
-        %A = smoothdata(A,'Gaussian');
-        plot(f.CurrentAxes,x,A,'-');
-        %fig.CurrentAxes.YLim(1) = 0;
-
-
-
 
       end
       %%

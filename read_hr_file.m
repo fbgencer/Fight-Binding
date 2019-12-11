@@ -36,8 +36,6 @@ matrix_row2 = matrix_row*matrix_row;
 R = zeros(nrpts,3);
 matrix = zeros(matrix_row,matrix_row,nrpts);
 
-tic;
-
 c = textscan(f,'%f %f %f %d %d %f %f');
 R1 = c{1};
 R2 = c{2};
@@ -111,8 +109,6 @@ bonds.matrix = matrix;
 
 
 % end
-toc;
-
 fclose(f);
 
 end
