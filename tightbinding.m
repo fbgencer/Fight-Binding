@@ -423,6 +423,7 @@ classdef tightbinding < handle
 
         toc;
       end
+
       function Energy_cell = calc_band_internalHR(self,k)
 
         matrix_row_size = size(self.unit_cell,2) * self.no_orbital; % if there is soc we have 2 times bigger matrix
@@ -438,7 +439,7 @@ classdef tightbinding < handle
         tic;
         disp('Starting diagonalization..');
         fprintf("K iteration number :%d\n",size(k,1));
-        
+
         R = self.bonds.R;
         matrix = self.bonds.matrix;
         matrix_row_size2 = matrix_row_size*matrix_row_size;
@@ -497,31 +498,37 @@ classdef tightbinding < handle
       end
       %%
       function surfaces = plot_energy_band(self,fig,kvec,plot_type,varargin)
-        error('Dont call me we need to change k vector issue')
+        %error('Dont call me we need to change k vector issue')
         %
         kx = kvec{1};
         ky = kvec{2};
         kz = kvec{3};
+        k = kvec{4};
 
         if(isempty(self.hr_file))
-          E = calc_band_internal(self,kx,ky,kz);
+          E = calc_band_internal(self,k);
         else
-          E = calc_band_internalHR(self,kx,ky,kz);
+          E = calc_band_internalHR(self,k);
         end
 
         self.E = E;
-
         f = fig();
         surfaces = {};
+
 
         if(plot_type == 'surface')  
           hold on;
           for i = 1:size(E,2)
             if(self.no_primvec == 3) 
-              surfaces{end+1} = surf(kx(:,:,1),ky(:,:,1),E{i}(:,:,1),varargin{:});
+              Eband_sz = int32((numel(E{i}))^(1/3));
+              Esurf = reshape(E{i},Eband_sz,Eband_sz,Eband_sz);
+              surfaces{end+1} = surf(kx(:,:,1),ky(:,:,1),Esurf(:,:,1),varargin{:});
             elseif(self.no_primvec == 2)
-              surfaces{end+1} = surf(kx,ky,E{i},varargin{:});
+              Eband_sz = sqrt(numel(E{i}));
+              Esurf = reshape(E{i},Eband_sz,Eband_sz);
+              surfaces{end+1} = surf(kx,ky,Esurf,varargin{:});
             elseif(self.no_primvec == 1)
+              error('1d surf not implemented yet ')
                 surfaces{end+1}= surf(kx,E{i},varargin{:});
             else
               error('Before plotting, define primitive vectors');
@@ -785,6 +792,10 @@ classdef tightbinding < handle
         constraint_x = lattice_fill_factorx;
         constraint_y = lattice_fill_factory;
         constraint_z = lattice_fill_factorz;
+
+        gp.set_xlabel('X');
+        gp.set_ylabel('Y');
+        gp.set_zlabel('Z');
 
         i = 1;
         while(i <= size(varargin,2))
@@ -1060,8 +1071,12 @@ classdef tightbinding < handle
 
       end
       %%
-      function ln = plot_brillouin_zone(self,gp,varargin)
+      function ln = plot_brillouin_zone(self,gp,zone_no,varargin)
         %ln is line of the brillouin zone, so user can change its properties later
+
+        if(zone_no < 1)
+          error("Brillouin zone cannot be smaller than zero 1, enter valid number.");
+        end
 
         plot_points = 0;
         plot_lines = 0;
@@ -1096,58 +1111,130 @@ classdef tightbinding < handle
         %Create closest points using recip vectors
         %assumption is we can create brillouin zone with the -1,0,1 indices of recp vectors
         points = [];
+        
+        from_to = -2:2;
+        b_1 = b{1};
+        b_2 = b{2}; 
         if(self.dim == 2)
-          for i = [-1,0,1]
-            for j = [-1,0,1]
-              p = i.*b{1}+j.*b{2};
-              points = [points, [p(1);p(2)] ];
-            end
-          end
-    
-          %using voronoi calculate region vertices
-          [vpx,vpy] = voronoi(points(1,:),points(2,:));
-          %Voronoi calculates a lot of points but chose the first (XXXTODO think about this later, is it ok ?)
-          vpx1 = vpx(1,:);
-          vpy1 = vpy(1,:);
+          b_3 = [0,0,0];
+        else
+          b_3 = b{3};
+        end
 
-          %now we will eliminate same vertex points
-          i = 1;
-          while( i <= size(vpx1,2) )
-            pt(1) = vpx1(i);
-            pt(2) = vpy1(i);
-            j = i+1;
-            while(j <= size(vpx1,2) )
-              if(pt(1) == vpx1(j) & pt(2) == vpy1(j))
-                vpx1(j) = [];
-                vpy1(j) = [];
+        if(1)
+          for a1 = from_to
+            for a2 = from_to
+              for a3 = from_to
+                p = a1.*b_1+a2.*b_2+a3.*b_3;
+                points(end+1,:) = [p(1),p(2),p(3)];
+                %points = [points, [p(1);p(2);p(3)] ];
               end
-              j = j+1;
             end
-            i = i+1;
-          end
-          %Now vpx1 and vpy1 holds different vertex points, which one is closes to the origin ?, using hypot we can find closes points
-
-          hypots = transpose(hypot(vpx1(:),vpy1(:)));
-          %now sort hypots and sort vpx1 and vpy1 according to hypot
-          [hypots,I] = sort(hypots);
-          vpx1 = vpx1(I);
-          vpy1 = vpy1(I);
-
-          %get hypot minimum
-          hypotmin = min(hypots);
-          i = 1;
-          while (i <= size(hypots,2))
-            if(abs(hypots(i)-hypotmin) > 1e-4) % k-space is huge and truncation will cause some equality errors,our tolerance is 1e-4, 
-              %if there is a difference between hypot values then we will eliminate them until finding the closest points
-              hypots(i) = [];
-              vpx1(i) = [];
-              vpy1(i) = [];
-            else
-              i = i + 1;
-            end 
           end
 
-          %now vpx1 and vpy1 hold closes points but in order to draw the brillouin zone we need to sort them in terms of angle between origin
+          if(0)
+            %XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            %Add k-space option for user so we can plot k space points
+            gp.draw('point black',points(:,1),points(:,2),points(:,3));
+          end
+
+          %hp = hypot(points(1,:),points(2,:),points(3,:));
+          hp  = sqrt(points(:,1).^2 + points(:,2).^2 + points(:,3).^2);
+          uhp = uniquetol(hp,1e-4);
+
+          good_index = [];
+
+          for i = 1:size(hp,1)
+            if( abs(uhp(zone_no+1)-hp(i))< 1e-4 )
+              good_index(end+1) = i;
+            end
+          end
+
+          good_index;
+
+          vopt = points(good_index,:);
+          vopt(end+1,:) = [0,0,0];
+          vopt = unique(vopt,'row');
+          zopt = vopt;
+
+          gp.draw('point black',zopt(:,1),zopt(:,2),zopt(:,3));
+
+          if(all(vopt(:,3) == 0))
+            vopt(:,3) = [];
+          end
+
+          %useing voronoi calculate region vertices
+          %old[vpx,vpy] = voronoi(points(1,:),points(2,:));
+          %[vpx,vpy] =voronoi(vopt(1,:),vopt(2,:));
+          %vopt
+          P = voronoin(vopt);
+          if(any(P(1,:) == Inf))
+            P(1,:) = [];
+          end
+          P
+
+          %Voronoi calculates a lot of points but chose the first (XXXTODO think about this later, is it ok ?)
+          vpx1 = P(:,1)'; %vpx(1,:)
+          vpy1 = P(:,2)'; %vpy(1,:)
+          if(size(vopt,2) == 3)
+            vpz1 = P(:,3)';
+          else
+            vpz1 = zeros(1,size(vpx1,2));
+          end
+          %P(:,1)'
+          % vpx1 = vpx(1,:);
+          % vpy1 = vpy(1,:);
+
+
+          % %now we will eliminate same vertex points, unique is not forking as expected why?
+          % i = 1;
+          % while( i <= size(vpx1,2) )
+          %   pt(1) = vpx1(i);
+          %   pt(2) = vpy1(i);
+          %   j = i+1;
+          %   while(j <= size(vpx1,2) )
+          %     if(pt(1) == vpx1(j) & pt(2) == vpy1(j))
+          %       vpx1(j) = [];
+          %       vpy1(j) = [];
+          %     end
+          %     j = j+1;
+          %   end
+          %   i = i+1;
+          % end
+          % %Now vpx1 and vpy1 holds different vertex points, which one is closes to the origin ?, using hypot we can find closes points
+
+          % hypots = transpose(hypot(vpx1(:),vpy1(:)));
+          % %now sort hypots and sort vpx1 and vpy1 according to hypot
+          % hypots
+          % vpx1
+          % [hypots,I] = sort(hypots);
+          % vpx1 = vpx1(I);
+          % vpy1 = vpy1(I);
+
+          % vpx1
+          % hypots
+          % %hypots
+
+          % %get hypot minimum
+          % min_list = (uniquetol(hypots,1e-4));
+          % hypotmin = min_list(2);
+
+          % i = 1;
+          % while (i <= size(hypots,2))
+          %   if(abs(hypots(i)-hypotmin) > 1e-4) % k-space is huge and truncation will cause some equality errors,our tolerance is 1e-4, 
+          %     %if there is a difference between hypot values then we will eliminate them until finding the closest points
+          %     hypots(i) = [];
+          %     vpx1(i) = [];
+          %     vpy1(i) = [];
+          %   else
+          %     i = i + 1;
+          %   end 
+          % end
+
+          % %hypots
+
+
+          % %now vpx1 and vpy1 hold closes points but in order to draw the brillouin zone we need to sort them in terms of angle between origin
           angles = atan2d(vpy1,vpx1);
           [angles,I] = sort(angles);
           vpx1 = vpx1(I);
@@ -1156,7 +1243,7 @@ classdef tightbinding < handle
             
           if(plot_points)
             for i = 1:size(vpx1,2)
-              gp.copy_to(point_obj,vpx1(i),vpy1(i),'Visible','on');
+              gp.copy_to(point_obj,vpx1(i),vpy1(i),vpz1(i),'Visible','on');
             end
           end
 
@@ -1164,6 +1251,7 @@ classdef tightbinding < handle
             for i = 1:size(vpx1,2)
               x = fix(vpx1(i));
               y = fix(vpy1(i));
+              z = fix(vpz1(i));
               txt = pretty_print_scientific(x,2) + "," + pretty_print_scientific(y,2);
               %txt = sprintf("$$%g,%g$$",x,y);
               
@@ -1179,8 +1267,9 @@ classdef tightbinding < handle
             %finally connect first value to the array
             vpx1(end+1) = vpx1(1);
             vpy1(end+1) = vpy1(1);
+            vpz1(end+1) = vpz1(1);
             %and now plot as a line
-            ln = gp.copy_to(line_obj,vpx1,vpy1,'Visible','on');
+            ln = gp.copy_to(line_obj,vpx1,vpy1,vpz1,'Visible','on');
           end
 
         end

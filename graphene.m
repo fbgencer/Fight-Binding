@@ -75,29 +75,51 @@ end
 
 if(1)
 range = 2*pi/a; 
-precision = 100;
+precision = 3;
 k = tb.set_kvector(-range,range,precision);
-fig_dos = figure("Name","Density of States");
-ce = tb.plot_dos(fig_dos,k);
+%fig_dos = figure("Name","Density of States");
+%ce = tb.plot_dos(fig_dos,k);
+
+
+% kx = k{1};
+% ky = k{2};
+% kz = k{3};
+
+% E = zeros(size(kx,1),size(kx,2),size(kx,3));
+
+% for a = 1:size(kx,1)
+% 	for b = 1:size(kx,2)
+% 		for c = 1:size(kx,3)
+% 			E(a,b,c) = kx(a,b,c)+ky(a,b,c)+kz(a,b,c);
+% 		end
+% 	end
+% end
+
+
+% kk = k{4};
+% E2 = zeros(size(kk,1),1);
+% for kiter = 1:size(kk,1)
+% 	E2(kiter) = sum(kk(kiter,:));
+% end
+
 end
 
+if(1)
 
-if(0)
-
-range = 2*pi/a; 
-precision = 20;
+range = 8*pi/a; 
+precision = 10;
 k = tb.set_kvector(-range,range,precision);
 fig_band = figure("Name","Energy Band Figure");
-surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
+surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None','Visible','off');
 
 rp = lattice_drawer(fig_band);
 lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
-tb.plot_brillouin_zone(rp,'plot points','plot lines');
+tb.plot_brillouin_zone(rp,2,'plot points','plot lines');
 
 view(43,27);
 end
 
-if(1)
+if(0)
 
 %surfaces{1}.Visible = 'off';
 

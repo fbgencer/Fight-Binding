@@ -2,7 +2,7 @@ clear; clc; close all;
 %graphene consts
 Eo = 1;
 t = 2;
-a0 = 1.42*1e-10;
+a0 = 1e-10;
 a = a0;
 
 %primitive vectors
@@ -21,6 +21,7 @@ tb.add_hopping(-t,'A','A',[0 1]);  % 0 to 3
 tb.add_hopping(-t,'A','A',[0 -1]);  % 0 to 4
 
 
+if(0)
 fig_lat = figure("Name","Lattice Figure");
 gp = lattice_drawer(fig_lat,10,10);
 atoma = gp.draw('circle rgb:FF8000',0,0,0.3,'Visible','off');
@@ -28,16 +29,21 @@ bond = gp.draw('line black',0,0,0,0,'Visible','off');
 bonds = {bond};
 atoms = {atoma};
 tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms);
+end
 
-
+if(1)
 range = 8*pi/a;
-len = 100;
+len = 10;
 k = tb.set_kvector(-range,range,len);
 fig_band= figure("Name","Energy Band Figure");
-surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
+surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None','Visible','off');
 
 rp = lattice_drawer(fig_band);
-pt = rp.draw('point rgb:660066',0,0,10,'Visible','off');
+pt = rp.draw('point rgb:660066',0,0,20,'Visible','off');
 lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',20,'LineWidth',2);
 
-tb.plot_brillouin_zone(rp,'plot points',pt,'plot lines',lin,'plot coordinates');
+for i = 1:5
+	tb.plot_brillouin_zone(rp,i,'plot points',pt,'plot lines',lin);
+end
+view(0,90)
+end

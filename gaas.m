@@ -153,16 +153,25 @@ gp.draw('cuboid',an,an,an,an,an,an,'FaceColor','None','LineWidth',1);
 
 end
 
-if(0)
+if(1)
 range = 2*pi/a; 
 precision = 15;
 k = tb.set_kvector(-range,range,precision);
 fig_band = figure("Name","Energy Band Figure");
 surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
+
+rp = lattice_drawer(fig_band);
+pt = rp.draw('point rgb:660066',0,0,20,'Visible','off');
+lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',20,'LineWidth',2);
+
+for i = 1:1
+	tb.plot_brillouin_zone(rp,i,'plot points',pt,'plot lines',lin);
+end
+
 end
 
 
-if(1)
+if(0)
 Gamma = [0 0 0];
 X = [2*pi/a 0 0];
 L = [pi/a pi/a pi/a];

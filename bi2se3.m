@@ -47,8 +47,18 @@ grid();
 %for ix = 1:numel(plts), plts{ix}.Color = 'red'; end
 end
 
-
 if(1)
+
+range = pi; 
+precision = 20;
+k = tb.set_kvector(-range,range,precision);
+fig_band = figure("Name","Energy Band Figure");
+surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
+
+end
+
+
+if(0)
 range = pi; 
 precision = 20;
 k = tb.set_kvector(-range,range,precision);
