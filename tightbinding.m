@@ -1112,7 +1112,7 @@ classdef tightbinding < handle
         %assumption is we can create brillouin zone with the -1,0,1 indices of recp vectors
         points = [];
         
-        from_to = -2:2;
+        from_to = -1:1;
         b_1 = b{1};
         b_2 = b{2}; 
         if(self.dim == 2)
@@ -1171,7 +1171,21 @@ classdef tightbinding < handle
           if(any(P(1,:) == Inf))
             P(1,:) = [];
           end
-          P
+
+        [c,v] = voronoin(vopt);
+
+        nx = c(v{int32(numel(v)/2+1)},:)
+          if(any(nx(1,:) == Inf))
+            nx(1,:) = [];
+          end        
+        tri = convhulln(nx)
+        fh=figure(1);
+        plot3(X(:,1),X(:,2),X(:,3),'b.','markersize',10);
+        for i = 1:size(tri,1)
+          patch(nx(tri(i,:),1),nx(tri(i,:),2),nx(tri(i,:),3),i,'FaceAlpha',0.85);
+        end
+
+        return;
 
           %Voronoi calculates a lot of points but chose the first (XXXTODO think about this later, is it ok ?)
           vpx1 = P(:,1)'; %vpx(1,:)
