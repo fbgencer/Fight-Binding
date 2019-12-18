@@ -512,6 +512,7 @@ classdef tightbinding < handle
         end
 
         self.E = E;
+        %ax = fig.CurrentAxes;
         f = fig();
         surfaces = {};
 
@@ -524,7 +525,7 @@ classdef tightbinding < handle
               Esurf = reshape(E{i},Eband_sz,Eband_sz,Eband_sz);
               surfaces{end+1} = surf(kx(:,:,1),ky(:,:,1),Esurf(:,:,1),varargin{:});
             elseif(self.no_primvec == 2)
-              Eband_sz = sqrt(numel(E{i}));
+              Eband_sz = int32((numel(E{i}))^(1/2));
               Esurf = reshape(E{i},Eband_sz,Eband_sz);
               surfaces{end+1} = surf(kx,ky,Esurf,varargin{:});
             elseif(self.no_primvec == 1)
@@ -554,6 +555,46 @@ classdef tightbinding < handle
 
         hold off;
       end
+      %%
+      function fs = plot_fermi_surface(self,fig,kvec,band_no,varargin)
+        f = fig();
+        kx = kvec{1};
+        ky = kvec{2};
+        kz = kvec{3};
+        k = kvec{4};
+
+        if(iscell(self.E) && isempty(self.E))
+          if(isempty(self.hr_file))
+            E = calc_band_internal(self,k);
+          else
+            E = calc_band_internalHR(self,k);
+          end 
+          self.E = E;         
+        end
+
+
+        E = self.E{band_no};  
+
+        if(self.no_primvec == 3) 
+          Eband_sz = int32((numel(E))^(1/3));
+          Esurf = reshape(E,Eband_sz,Eband_sz,Eband_sz);
+        elseif(self.no_primvec == 2)
+          Eband_sz = int32((numel(E))^(1/2));
+          Esurf = reshape(E,Eband_sz,Eband_sz);
+        elseif(self.no_primvec == 1)
+          error('1d surf not implemented yet ')
+        else
+          error('Before plotting, define primitive vectors');
+        end
+
+        isosurface(kx,ky,kz,Esurf,self.Efermi);
+        colormap(gray);
+        % if(E == 0) 
+        %   error('First solve for energy eigens');
+        % end
+
+        fs  = 0;
+      end      
       %%
       function plots = plot_high_symmetry_points(self,fig,precision,varargin)
 

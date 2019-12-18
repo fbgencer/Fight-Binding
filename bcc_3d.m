@@ -71,14 +71,16 @@ k = tb.set_kvector(-range,range,precision);
 fig_band = figure("Name","Energy Band Figure");
 surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
 
+fig_fs = figure("Name","Fermi Surface");
+fs = tb.plot_fermi_surface(fig_fs,k,1);
 
-rp = lattice_drawer(fig_band);
-pt = rp.draw('point rgb:660066',0,0,20,'Visible','off');
-lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',20,'LineWidth',2);
+%rp = lattice_drawer(fig_band);
+%pt = rp.draw('point rgb:660066',0,0,20,'Visible','off');
+%lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',20,'LineWidth',2);
 
-for i = 1:1
-	tb.plot_brillouin_zone(rp,i,'plot points',pt,'plot lines',lin);
-end
+%for i = 1:1
+%	tb.plot_brillouin_zone(rp,i,'plot points',pt,'plot lines',lin);
+%end
 
 
 %colorbar;

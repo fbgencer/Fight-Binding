@@ -3,7 +3,7 @@
 
 clear all;
 close all;
-clc;
+%clc;
 
 disp('+++++++++++++++++++');
 disp('  BRILLOUIN ZONES  ');
@@ -39,24 +39,30 @@ w2 = sin(gamma)^2 - cos(beta)^2 - cos(alpha)^2 ...
     + 2*cos(alpha) *cos(beta) * cos(gamma);
 w2 = sqrt(w2) / (sin(beta) * sin(gamma));
 
+tp = 'fcc'
+
+
 %T1 = [a, 0, 0];
 %T2 = [b * cos(gamma), b * sin(gamma), 0];
 %T3 = [c * cos(beta), c * w1*sin(beta), c*w2*sin(beta)];
 
-% a = 1;
-% T1 = a*[1 0 0];
-% T2 = a*[0 1 0];
-% T3 = a*[0 0 1];
-
-% a = 1/2;
-% T1 = a*[1,1,-1];
-% T2 = a*[-1,1,1];
-% T3 = a*[1,-1,1];
-
+if(tp == 'cub')
+a = 1;
+T1 = a*[1 0 0];
+T2 = a*[0 1 0];
+T3 = a*[0 0 1];
+elseif(tp == 'bcc')
 a = 1/2;
+T1 = a*[1,1,-1];
+T2 = a*[-1,1,1];
+T3 = a*[1,-1,1];
+else
+a = 1;
 T1 = a*[1 1 0];
 T2 = a*[0 1 1];
 T3 = a*[1 0 1];
+end
+
 
 spat=cross(T1,T2)*T3';
 
@@ -66,8 +72,7 @@ G3=2*pi*cross(T1,T2)/spat;
 
 X = [];
 
-l=1;
-from_to = -1:1;
+from_to = -2:2;
 for i=from_to
     for j=from_to
         for k=from_to
@@ -76,11 +81,13 @@ for i=from_to
         end
     end
 end
+
+if(1)
 points = X;
 hp  = sqrt(points(:,1).^2 + points(:,2).^2 + points(:,3).^2);
 uhp = uniquetol(hp,1e-4);
 
-zone_no = 1;
+zone_no = 5;
 good_index = [];
 
 for i = 1:size(hp,1)
@@ -88,33 +95,59 @@ if( abs(uhp(zone_no+1)-hp(i))< 1e-4 )
   good_index(end+1) = i;
 end
 end
-vopt = points(good_index,:)
-vopt(end+1,:) = [0,0,0]
-vopt = unique(vopt,'row')
+vopt = points(good_index,:);
+%vopt(end+1,:) = [0,0,0];
+vopt = unique(vopt,'row');
+%X = vopt;
+end
 
-X = vopt;
+% X(7,:) = [];
+% X(8,:) = [];
+% X(19,:) = [];
+% X(22,:) = [];
+% X(3,:) = [];
+XX = X;
+for j = 1:size(vopt,1)
+    i = 1;
+    while(i <= size(XX,1))
+        if(vopt(j,:) == XX(i,:))
+            %XX(i,:)
+            XX(i,:) = [];
 
+            %fprintf("found at %d %d\n",i,j);
+        else
+            i = i + 1;
+        end
+    end
+end
+
+X = XX;
 cla reset; hold on
 
 % Compute Voronoi diagram.
 [c,v] = voronoin(X);
+
 iter = floor(numel(v)/2)+1;
 nx = c(v{iter},:);
 tri = convhulln(nx);
-
+if(c(1,:) == Inf)
+    c(1,:)  = [];
+end
 %l = line(a,b,c,'LineWidth',2,'Color','k')
-
+%bendeki nx
 
 
 p = {};
 if (animation ~= 'y')
     fh=figure(1);
+    %plot3(c(:,1),c(:,2),c(:,3),'g.','markersize',20)
     %kpoints
-    plot3(X(:,1),X(:,2),X(:,3),'b.','markersize',10);
+    %plot3(X(:,1),X(:,2),X(:,3),'b.','markersize',10);
     %vertec pt
-    plot3(nx(:,1),nx(:,2),nx(:,3),'r.','markersize',20)
+    %plot3(nx(:,1),nx(:,2),nx(:,3),'r.','markersize',20)
+    %
     for i = 1:size(tri,1)
-        p{end+1} = patch(nx(tri(i,:),1),nx(tri(i,:),2),nx(tri(i,:),3),1,'FaceAlpha',0.2,'LineStyle','none');
+        p{end+1} = patch(nx(tri(i,:),1),nx(tri(i,:),2),nx(tri(i,:),3),i,'FaceAlpha',0.2,'LineStyle','none');
     end
     % Modify the view.
     view(3);

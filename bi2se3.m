@@ -52,8 +52,11 @@ if(1)
 range = pi; 
 precision = 20;
 k = tb.set_kvector(-range,range,precision);
-fig_band = figure("Name","Energy Band Figure");
-surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
+%fig_band = figure("Name","Energy Band Figure");
+%surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
+
+fig_fs = figure("Name","Fermi Surface");
+fs = tb.plot_fermi_surface(fig_fs,k,1);
 
 end
 
