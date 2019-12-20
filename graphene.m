@@ -21,7 +21,7 @@
 clear all; clc; close all;
 %graphene consts
 
-a0 = 1.42*1e-10;
+a0 = 1.420;
 a = a0*sqrt(3);
 
 %primitive vectors
@@ -34,7 +34,7 @@ a2 = [a*sqrt(3)/2, -a/2, 0];
 
 tb = tightbinding(2,a1,a2);% Start with dimension and primitive vectors
 tb.set_unit_cell('A',[-a0/2 0],'B',[a0/2 0]); %give unit cell atoms and their locations
-
+tb.set_metric_unit('A');
 
 Eo = 0;
 t = 0.1;
@@ -51,7 +51,7 @@ tb.add_hopping(-t,'A','B',[0 -1]);  % 0 to 3
 
 %Do this, just make sure to get symmetric hamiltonian
 %tb.hermitian_hamiltonian();
-if(0)
+if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
 
@@ -61,19 +61,19 @@ gp.zaxis_symmetric();
 
 atoma = gp.draw('circle rgb:0066cc',0,0,0.3,'Visible','off');
 atomb = gp.draw('circle rgb:fb7100',0,0,0.3,'Visible','off');
-bond = gp.draw('line black',0,0,0,0,'Visible','off','LineWidth',2);
+bond = gp.draw('line black',0,0,0,0,'Visible','off','LineWidth',1);
 bonds = {bond};
 atoms = {atoma,atomb};
-tb.plot_lattice(gp,"x",-6:6,"y",-8:8,"bonds",bonds,"atoms",atoms);
+tb.plot_lattice(gp,"x",-6:6,"y",-6:6,"bonds",bonds,"atoms",atoms,'unit vector');
 
-uc_rect{1} = gp.draw('line',-2,0,0,1,'Color','red','LineWidth',2);
-uc_rect{2} = gp.draw('line',0,1,2,0,'Color','red','LineWidth',2);
-uc_rect{3} = gp.draw('line',2,0,0,-1,'Color','red','LineWidth',2);
-uc_rect{4} = gp.draw('line',0,-1,-2,0,'Color','red','LineWidth',2);
+%uc_rect{1} = gp.draw('line',-2,0,0,1,'Color','red','LineWidth',2);
+%uc_rect{2} = gp.draw('line',0,1,2,0,'Color','red','LineWidth',2);
+%uc_rect{3} = gp.draw('line',2,0,0,-1,'Color','red','LineWidth',2);
+%uc_rect{4} = gp.draw('line',0,-1,-2,0,'Color','red','LineWidth',2);
 
 end
 
-if(0)
+if(1)
 range = pi/a; 
 precision = 150;
 k = tb.set_kvector(-range,range,precision);
@@ -81,7 +81,7 @@ fig_dos = figure("Name","Density of States");
 ce = tb.plot_dos(fig_dos,k,'k -','LineWidth',1.5);
 end
 
-if(0)
+if(1)
 
 range = 2*pi/a; 
 precision = 30;

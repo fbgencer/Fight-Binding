@@ -16,7 +16,8 @@ classdef tightbinding < handle
       is_soc = 0; %we will open it after user calls add_soc
 
       %normalization unit for drawing lattices and k space
-      spatial_unit = 'nm';
+      spatial_unit = 1e-9;
+      spatial_unit_str = 'nm';
 
       deg_points = [];
 
@@ -88,6 +89,30 @@ classdef tightbinding < handle
        %%
        function set_fermi_level(self,ef)
           self.Efermi = ef;
+       end
+       %%
+       function set_metric_unit(self,m)
+        
+        switch(m)
+           case 'm'
+              self.spatial_unit = 1; 
+               self.spatial_unit_str = m;
+           case 'nm'
+               self.spatial_unit = 1e-9;
+                self.spatial_unit_str = m;
+           case 'A'
+               self.spatial_unit = 1e-10;
+                self.spatial_unit_str = 'A^{o}';
+               
+            otherwise
+                error('Undefined unit, available units are {meter,nanometer,angstrom}');
+        end
+        self.pvec = self.pvec .* self.spatial_unit;
+        for i = 1:size(self.unit_cell,2)
+            self.unit_cell{i}.pos = self.unit_cell{i}.pos * self.spatial_unit;
+        end
+       
+       
        end
        %%
        function r = get_primitive_vectors(self)
@@ -470,7 +495,7 @@ classdef tightbinding < handle
 
       %%
       function kvec = set_kvector(self,from,to,len)
-        k = linspace(from,to,len);
+        k = linspace(from/self.spatial_unit,to/self.spatial_unit,len);
         if(self.no_primvec == 3)
             [kx,ky,kz] = meshgrid(k);
         elseif(self.no_primvec == 2)
@@ -624,7 +649,7 @@ classdef tightbinding < handle
             kz = [kz,linspace(varargin{i}(3),varargin{i+1}(3),precision)];
         end
 
-        k =[kx(:),ky(:),kz(:)]; 
+        k =[kx(:),ky(:),kz(:)]/self.spatial_unit; 
 
         if(isempty(self.hr_file))
           E = calc_band_internal(self,k);
@@ -638,9 +663,9 @@ classdef tightbinding < handle
         end
         ax = fig.CurrentAxes;
 
-        title(ax,'High Symmetry Points','Interpreter','Latex','FontSize',15);
-        ylabel(ax,'$$Energy(eV)$$','Interpreter','Latex','FontSize',15);
-        xlabel(ax,'k-space','Interpreter','Latex','FontSize',15);
+        %title(ax,'High Symmetry Points','Interpreter','Latex','FontSize',15);
+        ylabel(ax,'$$E(eV)$$','Interpreter','Latex','FontSize',15);
+        xlabel(ax,'High Symmetry Points','Interpreter','Latex','FontSize',15);
         set(ax,'TickLabelInterpreter','Latex');
         
         hold off;
@@ -665,7 +690,7 @@ classdef tightbinding < handle
 
         omin = min(min(E{1}));
         omax = max(max(E{size(E,2)}));
-        onum = 10*size(kx,1);
+        onum = 10*size(kvec{1},1);
         omega = linspace(omin,omax,onum);
         %size(E,2)
 
@@ -843,14 +868,12 @@ classdef tightbinding < handle
 
         plot_atoms = 1;
         plot_bonds = 1;
+        plot_unit_vector = 0;
 
         constraint_x = lattice_fill_factorx;
         constraint_y = lattice_fill_factory;
         constraint_z = lattice_fill_factorz;
 
-        gp.set_xlabel('X');
-        gp.set_ylabel('Y');
-        gp.set_zlabel('Z');
 
         i = 1;
         while(i <= size(varargin,2))
@@ -878,7 +901,10 @@ classdef tightbinding < handle
               i = i -1;
             case 'only bonds'
               plot_atoms = 0;
-              i = i -1;                    
+              i = i -1;
+            case 'unit vector'
+              plot_unit_vector = 1;
+              i = i-1;
             otherwise
               error('Undefined entry valid entries [atoms,bonds,x,y,z]');
           end
@@ -897,16 +923,14 @@ classdef tightbinding < handle
         end
 
 
-        %Bununla ilgili bir sorun var, lattice factoru  = 1 yapınca tek boyutlu zinciri çizmiyor 
+        %Bununla ilgili bir sorun var, lattice factoru  = 1 yapınca tek boyutlu zinciri cizmiyor 
         %if(self.dim == 1)
         %  lattice_fill_factory = 1;
         %end
 
-        if(strcmp(self.spatial_unit,'nm'))
-          unit_factor = 1e9;
-        end
         
-        normalize = 1e10;
+        normalize = 1/self.spatial_unit;
+        
         a1 = self.pvec(1,:).*normalize;
         if(self.no_primvec > 1) 
           a2 = self.pvec(2,:).*normalize;
@@ -988,6 +1012,7 @@ classdef tightbinding < handle
           end
           end
           end
+                    
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         end
@@ -996,25 +1021,7 @@ classdef tightbinding < handle
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %first get the atoms from the unitcell
         uc_size = numel(self.unit_cell);
-        % cx = 0; % unitcell center values
-        % cy = 0;
-        % cz = 0;
-        % for i = 1:uc_size
-        %     atom = self.unit_cell{i}; %unit_cell{} contains atoms inside the unit cell
-        %     cx = cx+atom.pos(1)*normalize;
-        %     cy = cy+atom.pos(2)*normalize;
-        %     if(self.dim > 2)
-        %       cz = cz + atom.pos(3)*normalize;
-        %     end
-        % end
 
-        % cx = cx/uc_size;
-        % cy = cy/uc_size;
-        % cz = cz/uc_size;
-        % fprintf("Center[%g,%g,%g]\n",cx,cy,cz);
-        % cx = 0;
-        % cy = 0;
-        % cz = 0;
         old_x = 0;
         old_y = 0;
         old_z = 0;
@@ -1058,8 +1065,25 @@ classdef tightbinding < handle
         end
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
         end
-      
-      end
+        unit_str = self.spatial_unit_str;
+        xs = sprintf("$$X(%s)$$",unit_str);
+        ys = sprintf("$$Y(%s)$$",unit_str);
+        zs = sprintf("$$Z(%s)$$",unit_str);
+
+        gp.set_xlabel(xs,'Interpreter','Latex');
+        gp.set_ylabel(ys,'Interpreter','Latex');
+        gp.set_zlabel(zs,'Interpreter','Latex');
+        
+        uv_cx = 6;
+        uv_cy = 6;
+        if(plot_unit_vector)
+            v1 = gp.draw('vector black',uv_cx,uv_cy,uv_cx+a1(1),uv_cy+a1(2),'LineWidth',2,'MaxHeadSize',0.5);
+            gp.draw('text',uv_cx+a1(1),uv_cy+a1(2),"$$a_{1}$$",'Interpreter','Latex','FontSize',15);
+            v2 = gp.draw('vector black',uv_cx,uv_cy,uv_cx+a2(1),uv_cy+a2(2),'LineWidth',2,'MaxHeadSize',0.5);
+            gp.draw('text',uv_cx+a2(1),uv_cy+a2(2),"$$a_{2}$$",'Interpreter','Latex','FontSize',15);
+        end
+
+      end %plot_lattice end
       %%
       function str_hamiltonian = symbolic_hamiltonian(self,varargin)
         %Create hamiltonian matrix
@@ -1344,8 +1368,8 @@ classdef tightbinding < handle
         end
 
       end
-   end
-end
+   end %methods end
+end %class end
 
 
 function res = delta_gaussian(x,sigma)
