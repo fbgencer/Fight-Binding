@@ -81,7 +81,7 @@ fig_dos = figure("Name","Density of States");
 ce = tb.plot_dos(fig_dos,k,'k -','LineWidth',1.5);
 end
 
-if(0)
+if(1)
 
 range = 2*pi/a; 
 precision = 30;
@@ -90,22 +90,22 @@ fig_band = figure("Name","Energy Band Figure");
 surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None','Visible','on');
 
 
-%fig_fs = figure("Name","Fermi Surface");
-%fs = tb.plot_fermi_surface(fig_fs,k,1);
+fig_fs = figure("Name","Fermi Surface");
+fs = tb.plot_fermi_surface(fig_fs,k,1);
 %rp = lattice_drawer(fig_band);
 %lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
 %tb.plot_brillouin_zone(rp,2,'plot points','plot lines');
 
-view(43,27);
+%view(43,27);
 end
 
-if(1)
+if(0)
 
 %surfaces{1}.Visible = 'off';
 
 %view(0,90);
 
-precision = 10;
+precision = 3;
 Gamma = [0, 0,0];
 K1 = [-2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 M = [2*pi / (sqrt(3)*a), 0, 0];
@@ -114,9 +114,11 @@ K2 = [2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
 tb.plot_high_symmetry_points(fig_hsym,precision,K1,Gamma,M,K2);
-
+title(fig_hsym.CurrentAxes,'High Symmetry Points','Interpreter','Latex');
+xlabel(fig_hsym.CurrentAxes,'$$\Gamma K M K$$','Interpreter','Latex');
 xticks(fig_hsym.CurrentAxes,0:precision:precision*4);
-xticklabels(fig_hsym.CurrentAxes,{'$K$','$\Gamma$','$M$','$K$'});
+xticklabels(fig_hsym.CurrentAxes,{'K','\Gamma','M','K'});
+ylabel(fig_hsym.CurrentAxes,'$$Energy(eV)$$','Interpreter','Latex')
 grid;
 
 % band_dw = lattice_drawer(fig_band); 

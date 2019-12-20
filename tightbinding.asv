@@ -516,9 +516,7 @@ classdef tightbinding < handle
         f = fig();
         surfaces = {};
         
-        kx = kx*1e-9;
-        ky = ky*1e-9;
-        kz = kz*1e-9;
+        kx = kx*1e
     
         if(plot_type == 'surface')  
           hold on;
@@ -636,15 +634,8 @@ classdef tightbinding < handle
         for i = 1:size(E,2)
           plots{end+1} = plot(E{i});
         end
-        ax = fig.CurrentAxes;
-
-        title(ax,'High Symmetry Points','Interpreter','Latex','FontSize',15);
-        ylabel(ax,'$$Energy(eV)$$','Interpreter','Latex','FontSize',15);
-        xlabel(ax,'k-space','Interpreter','Latex','FontSize',15);
-        set(ax,'TickLabelInterpreter','Latex');
-        
         hold off;
-        fig.UserData = plots;
+        f.UserData = plots;
         %self.Epath = E;
       end
       %%
