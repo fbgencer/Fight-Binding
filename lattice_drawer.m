@@ -305,15 +305,22 @@ classdef lattice_drawer < handle
 								txt = varargin{4};
 								varargin_start = 5;
 							end
-							
 							r = text(ax,x,y,z,txt,varargin{varargin_start:end});
+                            disp('');
+                            
 						otherwise
 								disp('Draw function undefined type!');
 								r = 0;
 								return;
 					 end
-					 
-					 r.Tag = type;
+					 %if(numel(r)>1)
+                        for i = 1:numel(r)
+                            r(i).Tag = type;
+                        end
+                     %end
+                     
+					 %r.Tag = type;
+                     
 					 
 			 end
 				%%

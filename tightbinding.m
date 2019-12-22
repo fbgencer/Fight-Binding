@@ -102,7 +102,7 @@ classdef tightbinding < handle
                 self.spatial_unit_str = m;
            case 'A'
                self.spatial_unit = 1e-10;
-                self.spatial_unit_str = 'A^{o}';
+                self.spatial_unit_str = 'A';
                
             otherwise
                 error('Undefined unit, available units are {meter,nanometer,angstrom}');
@@ -581,10 +581,11 @@ classdef tightbinding < handle
           f.UserData = surfaces;          
         end
         ax = f.CurrentAxes;
-        xlabel(ax,'$k_{x}(nm^{-1})$','Interpreter','Latex','FontSize',15);
-        ylabel(ax,'$k_{y}(nm^{-1})$','Interpreter','Latex','FontSize',15);
+        xlabel(ax,sprintf('$k_{x}(%s^{-1})$',self.spatial_unit_str),'Interpreter','Latex','FontSize',15);
+        ylabel(ax,sprintf('$k_{y}(%s^{-1})$',self.spatial_unit_str),'Interpreter','Latex','FontSize',15);
         zlabel(ax,'$E(eV)$','Interpreter','Latex','FontSize',15);
-        title(ax,'Energy Band','Interpreter','Latex','FontSize',15);
+        set(ax,'TickLabelInterpreter','Latex');
+        %title(ax,'Energy Band','Interpreter','Latex','FontSize',15);
         hold off;
       end
       %%
@@ -714,8 +715,9 @@ classdef tightbinding < handle
         plot(ax,omega(1,:),dosE(1,:),varargin{:});
         xlabel(ax,'E(eV)','Interpreter','Latex');
         ylabel(ax,'D(E)','Interpreter','Latex');
-        title(ax,'Density of States','Interpreter','Latex');
+        %title(ax,'Density of States','Interpreter','Latex');
         set(ax,'TickLabelInterpreter','Latex');
+        grid(ax);
 
       end
       %%
@@ -873,8 +875,8 @@ classdef tightbinding < handle
         constraint_x = lattice_fill_factorx;
         constraint_y = lattice_fill_factory;
         constraint_z = lattice_fill_factorz;
-
-
+        
+    
         i = 1;
         while(i <= size(varargin,2))
           st = string(varargin{i});
@@ -904,17 +906,19 @@ classdef tightbinding < handle
               i = i -1;
             case 'unit vector'
               plot_unit_vector = 1;
-              i = i-1;
+              uv_cx = varargin{i}(1);
+              uv_cy = varargin{i}(2);
+              uv_cz = varargin{i}(3);
             otherwise
               error('Undefined entry valid entries [atoms,bonds,x,y,z]');
           end
           i = i+1;
         end
 
-        if(isstring(line_object) & line_object == "None");
+        if(isstring(line_object) && strcmp(line_object,"None"))
           line_object = gp.draw("line black",0,0,0,0,'Visible','off');
         end
-        if(isstring(atom_object) & atom_object == "None")
+        if(isstring(atom_object) && strcmp(atom_object,"None"))
           atom_object = cell(1,size(self.unit_cell,2));
           colors = {"red","blue","green","magenta","yellow","black"};
           for i = 1:size(self.unit_cell,2)
@@ -947,75 +951,6 @@ classdef tightbinding < handle
         cx = 0;
         cy = 0;
         cz = 0;
-
-        if(plot_bonds)
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%BOND plottign
-        old_x = 0;
-        old_y = 0;
-        old_z = 0;
-
-        
-        for i = 1 : numel(self.bonds)
-        %size(self.bonds,2)
-        %size(phases,2)
-        bond = self.bonds{i};
-
-        if(all(bond.phase == 0) && bond.i == bond.j)
-         continue;
-        end
-
-          % tvec translates our unitcell to new unitcells
-          tvector = a1 .* bond.phase(1);
-          if(size(bond.phase,2) > 1)
-            tvector = tvector + a2 .* bond.phase(2);
-            if(size(bond.phase,2) > 2)
-              tvector = tvector + a3 .* bond.phase(3);
-            end
-          end 
-          
-          atom1 = self.unit_cell{bond.atoms{1}};
-          atom2 = self.unit_cell{bond.atoms{2}};
-
-          for e1 = lattice_fill_factorx
-          for e2 = lattice_fill_factory
-          for e3 = lattice_fill_factorz
-
-            txyz = e1.*a1 + e2.*a2 + e3.*a3;
-
-            x = [atom1.pos(1)*normalize, tvector(1) + atom2.pos(1)*normalize] + txyz(1);
-            if(any(x < constraint_x(1)) || any(x > constraint_x(end))), continue, end
-
-            y = [atom1.pos(2) * normalize, tvector(2) + atom2.pos(2) * normalize]+ txyz(2);
-            if( any(y < constraint_y(1)) || any(y > constraint_y(end))), continue, end
-
-            if(self.dim > 2)
-              z = [atom1.pos(3) * normalize, tvector(3) + atom2.pos(3) * normalize]+txyz(3);
-            else 
-              z = [0 0];
-            end
-            if(any(z < constraint_z(1)) || any(z > constraint_z(end)) ),continue, end 
-
-            if(all(x == old_x) && all(y == old_y) && all(z == old_z))
-              continue;
-            end
-
-            if(x(1) == x(2) && y(1) == y(2) &&  z(1) == z(2))
-              continue;
-            end
-   
-            gp.copy_to(line_object,x,y,z,'Visible','on');
-          
-            old_x = x;
-            old_y = y;
-            old_z = z;
-          
-          end
-          end
-          end
-                    
-        end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        end
 
         if(plot_atoms)
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1063,25 +998,131 @@ classdef tightbinding < handle
             end
           end
         end
-      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+        end%end of plot atoms        
+        plotted_bonds = {};
+        
+        if(plot_bonds)
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%BOND plottign
+        old_x = 0;
+        old_y = 0;
+        old_z = 0;
+        
+        ctr = 0;
+        plotted = 0;
+       
+        
+        for i = 1 : numel(self.bonds)
+        bond = self.bonds{i};
+        pass = 0;
+        if(bond.atoms{1} == bond.atoms{2})
+            continue;
         end
+        %
+        for qqq = 1:numel(plotted_bonds)
+            bd = plotted_bonds{qqq};
+            disp('');
+            if(all(all(bd.phase == bond.phase)) && bd.atoms{1} == bond.atoms{1} && bd.atoms{2} == bond.atoms{2})
+                pass=1;
+                break;
+            end
+            %check complex conjugate
+            if(all(all(bd.phase == -bond.phase)) && bd.atoms{1} == bond.atoms{2} && bd.atoms{2} == bond.atoms{1}) 
+                pass = 1;
+                break;
+            end
+        end
+        %
+        if(pass),continue,end;
+        
+        for piter = 1:size(bond.phase,1) 
+        %size(self.bonds,2)
+        %size(phases,2)
+        bphase = bond.phase(piter,:);
+        
+        
+        if(bond.amp(piter) == 0)
+            continue;
+        end
+        %if(all(bphase == 0) )
+        %    continue;
+        %end
+
+          % tvec translates our unitcell to new unitcells
+          tvector = a1 .* bphase(1);
+          if(size(bphase,2) > 1)
+            tvector = tvector + a2 .* bphase(2);
+            if(size(bphase,2) > 2)
+              tvector = tvector + a3 .* bphase(3);
+            end
+          end 
+          
+          atom1 = self.unit_cell{bond.atoms{1}};
+          atom2 = self.unit_cell{bond.atoms{2}};
+
+          for e1 = lattice_fill_factorx
+          for e2 = lattice_fill_factory
+          for e3 = lattice_fill_factorz
+
+            txyz = e1.*a1 + e2.*a2 + e3.*a3;
+
+            x = [atom1.pos(1)*normalize, tvector(1) + atom2.pos(1)*normalize] + txyz(1);
+            if(any(x < constraint_x(1)) || any(x > constraint_x(end))), continue, end
+
+            y = [atom1.pos(2) * normalize, tvector(2) + atom2.pos(2) * normalize]+ txyz(2);
+            if( any(y < constraint_y(1)) || any(y > constraint_y(end))), continue, end
+
+            if(self.dim > 2)
+              z = [atom1.pos(3) * normalize, tvector(3) + atom2.pos(3) * normalize]+txyz(3);
+            else 
+              z = [0 0];
+            end
+            if(any(z < constraint_z(1)) || any(z > constraint_z(end)) ),continue, end 
+
+            if(all(x == old_x) && all(y == old_y) && all(z == old_z))
+              continue;
+            end
+
+            if(x(1) == x(2) && y(1) == y(2) &&  z(1) == z(2))
+              continue;
+            end
+            
+            gp.copy_to(line_object,x,y,z,'Visible','on');
+            %gp.draw('text',mean(x),mean(y),mean(z),sprintf("%d",ctr),'FontSize',10);
+            %ctr = ctr+1;
+            plotted = 1;
+            old_x = x;
+            old_y = y;
+            old_z = z;
+          
+          end
+          end
+          end
+        end
+          if(plotted)
+            plotted_bonds{end+1} = bond;
+            plotted = 0;
+          end
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        end
+
         unit_str = self.spatial_unit_str;
         xs = sprintf("$$X(%s)$$",unit_str);
         ys = sprintf("$$Y(%s)$$",unit_str);
         zs = sprintf("$$Z(%s)$$",unit_str);
-
+        grid(gp.fig.CurrentAxes);
+        gp.fig.CurrentAxes.TickLabelInterpreter = 'latex';
         gp.set_xlabel(xs,'Interpreter','Latex');
         gp.set_ylabel(ys,'Interpreter','Latex');
         gp.set_zlabel(zs,'Interpreter','Latex');
         
-        uv_cx = 6;
-        uv_cy = 6;
         if(plot_unit_vector)
             v1 = gp.draw('vector black',uv_cx,uv_cy,uv_cx+a1(1),uv_cy+a1(2),'LineWidth',2,'MaxHeadSize',0.5);
             gp.draw('text',uv_cx+a1(1),uv_cy+a1(2),"$$a_{1}$$",'Interpreter','Latex','FontSize',15);
             v2 = gp.draw('vector black',uv_cx,uv_cy,uv_cx+a2(1),uv_cy+a2(2),'LineWidth',2,'MaxHeadSize',0.5);
             gp.draw('text',uv_cx+a2(1),uv_cy+a2(2),"$$a_{2}$$",'Interpreter','Latex','FontSize',15);
         end
+        
 
       end %plot_lattice end
       %%

@@ -17,7 +17,7 @@ Vpasc=5.7839;
 Vseapc=4.8422;
 Vpasec=4.8077;
 
-a = 1e-10;
+a = 1;
 
 %primitive vectors
 a1 = (a/2).*[0, 1, 1];
@@ -40,6 +40,7 @@ tb = tightbinding(3,a1,a2,a3);% Start with name and primitive vectors
 
 tb.set_unit_cell('a',[0 0 0],'c',[1 1 1].*(a/4) );
 tb.set_orbital('3s','px,py,pz','4s');
+tb.set_metric_unit('A');
 
 %Diagonal terms
 tb.add_hopping(Esa ,'a','a',d0,'3s','3s','sym','E_sa');
@@ -129,31 +130,29 @@ tb.add_hopping(0,'a','c',d0,'4s','4s','sym','0');
 
 %sym_ham = tb.symbolic_hamiltonian();
 
-if(0)
+if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,3,3,3);
 
 
 atoma = gp.draw('sphere rgb:33FFFF',0,0,0,0.1,'Visible','off');
-atomb = gp.draw('point black',0,0,0.1,'Visible','off');
-bond = gp.draw('line rgb:FF55FF',0,0,0,0,'Visible','off','LineWidth',0.01,'LineStyle','--');
+atomb = gp.draw('sphere black',0,0,0,0.1,'Visible','off');
+bond = gp.draw('line yellow',0,0,0,0,'Visible','off','LineWidth',4,'LineStyle','-');
+%rgb:FF55FF
 bonds = {bond};
 atoms = {atoma,atomb};
 from_to = 1:2;
 tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",from_to,"y",from_to,"z",from_to);
-gp.set_xlabel('X');
-gp.set_ylabel('Y');
-gp.set_zlabel('Z');
-grid;
 
-an = a*1e10;
+
+an = a;
 gp.draw('cuboid',an,an,an,an,an,an,'FaceColor','None','LineWidth',1);
 
 %gp.xaxis_symmetric
 
 end
 
-if(1)
+if(0)
 range = 2*pi/a; 
 precision = 15;
 k = tb.set_kvector(-range,range,precision);
