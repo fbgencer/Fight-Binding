@@ -81,7 +81,7 @@ classdef lattice_drawer < handle
 					 end
 					 
 					 splitted_str = strsplit(type_string,' ');
-					 type = splitted_str{1};
+					 typ = splitted_str{1};
 					 color = "None";
 					 if(size(splitted_str,2) > 1 )
 					 		color = splitted_str{2};
@@ -108,7 +108,7 @@ classdef lattice_drawer < handle
 					 %number of varargin, basically size 
 					 nvargin = size(varargin,2);
 					 
-					 switch type
+					 switch typ
 			 			case 'crect'
 			 				%centered rectangle
 		 					w = varargin{3};
@@ -306,17 +306,17 @@ classdef lattice_drawer < handle
 								varargin_start = 5;
 							end
 							r = text(ax,x,y,z,txt,varargin{varargin_start:end});
-                            disp('');
-                            
 						otherwise
 								disp('Draw function undefined type!');
 								r = 0;
 								return;
 					 end
 					 %if(numel(r)>1)
-                        for i = 1:numel(r)
-                            r(i).Tag = type;
-                        end
+	          for i = 1:numel(r)
+	          		%xxx = r(i)
+	          		set(r(i),'tag',typ); 
+	              %r(i).Tag = type;
+	          end
                      %end
                      
 					 %r.Tag = type;
@@ -383,7 +383,14 @@ classdef lattice_drawer < handle
 			 end
 			 %%
 			 function r = copy_to(self,obj,varargin)
-						r = copy(obj);
+						if(isOctave)
+							%r = copyobj(obj);
+							error('Not working in octave..');
+						else
+							r = copy(obj);
+						end
+
+
 						x = varargin{1};
 						y = varargin{2};
 						w = 0;
@@ -500,24 +507,36 @@ classdef lattice_drawer < handle
 						r.Parent = obj.Parent;
 			 end
 			 %%
-			 function save_pdf(self,pdfname)
-						saveas(self.fig,pdfname+".pdf");
-			 end
+			 %function save_pdf(self,pdfname)
+			 %	saveas(self.fig,pdfname+".pdf");
+			 %end
 			 %%
 			 function r = set_title(self,text,varargin)
-						r = title(self.fig.CurrentAxes,text,varargin{:});
+			 	ax = get(self.fig,'currentaxes');
+				r = title(ax,text,varargin{:});
+				if(isOctave), set(r,'interpreter','tex');
+				else, set(r,'Interpreter','latex'); end		
 			 end
 			 %%
 			 function r = set_xlabel(self,text,varargin)
-						r = xlabel(self.fig.CurrentAxes,text,varargin{:});
+			 	ax = get(self.fig,'currentaxes');
+				r = xlabel(ax,text,varargin{:});
+				if(isOctave), set(r,'interpreter','tex');
+				else, set(r,'Interpreter','latex'); end				
 			 end
 			 %%
 			 function r = set_ylabel(self,text,varargin)
-						r = ylabel(self.fig.CurrentAxes,text,varargin{:});
+			 	ax = get(self.fig,'currentaxes');
+				r = ylabel(ax,text,varargin{:});
+				if(isOctave), set(r,'interpreter','tex');
+				else, set(r,'Interpreter','latex'); end		
 			 end
 			 %%
 			 function r = set_zlabel(self,text,varargin)
-						r = zlabel(self.fig.CurrentAxes,text,varargin{:});
+			 	ax = get(self.fig,'currentaxes');
+				r = zlabel(axtext,varargin{:});
+				if(isOctave), set(r,'interpreter','tex');
+				else, set(r,'Interpreter','latex'); end						
 			 end			 
 			 %%
 			 function [rx,ry] = rotate(self,x,y,angle)

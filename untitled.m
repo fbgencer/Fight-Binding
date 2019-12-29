@@ -29,7 +29,6 @@ figure();
 contour(kx,ky,Esq);
 
 
-
        % function set_orbital(self,varargin)
           
        %    orbs = struct('name','s','l',0,'orbital_number',1);
