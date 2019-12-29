@@ -73,15 +73,15 @@ tb.plot_lattice(gp,"x",-6:6,"y",-6:6,"bonds",bonds,"atoms",atoms,'unit vector',[
 
 end
 
-if(0)
+if(1)
 range = pi/a; 
-precision = 150;
+precision = 300;
 k = tb.set_kvector(-range,range,precision);
 fig_dos = figure("Name","Density of States");
 ce = tb.plot_dos(fig_dos,k,'k -','LineWidth',1.5);
 end
 
-if(0)
+if(1)
 
 range = 2*pi/a; 
 precision = 30;
@@ -98,7 +98,7 @@ surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None','Visible'
 view(43,27);
 end
 
-if(0)
+if(1)
 
 %surfaces{1}.Visible = 'off';
 
