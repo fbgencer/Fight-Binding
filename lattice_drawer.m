@@ -534,7 +534,7 @@ classdef lattice_drawer < handle
 			 %%
 			 function r = set_zlabel(self,text,varargin)
 			 	ax = get(self.fig,'currentaxes');
-				r = zlabel(axtext,varargin{:});
+				r = zlabel(ax,text,varargin{:});
 				if(isOctave), set(r,'interpreter','tex');
 				else, set(r,'Interpreter','latex'); end						
 			 end			 

@@ -51,7 +51,7 @@ tb.add_hopping(-t,'A','B',[0 -1]);  % 0 to 3
 
 %Do this, just make sure to get symmetric hamiltonian
 %tb.hermitian_hamiltonian();
-if(1)
+if(0)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
 
@@ -81,7 +81,7 @@ fig_dos = figure("Name","Density of States");
 ce = tb.plot_dos(fig_dos,k,'k -','LineWidth',1.5);
 end
 
-if(1)
+if(0)
 
 range = 2*pi/a; 
 precision = 30;
@@ -98,7 +98,7 @@ surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None','Visible'
 view(43,27);
 end
 
-if(1)
+if(0)
 
 %surfaces{1}.Visible = 'off';
 
