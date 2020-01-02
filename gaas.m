@@ -130,7 +130,7 @@ tb.add_hopping(0,'a','c',d0,'4s','4s','sym','0');
 
 %sym_ham = tb.symbolic_hamiltonian();
 
-if(1)
+if(0)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,3,3,3);
 
@@ -147,8 +147,6 @@ tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",from_to,"y",from_to,"z",from_
 
 an = a;
 gp.draw('cuboid',an,an,an,an,an,an,'FaceColor','None','LineWidth',1);
-
-%gp.xaxis_symmetric
 
 end
 
@@ -169,8 +167,17 @@ end
 
 end
 
-
 if(0)
+range = pi; 
+precision = 50;
+k = tb.set_kvector(-range,range,precision);
+fig_dos = figure("Name","Density of States");
+ce = tb.plot_dos(fig_dos,k);
+end
+
+
+
+if(1)
 Gamma = [0 0 0];
 X = [2*pi/a 0 0];
 L = [pi/a pi/a pi/a];

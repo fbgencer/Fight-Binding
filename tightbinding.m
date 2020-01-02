@@ -16,7 +16,7 @@ classdef tightbinding < handle
       is_soc = 0; %we will open it after user calls add_soc
 
       %normalization unit for drawing lattices and k space
-      spatial_unit = 1e-9;
+      spatial_unit = 1;
       spatial_unit_str = 'nm';
 
       deg_points = [];
@@ -47,11 +47,11 @@ classdef tightbinding < handle
        %%
        function set_unit_cell(self,varargin)
        %nargin must be even, we will create a structure that holds our unit
-       %cell-
+       %cell- 
             atom = struct('name','','pos',0);
             for i = 1:2:nargin-1
                 atom.name = varargin{i};
-                atom.pos = varargin{i+1};
+                atom.pos = varargin{i+1}*self.spatial_unit;
                self.unit_cell{end+1} = atom;
             end
        end
@@ -102,7 +102,7 @@ classdef tightbinding < handle
                 self.spatial_unit_str = m;
            case 'A'
                self.spatial_unit = 1e-10;
-                self.spatial_unit_str = 'A';
+                self.spatial_unit_str = m;
                
             otherwise
                 error('Undefined unit, available units are {meter,nanometer,angstrom}');
@@ -469,7 +469,7 @@ classdef tightbinding < handle
         matrix = self.bonds.matrix;
         matrix_row_size2 = matrix_row_size*matrix_row_size;
         Zeros = zeros(matrix_row_size);
-        z = 2*pi*1i;
+        z = 1i;
         for kiter = 1:size(k,1)
           eig_matrix = Zeros;
           idpt = 1;
@@ -492,7 +492,6 @@ classdef tightbinding < handle
 
       toc;
       end %function end
-
       %%
       function kvec = set_kvector(self,from,to,len)
         k = linspace(from/self.spatial_unit,to/self.spatial_unit,len);
@@ -640,17 +639,36 @@ classdef tightbinding < handle
             return;
         end
 
+        if(size(precision,2) == 1)
+          precision = precision*ones(1,nvargin-1);
+        end
+
+        label_cell = {};
+        if(iscell(varargin{2}))
+          for i = 1:nvargin
+            label_cell{end+1} = varargin{i}{2};
+          end
+        end
 
         kx = [];
         ky = [];
         kz = [];
         for i = 1:nvargin-1
-            kx = [kx,linspace(varargin{i}(1),varargin{i+1}(1),precision)];
-            ky = [ky,linspace(varargin{i}(2),varargin{i+1}(2),precision)];
-            kz = [kz,linspace(varargin{i}(3),varargin{i+1}(3),precision)];
+            if(iscell(varargin{2}))
+              point = varargin{i}{1};
+              point2 = varargin{i+1}{1};
+            else
+              point  = varargin{i};
+              point2 = varargin{i+1};
+            end
+
+            kx = [kx,linspace(point(1),point2(1),precision(i))];
+            ky = [ky,linspace(point(2),point2(2),precision(i))];
+            kz = [kz,linspace(point(3),point2(3),precision(i))];
         end
 
-        k =[kx(:),ky(:),kz(:)]/self.spatial_unit; 
+        k =[kx(:),ky(:),kz(:)]/self.spatial_unit;
+
 
         if(isempty(self.hr_file))
           E = calc_band_internal(self,k);
@@ -665,9 +683,19 @@ classdef tightbinding < handle
         ax = fig.CurrentAxes;
 
         %title(ax,'High Symmetry Points','Interpreter','Latex','FontSize',15);
+        
         ylabel(ax,'$$E(eV)$$','Interpreter','Latex','FontSize',15);
         xlabel(ax,'High Symmetry Points','Interpreter','Latex','FontSize',15);
+
+        axtick = [0];
+        for i = 1:numel(precision)
+          axtick(end+1) = axtick(end) + precision(i); 
+        end
+         
+        xticks(ax,axtick);
+        if(isempty(label_cell) == 0), xticklabels(ax,label_cell); end
         set(ax,'TickLabelInterpreter','Latex');
+        grid(ax);
         
         hold off;
         fig.UserData = plots;

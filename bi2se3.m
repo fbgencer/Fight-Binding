@@ -6,6 +6,7 @@ a2 = [2.069  -3.583614  0.000000];
 a3 = [0.000   2.389075  9.546667];
 
 tb = tightbinding(3,a1,a2,a3);% Start with dimension and primitive vectors
+tb.set_metric_unit('m');
 
 pos_bi1 = [0.3990    0.3990    0.6970];
 pos_bi2 = [0.6010    0.6010    0.3030];
@@ -21,18 +22,19 @@ tb.add_hrfile('bi2se3_hr.dat');
 tb.set_fermi_level(4.4195);
 
 
+
 % G 0.00000 0.00000 0.0000 Z 0.00000 0.00000 0.5000
 % Z 0.00000 0.00000 0.5000 F 0.50000 0.50000 0.0000
 % F 0.50000 0.50000 0.0000 G 0.00000 0.00000 0.0000
 % G 0.00000 0.00000 0.0000 L 0.50000 0.00000 0.0000
 
-if(0)
+if(1)
 G = [0 0 0];
-Z = [0 0 0.5];
-F = [0.5 0.5 0];
-L = [0.5 0 0];
+Z = 2*pi*[0 0 0.5];
+F = 2*pi*[0.5 0.5 0];
+L = 2*pi*[0.5 0 0];
 
-precision = 71;
+precision = 100;
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
 plts = tb.plot_high_symmetry_points(fig_hsym,precision,G,Z,F,G,L);
@@ -47,7 +49,7 @@ grid();
 %for ix = 1:numel(plts), plts{ix}.Color = 'red'; end
 end
 
-if(1)
+if(0)
 
 range = pi; 
 precision = 20;

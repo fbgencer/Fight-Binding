@@ -2,6 +2,10 @@ function [bonds] = read_hr_file(file_name)
 
 f = fopen(file_name,'r');
 
+if(f == -1)
+	error("Could not find file : " + file_name);
+end
+
 %skip the comment line
 fgetl(f);
 matrix_row = str2double(fgetl(f)); % Number of wannier functions
