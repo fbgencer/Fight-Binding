@@ -678,7 +678,7 @@ classdef tightbinding < handle
 
         hold on;
         for i = 1:size(E,2)
-          plots{end+1} = plot(E{i});
+          plots{end+1} = plot(E{i},'-');
         end
         ax = fig.CurrentAxes;
 

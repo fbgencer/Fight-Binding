@@ -14,7 +14,7 @@ a3 = (a/2).*[1, 1, 0];
 
 tb = tightbinding(3,a1,a2,a3);% Start with name and primitive vectors
 
-tb.set_unit_cell('a',[0 0 0],'c',[1 1 1].*(a/4) );
+tb.set_unit_cell('a',[0 0 0],'c',[0.25 0.25 0.25] );
 tb.set_orbital('3s','px,py,pz','1,2,3,4,5');
 tb.set_metric_unit('m');
 tb.spin_orbit_coupling('false');
@@ -42,7 +42,7 @@ gp.draw('cuboid',an,an,an,an,an,an,'FaceColor','None','LineWidth',1);
 end
 
 
-if(0)
+if(1)
 % begin kpoint_path
 % L   0.50000     0.50000     0.50000   G   0.00000     0.00000     0.00000
 % G   0.00000     0.00000     0.00000   X   0.50000     0.00000     0.50000
@@ -67,7 +67,7 @@ tb.plot_high_symmetry_points(fig_hsym,precision,L,G,X);
 end
 
 
-if(1)
+if(0)
 range = pi; 
 precision = 50;
 k = tb.set_kvector(-range,range,precision);

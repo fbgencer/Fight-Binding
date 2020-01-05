@@ -6,13 +6,12 @@
 
 2. DOS hesabı bütün bandlara veya tek bir band için istenebilsin.
 
-   +) N(E) hesaplayarak buluyoruz ama spesifik integralle bulmak da olabilir
+   +) N(E) hesaplayarak buluyoruz ama spesifik integralle bulmak da olabilir. Gaussian integrali ile dirac fonks benzetiyoruz.
 
 3. Brillouin Zone çıkarılsın
 
    +) 2D
-
-   -) 3D
+   +) 3D
 
 4. Reciprocal Space Vektörleri bulunsun.
 

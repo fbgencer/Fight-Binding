@@ -29,24 +29,15 @@ tb.set_fermi_level(4.4195);
 % G 0.00000 0.00000 0.0000 L 0.50000 0.00000 0.0000
 
 if(1)
-G = [0 0 0];
-Z = 2*pi*[0 0 0.5];
-F = 2*pi*[0.5 0.5 0];
-L = 2*pi*[0.5 0 0];
+G = {[0 0 0],'$$\Gamma$$'};
+Z = {2*pi*[0 0 0.5],'Z'};
+F = {2*pi*[0.5 0.5 0],'F'};
+L = {2*pi*[0.5 0 0],'L'};
 
 precision = 100;
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
 plts = tb.plot_high_symmetry_points(fig_hsym,precision,G,Z,F,G,L);
-
-xlabel(fig_hsym.CurrentAxes,'$$G Z F G L$$','Interpreter','Latex');
-
-xticks(fig_hsym.CurrentAxes,0:precision:5*precision);
-xticklabels(fig_hsym.CurrentAxes,{'G','Z','F','G','L'});
-ylabel(fig_hsym.CurrentAxes,'$$Energy(eV)$$','Interpreter','Latex')
-grid();
-%fig_hsym.CurrentAxes.YLim = [-3 3];
-%for ix = 1:numel(plts), plts{ix}.Color = 'red'; end
 end
 
 if(0)
