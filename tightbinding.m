@@ -678,14 +678,14 @@ classdef tightbinding < handle
 
         hold on;
         for i = 1:size(E,2)
-          plots{end+1} = plot(E{i},'-');
+          plots{end+1} = plot(E{i},'-','LineWidth',2);
         end
         ax = fig.CurrentAxes;
 
         %title(ax,'High Symmetry Points','Interpreter','Latex','FontSize',15);
         
-        ylabel(ax,'$$E(eV)$$','Interpreter','Latex','FontSize',15);
-        xlabel(ax,'High Symmetry Points','Interpreter','Latex','FontSize',15);
+        ylabel(ax,'$$E(eV)$$','Interpreter','Latex','FontSize',25);
+        xlabel(ax,'High Symmetry Points','Interpreter','Latex','FontSize',25);
 
         axtick = [0];
         for i = 1:numel(precision)
@@ -697,6 +697,11 @@ classdef tightbinding < handle
         set(ax,'TickLabelInterpreter','Latex');
         grid(ax);
         
+        dummy =  get(gca,'XTickLabel');
+        set(gca,'XTickLabel',dummy,'fontsize',25);
+        dummy =  get(gca,'YTickLabel');
+        set(gca,'YTickLabel',dummy,'fontsize',25);
+
         hold off;
         fig.UserData = plots;
         %self.Epath = E;
@@ -741,11 +746,16 @@ classdef tightbinding < handle
         ddd = dosE;
         ax = fig.CurrentAxes;
         plot(ax,omega(1,:),dosE(1,:),varargin{:});
-        xlabel(ax,'E(eV)','Interpreter','Latex');
-        ylabel(ax,'D(E)','Interpreter','Latex');
+        xlabel(ax,'E(eV)','Interpreter','Latex','FontSize',15);
+        ylabel(ax,'D(E)','Interpreter','Latex','FontSize',15);
         %title(ax,'Density of States','Interpreter','Latex');
         set(ax,'TickLabelInterpreter','Latex');
         grid(ax);
+
+        dummy =  get(gca,'XTickLabel')
+        set(gca,'XTickLabel',dummy,'fontsize',25)
+        dummy =  get(gca,'YTickLabel')
+        set(gca,'YTickLabel',dummy,'fontsize',25)
 
       end
       %%
@@ -979,54 +989,7 @@ classdef tightbinding < handle
         cx = 0;
         cy = 0;
         cz = 0;
-
-        if(plot_atoms)
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %first get the atoms from the unitcell
-        uc_size = numel(self.unit_cell);
-
-        old_x = 0;
-        old_y = 0;
-        old_z = 0;
-
-        for i = 1:uc_size
-          atom = self.unit_cell{i};
-
-          for e1 = lattice_fill_factorx
-            for e2 = lattice_fill_factory
-              for e3 = lattice_fill_factorz
-
-                txyz = e1.*a1 + e2.*a2 + e3.*a3;
-
-                x = txyz(1) + atom.pos(1)*normalize;
-                if(any(x < constraint_x(1)) || any(x > constraint_x(end))), continue, end
-
-                y = txyz(2) + atom.pos(2)*normalize;
-                if( any(y < constraint_y(1)) || any(y > constraint_y(end))), continue, end
-                z = 0;
-
-                if(self.dim > 2)
-                  z = txyz(3) + atom.pos(3) * normalize;
-                end
-                
-                if(any(z < constraint_z(1)) || any(z > constraint_z(end)) ),continue, end
-
-                if(x == old_x & y == old_y & z == old_z) , continue, end
-
-                if(size(atom.pos,2) > 2)
-                  gp.copy_to(atom_object{i},x,y,z,'Visible','on');
-                else 
-                  gp.copy_to(atom_object{i},x,y,'Visible','on');
-                end
-                
-                old_x = x;
-                old_y = y;
-                old_z = z;
-              end
-            end
-          end
-        end
-        end%end of plot atoms        
+      
         plotted_bonds = {};
         
         if(plot_bonds)
@@ -1130,6 +1093,56 @@ classdef tightbinding < handle
             plotted_bonds{end+1} = bond;
             plotted = 0;
           end
+
+
+        if(plot_atoms)
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %first get the atoms from the unitcell
+        uc_size = numel(self.unit_cell);
+
+        old_x = 0;
+        old_y = 0;
+        old_z = 0;
+
+        for i = 1:uc_size
+          atom = self.unit_cell{i};
+
+          for e1 = lattice_fill_factorx
+            for e2 = lattice_fill_factory
+              for e3 = lattice_fill_factorz
+
+                txyz = e1.*a1 + e2.*a2 + e3.*a3;
+
+                x = txyz(1) + atom.pos(1)*normalize;
+                if(any(x < constraint_x(1)) || any(x > constraint_x(end))), continue, end
+
+                y = txyz(2) + atom.pos(2)*normalize;
+                if( any(y < constraint_y(1)) || any(y > constraint_y(end))), continue, end
+                z = 0;
+
+                if(self.dim > 2)
+                  z = txyz(3) + atom.pos(3) * normalize;
+                end
+                
+                if(any(z < constraint_z(1)) || any(z > constraint_z(end)) ),continue, end
+
+                if(x == old_x & y == old_y & z == old_z) , continue, end
+
+                if(size(atom.pos,2) > 2)
+                  gp.copy_to(atom_object{i},x,y,z,'Visible','on');
+                else 
+                  gp.copy_to(atom_object{i},x,y,'Visible','on');
+                end
+                
+                old_x = x;
+                old_y = y;
+                old_z = z;
+              end
+            end
+          end
+        end
+        end%end of plot atoms  
+
         end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         end
@@ -1145,10 +1158,16 @@ classdef tightbinding < handle
         gp.set_zlabel(zs,'Interpreter','Latex');
         
         if(plot_unit_vector)
-            v1 = gp.draw('vector black',uv_cx,uv_cy,uv_cx+a1(1),uv_cy+a1(2),'LineWidth',2,'MaxHeadSize',0.5);
-            gp.draw('text',uv_cx+a1(1),uv_cy+a1(2),"$$a_{1}$$",'Interpreter','Latex','FontSize',15);
-            v2 = gp.draw('vector black',uv_cx,uv_cy,uv_cx+a2(1),uv_cy+a2(2),'LineWidth',2,'MaxHeadSize',0.5);
-            gp.draw('text',uv_cx+a2(1),uv_cy+a2(2),"$$a_{2}$$",'Interpreter','Latex','FontSize',15);
+            v1 = gp.draw('vector black',uv_cx,uv_cy,uv_cz,uv_cx+a1(1),uv_cy+a1(2),uv_cz+a1(3),'LineWidth',2,'MaxHeadSize',0.5);
+            gp.draw('text',uv_cx+a1(1),uv_cy+a1(2),uv_cz+a1(3),"$$a_{1}$$",'Interpreter','Latex','FontSize',15);
+            
+            v2 = gp.draw('vector black',uv_cx,uv_cy,uv_cz,uv_cx+a2(1),uv_cy+a2(2),uv_cz+a2(3),'LineWidth',2,'MaxHeadSize',0.5);
+            gp.draw('text',uv_cx+a2(1),uv_cy+a2(2),uv_cz+a2(3),"$$a_{2}$$",'Interpreter','Latex','FontSize',15);
+
+            if(self.dim == 3)
+              v3 = gp.draw('vector black',uv_cx,uv_cy,uv_cz,uv_cx+a3(1),uv_cy+a3(2),uv_cz+a3(3),'LineWidth',2,'MaxHeadSize',0.5);
+              gp.draw('text',uv_cx+a3(1),uv_cy+a3(2),uv_cz+a3(3),"$$a_{3}$$",'Interpreter','Latex','FontSize',15);
+            end
         end
         
 

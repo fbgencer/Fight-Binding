@@ -9,7 +9,7 @@ Esc=-2.6569;
 Epc=3.6686;
 Esea=8.5914;
 Esec=6.7386;
-Vss=-6.4513;
+Vss=-6.4513; 
 Vxx=1.9546;
 Vxy=5.0779;
 Vsapc=4.4800;
@@ -135,14 +135,14 @@ lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,3,3,3);
 
 
-atoma = gp.draw('sphere rgb:33FFFF',0,0,0,0.1,'Visible','off');
+atoma = gp.draw('sphere rgb:4589e4',0,0,0,0.1,'Visible','off');
 atomb = gp.draw('sphere black',0,0,0,0.1,'Visible','off');
-bond = gp.draw('line yellow',0,0,0,0,'Visible','off','LineWidth',4,'LineStyle','-');
+bond = gp.draw('line red',0,0,0,0,'Visible','off','LineWidth',4,'LineStyle','-');
 %rgb:FF55FF
 bonds = {bond};
 atoms = {atoma,atomb};
 from_to = 1:2;
-tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",from_to,"y",from_to,"z",from_to);
+tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",from_to,"y",from_to,"z",from_to,'unit vector',[2 2 2]);
 
 
 an = a;
@@ -169,7 +169,7 @@ end
 
 if(0)
 range = pi; 
-precision = 50;
+precision = 70;
 k = tb.set_kvector(-range,range,precision);
 fig_dos = figure("Name","Density of States");
 ce = tb.plot_dos(fig_dos,k);
@@ -178,18 +178,21 @@ end
 
 
 if(1)
-Gamma = [0 0 0];
+%both points are working
+G = [0 0 0];
 X = [2*pi/a 0 0];
 L = [pi/a pi/a pi/a];
-precision =  20;
+precision =  100;
+
+L = {2*pi*[0.5 0.5 0.5],'L'};
+G = {[0 0 0],'$$\Gamma$$'};
+X = {2*pi*[0.5 0 0.5],'X'};
+W = {2*pi*[0.5 0.25 0.75],'W'};
+K = {2*pi*[0.75 0.375 0.375],'K'};
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
-tb.plot_high_symmetry_points(fig_hsym,precision,L,Gamma,X);
-xlabel(fig_hsym.CurrentAxes,'$$L \Gamma X$$','Interpreter','Latex');
-xticks(fig_hsym.CurrentAxes,0:precision:2*precision);
-xticklabels(fig_hsym.CurrentAxes,{'L','\Gamma','X'});
-ylabel(fig_hsym.CurrentAxes,'$$Energy(eV)$$','Interpreter','Latex')
-grid();
+tb.plot_high_symmetry_points(fig_hsym,precision,L,G,X);
+
 end
 
 

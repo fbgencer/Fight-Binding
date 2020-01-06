@@ -187,21 +187,38 @@ fig_band = figure("Name","Energy Band Figure");
 surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
 end
 
-
 if(1)
+%both points are working
+G = [0 0 0];
+X = [2*pi/a 0 0];
+L = [pi/a pi/a pi/a];
+precision =  100;
+
+X = {2*pi/a*[1 0 0],'X'};
+G = {[0 0 0],'$$\Gamma$$'};
+L = {(pi/a)*[1 1 1],'L'};
+
+fig_hsym = figure("Name","High Symmetry Points Figure");
+tb.plot_high_symmetry_points(fig_hsym,precision,L,G,X);
+
+%fig_hsym.CurrentAxes.YLim = [-3 3];
+
+end
+
+if(0)
 Gamma = [0 0 0];
 X = [2*pi/a 0 0];
 L = [pi/a pi/a pi/a];
 
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
-plts = tb.plot_high_symmetry_points(fig_hsym,100,L,Gamma,X);
+plts = tb.plot_high_symmetry_points(fig_hsym,500,L,Gamma,X);
 xlabel(fig_hsym.CurrentAxes,'$$L \Gamma X$$','Interpreter','Latex');
 xticks(fig_hsym.CurrentAxes,[0 100 200]);
 xticklabels(fig_hsym.CurrentAxes,{'L','\Gamma','X'});
 ylabel(fig_hsym.CurrentAxes,'$$Energy(eV)$$','Interpreter','Latex')
 grid();
-fig_hsym.CurrentAxes.YLim = [-3 3];
+%fig_hsym.CurrentAxes.YLim = [-3 3];
 %for ix = 1:numel(plts), plts{ix}.Color = 'red'; end
 end
 

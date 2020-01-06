@@ -49,8 +49,6 @@ tb.add_hopping(-t,'A','B',[-1 0]);  % 0 to 1 with -a1 vector
 tb.add_hopping(-t,'A','B',[0 -1]);  % 0 to 3
 %tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 
-%Do this, just make sure to get symmetric hamiltonian
-%tb.hermitian_hamiltonian();
 if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
@@ -73,7 +71,7 @@ tb.plot_lattice(gp,"x",-6:6,"y",-6:6,"bonds",bonds,"atoms",atoms,'unit vector',[
 
 end
 
-if(1)
+if(0)
 range = pi/a; 
 precision = 300;
 k = tb.set_kvector(-range,range,precision);
@@ -104,18 +102,16 @@ if(1)
 
 %view(0,90);
 
-precision = 10;
-Gamma = [0, 0,0];
-K1 = [-2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
-M = [2*pi / (sqrt(3)*a), 0, 0];
-K2 = [2*pi / (sqrt(3)*a), 2*pi / (3*a), 0];
+precision = 20;
 
+K1 = {[-2*pi / (sqrt(3)*a), 2*pi / (3*a), 0],'K'};
+G = {[0 0 0],'$$\Gamma$$'};
+K2 = {[2*pi / (sqrt(3)*a), 2*pi / (3*a), 0],'K'};
+M = {[2*pi / (sqrt(3)*a), 0, 0],'M'};
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
-tb.plot_high_symmetry_points(fig_hsym,precision,K1,Gamma,M,K2);
+tb.plot_high_symmetry_points(fig_hsym,precision,K1,G,M,K2);
 
-xticks(fig_hsym.CurrentAxes,0:precision:precision*4);
-xticklabels(fig_hsym.CurrentAxes,{'$K$','$\Gamma$','$M$','$K$'});
 grid;
 
 % band_dw = lattice_drawer(fig_band); 
@@ -129,10 +125,6 @@ grid;
 % band_dw.draw('text',M(1),M(2),0.6,'M','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
 % band_dw.draw('text',K2(1),K2(2),0.6,'K','Interpreter','Latex','FontSize',13,'VerticalAlignment','bottom','HorizontalAlignment','right');
 end
-
-
-%rp.draw('vector black',0,0,b1(1)+b2(1),b1(2)+b2(2));
-%rp.draw('vector yellow',0,0,b1(1)-b2(1),b1(2)-b2(2));
 
 
 
