@@ -10,6 +10,7 @@ classdef lattice_drawer < handle
 			 function f = lattice_drawer(fig,varargin)
 						f.fig = fig;
 						nvargin = nargin-1;
+
 						if(nvargin > 1) 
 								f.canvas_x = varargin{1};
 								f.canvas_y = varargin{2};
@@ -26,10 +27,10 @@ classdef lattice_drawer < handle
 									view(fig.CurrentAxes,3);
 								end
 
-						else
-								f.canvas_x = fig.CurrentAxes.XLim(2) - fig.CurrentAxes.XLim(1);
-								f.canvas_y = fig.CurrentAxes.YLim(2) - fig.CurrentAxes.YLim(1);
-								f.canvas_z = fig.CurrentAxes.ZLim(2) - fig.CurrentAxes.ZLim(1);
+						%else
+							%	f.canvas_x = fig.CurrentAxes.XLim(2) - fig.CurrentAxes.XLim(1);
+							%	f.canvas_y = fig.CurrentAxes.YLim(2) - fig.CurrentAxes.YLim(1);
+							%	f.canvas_z = fig.CurrentAxes.ZLim(2) - fig.CurrentAxes.ZLim(1);
 						end
 			 end
 			 %%
@@ -49,16 +50,18 @@ classdef lattice_drawer < handle
 			 			end
 			 			i = i+3;
 			 		end
+			 		self.update_axis_limits();
 			 	end
 			 end
 			 %%
 			 function xaxis_symmetric(self)
-			 		%self.fig.CurrentAxes.XLim = [-self.canvas_x/2 self.canvas_x/2];
+			 		self.update_axis_limits();
 			 		ax = get(self.fig,'currentaxes');
 			 		set(ax,'xlim',[-self.canvas_x/2 self.canvas_x/2]);
 			 end
 			 %%
 			 function yaxis_symmetric(self)
+			 		self.update_axis_limits();
 			 		%self.fig.CurrentAxes.YLim = [-self.canvas_y/2 self.canvas_y/2];
 			 		ax = get(self.fig,'currentaxes');
 			 		set(ax,'ylim',[-self.canvas_y/2 self.canvas_y/2]);
@@ -66,11 +69,25 @@ classdef lattice_drawer < handle
 			 %%
 			 function zaxis_symmetric(self)
 			 	if(self.canvas_z > 0)
+			 		self.update_axis_limits();
 			 		%self.fig.CurrentAxes.ZLim = [-self.canvas_z/2 self.canvas_z/2];
 			 		ax = get(self.fig,'currentaxes');
 			 		set(ax,'zlim',[-self.canvas_z/2 self.canvas_z/2]);
 			 	end
-			 end			 
+			 end
+			 %%
+			 function axis_symmetric(self)
+			 	self.xaxis_symmetric();
+			 	self.yaxis_symmetric();
+			 	self.zaxis_symmetric();
+			 end			 		
+			 %%
+			 function update_axis_limits(self)			 	
+				fig = self.fig;
+				f.canvas_x = fig.CurrentAxes.XLim(2) - fig.CurrentAxes.XLim(1);
+				f.canvas_y = fig.CurrentAxes.YLim(2) - fig.CurrentAxes.YLim(1);
+				f.canvas_z = fig.CurrentAxes.ZLim(2) - fig.CurrentAxes.ZLim(1);			
+			end 	 
 			 %%
 			 function r = draw(self,type_string,varargin)
 					 self.fig();
@@ -337,16 +354,20 @@ classdef lattice_drawer < handle
 			 end
 			 %%
 			 function t = set_text(self,obj,txt,varargin)
-					[cax,cay] = self.get_center(obj);
+					[cax,cay,caz] = self.get_center(obj);
+
+					offset =[0.1 0.1 0.1];
+
 					if(nargin>3)
-							t = text(cax,cay,txt,varargin{:});
+							t = text(cax+offset(1),cay+offset(2),caz+offset(3),txt,varargin{:});
 					else
-							t = text(cax,cay,txt);
+							text(cax+offset(1),cay+offset(2),caz+offset(3),txt);
 					end
 					t.FontSize = 7;
 			 end
 			 %%
-			 function [cx,cy] = get_center(self,a)
+			 function [cx,cy,cz] = get_center(self,a)
+			 	%buraya 3boyuta cevirmek gerekiyor bu eksik
 
 			 			if(a == 0)
 			 				disp("Empty value in get_center")
@@ -369,13 +390,15 @@ classdef lattice_drawer < handle
 								cy = p(2)+r;
 							case "line"
 								cx = 0.5*(a.XData(1) + a.XData(2));
-								cy = 0.5*(a.YData(1) + a.YData(2));									
+								cy = 0.5*(a.YData(1) + a.YData(2));
+								cz = 0.5*(a.ZData(1) + a.ZData(2))							
 							case "vector"
 								cx = a.XData + a.UData/2;
 								cy = a.YData + a.VData/2;
 							case 'point'
 								cx = a.XData;
 								cy = a.YData;
+								cz = a.ZData;
 							otherwise
 								disp('Undefined tag for get_center function');
 								return;
@@ -506,11 +529,13 @@ classdef lattice_drawer < handle
 
 						r.Parent = obj.Parent;
 			 end
-			 %%
-			 %function save_pdf(self,pdfname)
-			 %	saveas(self.fig,pdfname+".pdf");
-			 %end
-			 %%
+			 %
+			 function save_eps(self,epsname)
+			 	self.fig.Renderer = 'painters';
+			 	hgexport(self.fig,epsname+".eps");
+			 	self.fig.Renderer = 'opengl';
+			 end
+			 %
 			 function r = set_title(self,text,varargin)
 			 	ax = get(self.fig,'currentaxes');
 				r = title(ax,text,varargin{:});

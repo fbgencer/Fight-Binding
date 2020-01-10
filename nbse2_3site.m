@@ -47,7 +47,7 @@ end
 
 
 
-if(0)
+if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20,30);
 gp.xaxis_symmetric();

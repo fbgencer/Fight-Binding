@@ -42,7 +42,7 @@ end
 
 %gp.draw('text black',5.0,5.0,5.0,'Ga','Interpreter','Latex');
 %gp.draw('text black',5.0,5.0,5.0,'Ga','Interpreter','Latex');
-legend({'Ga','As'},'Location','southwest') 
+legend({'Ga','As'},'Location','southwest','Interpreter','Latex'); 
 
 if(0)
 
