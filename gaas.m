@@ -130,13 +130,17 @@ tb.add_hopping(0,'a','c',d0,'4s','4s','sym','0');
 
 %sym_ham = tb.symbolic_hamiltonian();
 
-if(0)
+
+%Gallium covalent radius = 1.26 ang, 1.36 atomic
+%As covalent radius = 1.19 ang, 1.14 atomic
+
+if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,3,3,3);
 
 
-atoma = gp.draw('sphere rgb:4589e4',0,0,0,0.1,'Visible','off');
-atomb = gp.draw('sphere black',0,0,0,0.1,'Visible','off');
+atoma = gp.draw('sphere rgb:4589e4',0,0,0,0.136,'Visible','off');
+atomb = gp.draw('sphere black',0,0,0,0.114,'Visible','off');
 bond = gp.draw('line red',0,0,0,0,'Visible','off','LineWidth',4,'LineStyle','-');
 %rgb:FF55FF
 bonds = {bond};
@@ -177,7 +181,7 @@ end
 
 
 
-if(1)
+if(0)
 %both points are working
 G = [0 0 0];
 X = [2*pi/a 0 0];

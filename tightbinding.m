@@ -26,6 +26,8 @@ classdef tightbinding < handle
 
       hr_file = '';
 
+      atom_types = {};
+
    end
    methods
        %selfect constructor
@@ -50,11 +52,33 @@ classdef tightbinding < handle
        %cell- 
             atom = struct('name','','pos',0);
             for i = 1:2:nargin-1
-                atom.name = varargin{i};
-                atom.pos = varargin{i+1}*self.spatial_unit;
-               self.unit_cell{end+1} = atom;
+              atom.name = varargin{i};
+              atom.pos = varargin{i+1}*self.spatial_unit;
+              self.unit_cell{end+1} = atom;
+              if(any(strcmp(self.atom_types,atom.name)) ~= 1)
+                self.atom_types{end+1} = atom.name;
+              end
             end
        end
+       %%
+       % function set_atom_type(self,varargin)
+        
+       %  covalent_radii_list = { ...
+       %  {'Ga',1.365},
+       %  {'As',1.2070},
+       %  {'Nb',1.5522},
+       %  {'Se',1.2075},
+       %  {'Bi',1.68}}; 
+
+
+       %  for i = 1:numel(varargin)
+       %      for j = covalent_radii_list
+       %        if(strcmp(varargin{i},))
+
+       %        end
+       %      end
+       %  end 
+       % end
        %%
        function set_orbital(self,varargin)
 
@@ -454,6 +478,8 @@ classdef tightbinding < handle
         matrix_row_size = size(self.unit_cell,2) * self.no_orbital; % if there is soc we have 2 times bigger matrix
         if(self.is_soc), matrix_row_size = matrix_row_size * 2; end
 
+        disp(matrix_row_size)
+        matrix_row_size = 11;
 
         Energy_cell = cell(1,matrix_row_size);
         for i = 1:matrix_row_size
@@ -473,7 +499,7 @@ classdef tightbinding < handle
         for kiter = 1:size(k,1)
           eig_matrix = Zeros;
           idpt = 1;
-          kp = k(kiter,:);
+          kp = k(kiter,:)*self.spatial_unit;% this is required to work with different units 
           for iter = 1:size(R,1)
             Rp = R(iter,:);%*self.pvec;
             kdotr = z * (kp(1)*Rp(1) + kp(2)*Rp(2) + kp(3)*Rp(3)); 
@@ -694,13 +720,13 @@ classdef tightbinding < handle
          
         xticks(ax,axtick);
         if(isempty(label_cell) == 0), xticklabels(ax,label_cell); end
-        set(ax,'TickLabelInterpreter','Latex');
+        %set(ax,'TickLabelInterpreter','Latex');
         grid(ax);
         
-        dummy =  get(gca,'XTickLabel');
-        set(gca,'XTickLabel',dummy,'fontsize',25);
-        dummy =  get(gca,'YTickLabel');
-        set(gca,'YTickLabel',dummy,'fontsize',25);
+        %dummy =  get(gca,'XTickLabel');
+        %set(gca,'XTickLabel',dummy,'fontsize',25);
+        %dummy =  get(gca,'YTickLabel');
+        %set(gca,'YTickLabel',dummy,'fontsize',25);
 
         hold off;
         fig.UserData = plots;
@@ -985,14 +1011,14 @@ classdef tightbinding < handle
           a3 = zeros(1,size(a1,2));
         end
 
-
         cx = 0;
         cy = 0;
         cz = 0;
       
         plotted_bonds = {};
         
-        if(plot_bonds)
+        %plot_bonds
+        if(0)
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%BOND plottign
         old_x = 0;
         old_y = 0;
@@ -1001,9 +1027,10 @@ classdef tightbinding < handle
         ctr = 0;
         plotted = 0;
        
-        
-        for i = 1 : numel(self.bonds)
-        bond = self.bonds{i};
+        %which_bonds = self.bonds;
+
+        for i = 1 : numel(which_bonds)
+        bond = which_bonds{i};
         pass = 0;
         if(bond.atoms{1} == bond.atoms{2})
             continue;
@@ -1093,7 +1120,11 @@ classdef tightbinding < handle
             plotted_bonds{end+1} = bond;
             plotted = 0;
           end
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        end
 
+        plotted_atoms = {};
 
         if(plot_atoms)
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1114,7 +1145,8 @@ classdef tightbinding < handle
                 txyz = e1.*a1 + e2.*a2 + e3.*a3;
 
                 x = txyz(1) + atom.pos(1)*normalize;
-                if(any(x < constraint_x(1)) || any(x > constraint_x(end))), continue, end
+                if(any(x < constraint_x(1)) || any(x > constraint_x(end))),
+                  continue, end
 
                 y = txyz(2) + atom.pos(2)*normalize;
                 if( any(y < constraint_y(1)) || any(y > constraint_y(end))), continue, end
@@ -1124,16 +1156,34 @@ classdef tightbinding < handle
                   z = txyz(3) + atom.pos(3) * normalize;
                 end
                 
-                if(any(z < constraint_z(1)) || any(z > constraint_z(end)) ),continue, end
+                if(any(z < constraint_z(1)) || any(z > constraint_z(end)) )
+                  %disp('constaint prob')
+                  continue, end
 
                 if(x == old_x & y == old_y & z == old_z) , continue, end
 
-                if(size(atom.pos,2) > 2)
-                  gp.copy_to(atom_object{i},x,y,z,'Visible','on');
+                %fprintf('x,y,z %f,%f,%f\n',x,y,z );
+                %Gallium covalent radius = 1.26 ang, 1.36 atomic
+                %As covalent radius = 1.19 ang, 1.14 atomic
+                
+                %distance = 
+                % dis = sqrt(sum( [[old_x,old_y,old_z]-[x,y,z]].^2 ));
+                %fprintf('Old:[%.2f,%.2f,%.2f] - New:[%.2f,%.2f,%.2f]\n',old_x,old_y,old_z,x,y,z);
+
+                
+                cmp = strcmp(atom.name,self.atom_types);
+                which_atom = find(cmp == 1);
+                which_atom = which_atom(1);
+
+                if(size(atom.pos,2) > 2) % 3d case
+                  gp.copy_to(atom_object{which_atom},x,y,z,'Visible','on');
+                  %gp.draw('text',x+1,y+1,z+1,sprintf('%.2f|%.2f|%.2f',x,y,z),'Color','red');
                 else 
-                  gp.copy_to(atom_object{i},x,y,'Visible','on');
+                  gp.copy_to(atom_object{which_atom},x,y,'Visible','on');
                 end
                 
+                plotted_atoms{end+1} = [x,y,z];
+
                 old_x = x;
                 old_y = y;
                 old_z = z;
@@ -1141,11 +1191,34 @@ classdef tightbinding < handle
             end
           end
         end
-        end%end of plot atoms  
+        end%end of plot atoms 
 
+        fprintf('plotted atoms\n');
+
+        %bond_dist = 2.56; %gaas
+        %bond_dist = 2.89; %bi2se3
+        bond_dist = 2.72; %nbse2
+
+        for i = 1:numel(plotted_atoms);
+          %fprintf("[%d] (%.2f,%.2f,%.2f)\n",i,plotted_atoms{i});
+          p1 = plotted_atoms{i};
+          for j = i+1:numel(plotted_atoms)
+            p2 = plotted_atoms{j};
+            dis = sqrt(sum([p2-p1].^2));
+            if(dis<=bond_dist)
+              %fprintf('bond between point [%d ~ %d]\n',i,j);
+              x = [p1(1) p2(1)];
+              y = [p1(2) p2(2)];
+              z = [0 0];
+              if(self.dim > 2)
+                z = [p1(3) p2(3)];
+              end
+              gp.copy_to(line_object,x,y,z,'Visible','on');
+            end
+          end
         end
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        end
+
+
 
         unit_str = self.spatial_unit_str;
         xs = sprintf("$$X(%s)$$",unit_str);
