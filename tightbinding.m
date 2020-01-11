@@ -126,7 +126,7 @@ classdef tightbinding < handle
                 self.spatial_unit_str = m;
            case 'A'
                self.spatial_unit = 1e-10;
-                self.spatial_unit_str = m;
+                self.spatial_unit_str = "\AA";
                
             otherwise
                 error('Undefined unit, available units are {meter,nanometer,angstrom}');
@@ -478,8 +478,8 @@ classdef tightbinding < handle
         matrix_row_size = size(self.unit_cell,2) * self.no_orbital; % if there is soc we have 2 times bigger matrix
         if(self.is_soc), matrix_row_size = matrix_row_size * 2; end
 
-        disp(matrix_row_size)
-        matrix_row_size = 11;
+        %disp(matrix_row_size)
+        %matrix_row_size = 11;
 
         Energy_cell = cell(1,matrix_row_size);
         for i = 1:matrix_row_size
@@ -711,16 +711,16 @@ classdef tightbinding < handle
         %title(ax,'High Symmetry Points','Interpreter','Latex','FontSize',15);
         
         ylabel(ax,'$$E(eV)$$','Interpreter','Latex','FontSize',25);
-        xlabel(ax,'High Symmetry Points','Interpreter','Latex','FontSize',25);
+        %xlabel(ax,'High Symmetry Points','Interpreter','Latex','FontSize',25);
 
         axtick = [0];
         for i = 1:numel(precision)
           axtick(end+1) = axtick(end) + precision(i); 
         end
-         
+        ax.XLim = [0 axtick(end)];
         xticks(ax,axtick);
         if(isempty(label_cell) == 0), xticklabels(ax,label_cell); end
-        %set(ax,'TickLabelInterpreter','Latex');
+        set(ax,'TickLabelInterpreter','Latex');
         grid(ax);
         
         %dummy =  get(gca,'XTickLabel');
@@ -778,10 +778,10 @@ classdef tightbinding < handle
         set(ax,'TickLabelInterpreter','Latex');
         grid(ax);
 
-        dummy =  get(gca,'XTickLabel')
-        set(gca,'XTickLabel',dummy,'fontsize',25)
-        dummy =  get(gca,'YTickLabel')
-        set(gca,'YTickLabel',dummy,'fontsize',25)
+        %dummy =  get(gca,'XTickLabel')
+        %set(gca,'XTickLabel',dummy,'fontsize',25)
+        %dummy =  get(gca,'YTickLabel')
+        %set(gca,'YTickLabel',dummy,'fontsize',25)
 
       end
       %%
@@ -1196,7 +1196,7 @@ classdef tightbinding < handle
         fprintf('plotted atoms\n');
 
         %bond_dist = 2.56; %gaas
-        %bond_dist = 2.89; %bi2se3
+        %bond_dist = 2.8; %bi2se3
         bond_dist = 2.72; %nbse2
 
         for i = 1:numel(plotted_atoms);
@@ -1205,7 +1205,7 @@ classdef tightbinding < handle
           for j = i+1:numel(plotted_atoms)
             p2 = plotted_atoms{j};
             dis = sqrt(sum([p2-p1].^2));
-            if(dis<=bond_dist)
+            if(dis<=bond_dist && dis ~= 0)
               %fprintf('bond between point [%d ~ %d]\n',i,j);
               x = [p1(1) p2(1)];
               y = [p1(2) p2(2)];

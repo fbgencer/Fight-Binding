@@ -47,9 +47,9 @@ end
 
 
 
-if(1)
+if(0)
 lat_f = figure("Name","Lattice Figure");
-gp = lattice_drawer(lat_f,20,20,30);
+gp = lattice_drawer(lat_f,20,20,80);
 gp.xaxis_symmetric();
 gp.yaxis_symmetric();
 gp.zaxis_symmetric();
@@ -67,70 +67,6 @@ atoms = {atoma,atomb};
 from_to = 10:40;
 tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms);
 %,"z",-6:6,"x",-3:3,"y",-3:3
-%legend({'Nb','Se'},'Location','southwest') 
-
-
-
-orj = [0 0 0];
-
-v1 = orj;
-v2 = a1;
-px = [v1(1) v2(1)];
-py = [v1(2) v2(2)];
-pz = [v1(3) v2(3)];
-gp.draw('line green',px,py,pz,'LineWidth',3);
-
-
-v1 = orj;
-v2 = a2;
-px = [v1(1) v2(1)];
-py = [v1(2) v2(2)];
-pz = [v1(3) v2(3)];
-gp.draw('line green',px,py,pz,'LineWidth',3);
-
-
-v1 = a2;
-v2 = a1+a2;
-px = [v1(1) v2(1)];
-py = [v1(2) v2(2)];
-pz = [v1(3) v2(3)];
-gp.draw('line green',px,py,pz,'LineWidth',3);
-
-
-
-v1 = a1+a2;
-v2 = a1;
-px = [v1(1) v2(1)];
-py = [v1(2) v2(2)];
-pz = [v1(3) v2(3)];
-gp.draw('line green',px,py,pz,'LineWidth',3);
-
-%%%%%%%%%%%%%%%%%%%%%%
-s = orj;
-x = [];
-y = [];
-z = [];
-
-for k = 0:1
-	for i = 0:1
-		for j = 0:1
-			v1 = i*a1+j*a2+k*a3
-			%v2 = s;
-			px = [v1(1) v2(1)];
-			py = [v1(2) v2(2)];
-			pz = [v1(3) v2(3)];
-			gp.draw('point',v1(1),v1(2),v1(3));
-			x(end+1) = v1(1);
-			y(end+1) = v1(2);
-			z(end+1) = v1(3);
-			%gp.draw('line green',px,py,pz,'LineWidth',3);
-			%s = v1;
-		end
-	end
-end
-
-
-%an = a;
-%gp.draw('cuboid',an,an,an,an,an,an,'FaceColor','None','LineWidth',1);
+legend({'Nb','Se'},'Location','southwest','Interpreter','Latex','FontSize',24) 
 
 end

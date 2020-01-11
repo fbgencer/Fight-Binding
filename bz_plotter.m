@@ -30,6 +30,10 @@ T1 = a*[2.9439482089090570 -1.6996892908939607 0.0000000000000000];
 T2 = a*[0.0000000000000000  3.3993785817879214   0.0000000000000000];
 T3 = a*[0.0000000000000000  0.0000000000000000 24.0320930230956016];
 
+elseif(strcmp(tp,'bi2se3'))
+T1 = [-2.069  -3.583614  0.000000];
+T2 = [2.069  -3.583614  0.000000];
+T3 = [0.000   2.389075  9.546667];
 
 end
 
@@ -111,23 +115,25 @@ end
 
 
 
-G = {[0 0 0],'$$\Gamma$$'};
-M = {[0.5 0 0]*Kvec,'M'};
-K = {[0.33 0.33 0]*Kvec,'K'};
-L = {[0.5 0 0.5]*Kvec,'L'};
+
 
 
 p = {};
 if (1)
     fh=figure(1);
-    gp = lattice_drawer(fh,4.2,4.2,4.2);
+    gp = lattice_drawer(fh,10,10,10);
     gp.axis_symmetric();
 
 
     gp.set_xlabel('$$K_{x}(\AA^{-1})$$','Interpreter','Latex','FontSize',20);
     gp.set_ylabel('$$K_{y}(\AA^{-1})$$','Interpreter','Latex','FontSize',20);
     gp.set_zlabel('$$K_{z}(\AA^{-1})$$','Interpreter','Latex','FontSize',20);        
-    
+
+
+    G = {[0 0 0],'$$\Gamma$$'};
+M = {[0.5 0 0]*Kvec,'M'};
+K = {[0.33 0.33 0]*Kvec,'K'};
+L = {[0.5 0 0.5]*Kvec,'L'};
     gmp = gp.draw('point black',G{1}(1),G{1}(2),G{1}(3));
     tg=gp.set_text(gmp,'$$\Gamma$$','Interpreter','Latex');
     tg.FontSize = 16;
@@ -150,18 +156,17 @@ if (1)
 
 
     %path vectors
-    vec1 = gp.draw('vector rgb:33ffff',G{1}(1),G{1}(2),G{1}(3),M{1}(1),M{1}(2),M{1}(3));
+    vec1 = gp.draw('vector rgb:ff0000',G{1}(1),G{1}(2),G{1}(3),M{1}(1),M{1}(2),M{1}(3));
     vec1.MaxHeadSize = 0.5;
     vec1.LineWidth = 2.2;
 
-    vec1 = gp.draw('vector rgb:33ffff',M{1}(1),M{1}(2),M{1}(3),K{1}(1),K{1}(2),K{1}(3));
+    vec1 = gp.draw('vector rgb:ff0000',M{1}(1),M{1}(2),M{1}(3),K{1}(1),K{1}(2),K{1}(3));
     vec1.MaxHeadSize = 0.5;
     vec1.LineWidth = 2.2;
 
-    vec1 = gp.draw('vector rgb:33ffff',K{1}(1),K{1}(2),K{1}(3),G{1}(1),G{1}(2),G{1}(3));
+    vec1 = gp.draw('vector rgb:ff0000',K{1}(1),K{1}(2),K{1}(3),G{1}(1),G{1}(2),G{1}(3));
     vec1.MaxHeadSize = 0.5;
     vec1.LineWidth = 2.2;
-
 
 
 
@@ -218,6 +223,7 @@ if (1)
 
     end
 
+    %burayi nbse2 için aç
     if(1)
     vertex_points = unique(vertex_points,'row');
     %sort x y
@@ -285,3 +291,122 @@ for i = 1:size(good_points,1)
     line([pt(1),good_points(i,1)],[pt(2),good_points(i,2)],[pt(3),good_points(i,3)],'LineWidth',2);
 end
 end
+
+
+
+%nbse2 paths
+if(0)
+
+    G = {[0 0 0],'$$\Gamma$$'};
+M = {[0.5 0 0]*Kvec,'M'};
+K = {[0.33 0.33 0]*Kvec,'K'};
+L = {[0.5 0 0.5]*Kvec,'L'};
+    gmp = gp.draw('point black',G{1}(1),G{1}(2),G{1}(3));
+    tg=gp.set_text(gmp,'$$\Gamma$$','Interpreter','Latex');
+    tg.FontSize = 16;
+
+    mp = gp.draw('point black',M{1}(1),M{1}(2),M{1}(3));
+    tm=gp.set_text(mp,'M','Interpreter','Latex');
+    tm.FontSize = 16;
+
+    kp = gp.draw('point black',K{1}(1),K{1}(2),K{1}(3));
+    tk=gp.set_text(kp,'K','Interpreter','Latex');
+    tk.FontSize = 16;
+
+    %kvectors
+    % for i = 1:3
+    % vcec1 = gp.draw('vector black',0,0,0,Kvec(i,1),Kvec(i,2),Kvec(i,3));
+    % vcec1.MaxHeadSize = 0.3;
+    % vcec1.LineWidth = 2;
+    % end
+    % vcec1.MaxHeadSize = 0.9;
+
+
+    %path vectors
+    vec1 = gp.draw('vector rgb:ff0000',G{1}(1),G{1}(2),G{1}(3),M{1}(1),M{1}(2),M{1}(3));
+    vec1.MaxHeadSize = 0.5;
+    vec1.LineWidth = 2.2;
+
+    vec1 = gp.draw('vector rgb:ff0000',M{1}(1),M{1}(2),M{1}(3),K{1}(1),K{1}(2),K{1}(3));
+    vec1.MaxHeadSize = 0.5;
+    vec1.LineWidth = 2.2;
+
+    vec1 = gp.draw('vector rgb:ff0000',K{1}(1),K{1}(2),K{1}(3),G{1}(1),G{1}(2),G{1}(3));
+    vec1.MaxHeadSize = 0.5;
+    vec1.LineWidth = 2.2;
+end
+
+%gaas path
+if(0)
+    L = {[0.5 0.5 0.5]*Kvec,'L'};
+    G = {[0 0 0],'$$\Gamma$$'};
+    X = {[0.5 0 0.5]*Kvec,'X'};    
+    gmp = gp.draw('point black',G{1}(1),G{1}(2),G{1}(3));
+    tg=gp.set_text(gmp,'$$\Gamma$$','Interpreter','Latex');
+    tg.FontSize = 16;
+    tg.Position = [-0.2 -0.3 -0.4]
+
+    mp = gp.draw('point black',L{1}(1),L{1}(2),L{1}(3));
+    tm=gp.set_text(mp,'L','Interpreter','Latex');
+    tm.FontSize = 16;
+
+    kp = gp.draw('point black',X{1}(1),X{1}(2),X{1}(3));
+    tk=gp.set_text(kp,'X','Interpreter','Latex');
+    tk.FontSize = 16;
+
+
+    vec1 = gp.draw('vector rgb:ff0000',L{1}(1),L{1}(2),L{1}(3),G{1}(1),G{1}(2),G{1}(3));
+    vec1.MaxHeadSize = 0.5;
+    vec1.LineWidth = 2.8;
+
+    vec1 = gp.draw('vector rgb:ff0000',G{1}(1),G{1}(2),G{1}(3),X{1}(1),X{1}(2),X{1}(3));
+    vec1.MaxHeadSize = 0.5;
+    vec1.LineWidth = 2.2;
+
+    end
+
+
+    if(0)
+ %bi2se3
+
+G = {[0 0 0],'$$\Gamma$$'};
+Z = {[0 0 0.5]*Kvec,'Z'};
+F = {[0.5 0.5 0]*Kvec,'F'};
+L = {[0.5 0 0]*Kvec,'L'};
+
+    gmp = gp.draw('point black',G{1}(1),G{1}(2),G{1}(3));
+    tg=gp.set_text(gmp,'$$\Gamma$$','Interpreter','Latex');
+    tg.FontSize = 16;
+    
+    %tg.Position = [-0.2 -0.3 -0.4]
+
+    mp = gp.draw('point black',Z{1}(1),Z{1}(2),Z{1}(3));
+    tm=gp.set_text(mp,'Z','Interpreter','Latex');
+    tm.FontSize = 16;
+
+    kp = gp.draw('point black',F{1}(1),F{1}(2),F{1}(3));
+    tk=gp.set_text(kp,'F','Interpreter','Latex');
+    tk.FontSize = 16;
+
+
+    kp = gp.draw('point black',L{1}(1),L{1}(2),L{1}(3));
+    tk=gp.set_text(kp,'L','Interpreter','Latex');
+    tk.FontSize = 16;
+
+
+    vec1 = gp.draw('vector rgb:ff0000',G{1}(1),G{1}(2),G{1}(3),Z{1}(1),Z{1}(2),Z{1}(3));
+    vec1.MaxHeadSize = 0.5;
+    vec1.LineWidth = 2.8;
+
+    vec1 = gp.draw('vector rgb:ff0000',Z{1}(1),Z{1}(2),Z{1}(3),F{1}(1),F{1}(2),F{1}(3));
+    vec1.MaxHeadSize = 0.5;
+    vec1.LineWidth = 2.2;
+
+    vec1 = gp.draw('vector rgb:ff0000',F{1}(1),F{1}(2),F{1}(3),G{1}(1),G{1}(2),G{1}(3));
+    vec1.MaxHeadSize = 0.5;
+    vec1.LineWidth = 2.8;
+
+    vec1 = gp.draw('vector rgb:ff0000',G{1}(1),G{1}(2),G{1}(3),L{1}(1),L{1}(2),L{1}(3));
+    vec1.MaxHeadSize = 0.5;
+    vec1.LineWidth = 2.2;       
+    end

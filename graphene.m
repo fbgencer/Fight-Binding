@@ -79,7 +79,7 @@ fig_dos = figure("Name","Density of States");
 ce = tb.plot_dos(fig_dos,k,'k -','LineWidth',1.5);
 end
 
-if(1)
+if(0)
 
 range = 2*pi/a; 
 precision = 30;
@@ -89,9 +89,9 @@ surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None','Visible'
 
 %fig_fs = figure("Name","Fermi Surface");
 %fs = tb.plot_fermi_surface(fig_fs,k,1);
-%rp = lattice_drawer(fig_band);
-%lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
-%tb.plot_brillouin_zone(rp,2,'plot points','plot lines');
+rp = lattice_drawer(fig_band);
+lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
+tb.plot_brillouin_zone(rp,2,'plot points','plot lines');
 
 view(43,27);
 end
@@ -112,7 +112,7 @@ M = {[2*pi / (sqrt(3)*a), 0, 0],'M'};
 fig_hsym = figure("Name","High Symmetry Points Figure");
 tb.plot_high_symmetry_points(fig_hsym,precision,K1,G,M,K2);
 
-grid;
+grid on;
 
 % band_dw = lattice_drawer(fig_band); 
 % band_dw.draw('vector red',K1(1),K1(2),0.5,Gamma(1),Gamma(2),0.5,'LineWidth',2,'MaxHeadSize',0.3);

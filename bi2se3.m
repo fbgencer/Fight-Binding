@@ -12,7 +12,7 @@ a3 = [0.000   2.389075  9.546667];
 %a3 =   [0.000000    0.000000    29.928688];
 
 tb = tightbinding(3,a1,a2,a3);% Start with dimension and primitive vectors
-tb.set_metric_unit('m');
+
 
 %pos_bi1 = [0.3990    0.3990    0.6970];
 %pos_bi2 = [0.6010    0.6010    0.3030];
@@ -66,7 +66,7 @@ tb.set_fermi_level(4.4195);
 % F 0.50000 0.50000 0.0000 G 0.00000 0.00000 0.0000
 % G 0.00000 0.00000 0.0000 L 0.50000 0.00000 0.0000
 
-if(1)
+if(0)
 G = {[0 0 0],'$$\Gamma$$'};
 Z = {2*pi*[0 0 0.5],'Z'};
 F = {2*pi*[0.5 0.5 0],'F'};
@@ -76,7 +76,7 @@ K = {[0.33 0.67 0],'K'};
 M = {[0.5 0.5 0],'M'};
 
 
-precision = 50;
+precision = 150;
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
 plts = tb.plot_high_symmetry_points(fig_hsym,precision,G,Z,F,G,L);
@@ -87,13 +87,13 @@ end
 if(0)
 
 range = pi; 
-precision = 20;
+precision = 3;
 k = tb.set_kvector(-range,range,precision);
 %fig_band = figure("Name","Energy Band Figure");
 %surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
 
 fig_fs = figure("Name","Fermi Surface");
-fs = tb.plot_fermi_surface(fig_fs,k,1);
+fs = tb.plot_fermi_surface(fig_fs,k,30);
 
 end
 
@@ -108,7 +108,7 @@ end
 
 
 
-if(0)
+if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20,20);
 gp.xaxis_symmetric();
@@ -119,27 +119,17 @@ gp.zaxis_symmetric();
 %Gallium covalent radius = 1.26 ang, 1.36 atomic
 %As covalent radius = 1.19 ang, 1.14 atomic
 
-atoma = gp.draw('sphere rgb:4589e4',0,0,0,1.36/2,'Visible','off');
-atomb = gp.draw('sphere black',0,0,0,1.14/2,'Visible','off');
-bond = gp.draw('line red',0,0,0,0,'Visible','off','LineWidth',4,'LineStyle','-');
+atoma = gp.draw('sphere rgb:ff8000',0,0,0,1.36/2,'Visible','off');
+atomb = gp.draw('sphere rgb:ff007f',0,0,0,1.14/2,'Visible','off');
+bond = gp.draw('line black',0,0,0,0,'Visible','off','LineWidth',8,'LineStyle','-');
 %rgb:FF55FF
 bonds = {bond};
 atoms = {atoma,atomb};
-from_to = -5:5;
+from_to = -5:7;
 tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",from_to,"y",from_to,"z",from_to);
 
 
-orj = [0 0 0];
-
-px = [orj(1) a1(1)];
-py = [orj(2) a1(2)];
-pz = [orj(3) a1(3)];
-p = a1;
-gp.draw('line yellow',px,py,pz,'LineWidth',3);
-
-
-
-
+legend({'Bi','Se'},'Location','southwest','Interpreter','Latex','FontSize',24) 
 
 %an = a;
 %gp.draw('cuboid',an,an,an,an,an,an,'FaceColor','None','LineWidth',1);

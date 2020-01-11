@@ -17,7 +17,7 @@ tb.set_orbital('1s','2s','2px,2py,2pz','3s','3px,3py,3pz');
 tb.set_metric_unit('A');
 tb.spin_orbit_coupling('true');
 tb.add_hrfile('GaAs_hr.dat');
-tb.set_fermi_level(6);
+tb.set_fermi_level(7.7950);
 
 if(1)
 lat_f = figure("Name","Lattice Figure");
@@ -26,9 +26,9 @@ gp = lattice_drawer(lat_f,15,15,15);
 %Gallium covalent radius = 1.26 ang, 1.36 atomic
 %As covalent radius = 1.19 ang, 1.14 atomic
 
-atoma = gp.draw('sphere rgb:4589e4',0,0,0,1.36/2,'Visible','off');
-atomb = gp.draw('sphere black',0,0,0,1.14/2,'Visible','off');
-bond = gp.draw('line red',0,0,0,0,'Visible','off','LineWidth',4,'LineStyle','-');
+atoma = gp.draw('sphere rgb:4522e4',0,0,0,1.36/2,'Visible','off');
+atomb = gp.draw('sphere rgb:66ff66',0,0,0,1.14/2,'Visible','off');
+bond = gp.draw('line rgb:ff8000',0,0,0,0,'Visible','off','LineWidth',8,'LineStyle','-');
 %rgb:FF55FF
 bonds = {bond};
 atoms = {atoma,atomb};
@@ -38,13 +38,11 @@ tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",from_to,"y",from_to,"z",from_
 
 an = a;
 gp.draw('cuboid',an,an,an,an,an,an,'FaceColor','None','LineWidth',1);
-end
 
-%gp.draw('text black',5.0,5.0,5.0,'Ga','Interpreter','Latex');
-%gp.draw('text black',5.0,5.0,5.0,'Ga','Interpreter','Latex');
-legend({'Ga','As'},'Location','southwest','Interpreter','Latex'); 
+legend({'Ga','As'},'Location','southwest','Interpreter','Latex','FontSize',24)
+end 
 
-if(0)
+if(1)
 
 L = {2*pi*[0.5 0.5 0.5],'L'};
 G = {[0 0 0],'$$\Gamma$$'};
@@ -66,4 +64,21 @@ precision = 50;
 k = tb.set_kvector(-range,range,precision);
 fig_dos = figure("Name","Density of States");
 ce = tb.plot_dos(fig_dos,k);
+end
+
+
+
+if(0)
+
+range = pi; 
+precision = 5;
+k = tb.set_kvector(-range,range,precision);
+%fig_band = figure("Name","Energy Band Figure");
+%surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None');
+
+%fig_fs = figure("Name","Fermi Surface");
+for i = 22:36
+f = figure(i);
+fs = tb.plot_fermi_surface(f,k,i);
+end
 end

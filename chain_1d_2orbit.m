@@ -39,7 +39,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if(1)
+if(0)
 range = pi; 
 precision = 300;
 k = tb.set_kvector(-range,range,precision);
@@ -49,7 +49,7 @@ end
 
 
 
-if(0)
+if(1)
 range = 2*pi/a; 
 precision = 100;
 k = tb.set_kvector(-range,range,precision);

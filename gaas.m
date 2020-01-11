@@ -134,7 +134,7 @@ tb.add_hopping(0,'a','c',d0,'4s','4s','sym','0');
 %Gallium covalent radius = 1.26 ang, 1.36 atomic
 %As covalent radius = 1.19 ang, 1.14 atomic
 
-if(1)
+if(0)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,3,3,3);
 
@@ -181,7 +181,7 @@ end
 
 
 
-if(0)
+if(1)
 %both points are working
 G = [0 0 0];
 X = [2*pi/a 0 0];
