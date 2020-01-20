@@ -62,24 +62,24 @@ atomb = gp.draw('circle rgb:fb7100',0,0,0.3,'Visible','off');
 bond = gp.draw('line black',0,0,0,0,'Visible','off','LineWidth',1);
 bonds = {bond};
 atoms = {atoma,atomb};
-tb.plot_lattice(gp,"x",-6:6,"y",-6:6,"bonds",bonds,"atoms",atoms,'unit vector',[0 a1(2) 0]);
+tb.plot_lattice(gp,"x",-6:6,"y",-6:6,"bonds",bonds,"atoms",atoms,'unit vector',[a1(1) 2*a1(2) 0]);
 
-%uc_rect{1} = gp.draw('line',0,a1(2),a2(1),a2(2)+a1(2),'Color','red','LineWidth',2);
-%uc_rect{2} = gp.draw('line',0,1,2,0,'Color','red','LineWidth',2);
-%uc_rect{3} = gp.draw('line',2,0,0,-1,'Color','red','LineWidth',2);
-%uc_rect{4} = gp.draw('line',0,-1,-2,0,'Color','red','LineWidth',2);
+uc_rect{1} = gp.draw('line',0,a1(2),a2(1),a2(2)+a1(2),'Color','red','LineWidth',2);
+uc_rect{2} = gp.draw('line',-a1(1),0,0,a1(2),'Color','red','LineWidth',2);
+uc_rect{3} = gp.draw('line',-a1(1),0,0,-a1(2),'Color','red','LineWidth',2);
+uc_rect{4} = gp.draw('line',0,-a1(2),a2(1),a2(2)+a1(2),'Color','red','LineWidth',2);
 
 end
 
-if(0)
+if(1)
 range = pi/a; 
-precision = 300;
+precision = 20;
 k = tb.set_kvector(-range,range,precision);
 fig_dos = figure("Name","Density of States");
 ce = tb.plot_dos(fig_dos,k,'k -','LineWidth',1.5);
 end
 
-if(0)
+if(1)
 
 range = 2*pi/a; 
 precision = 30;
@@ -89,9 +89,9 @@ surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None','Visible'
 
 %fig_fs = figure("Name","Fermi Surface");
 %fs = tb.plot_fermi_surface(fig_fs,k,1);
-rp = lattice_drawer(fig_band);
-lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
-tb.plot_brillouin_zone(rp,2,'plot points','plot lines');
+%rp = lattice_drawer(fig_band);
+%lin = rp.draw('line rgb:FF8000',0,0,0,0,'Visible','off','ZData',0.5,'LineWidth',2);
+%tb.plot_brillouin_zone(rp,2,'plot points','plot lines');
 
 view(43,27);
 end

@@ -28,6 +28,10 @@ classdef tightbinding < handle
 
       atom_types = {};
 
+      matrix_size = 0;
+
+      covalent_radii = 0;
+
    end
    methods
        %selfect constructor
@@ -60,26 +64,27 @@ classdef tightbinding < handle
               end
             end
        end
-       %%
-       % function set_atom_type(self,varargin)
+       %
+       function set_atom_types(self,varargin)
         
-       %  covalent_radii_list = { ...
-       %  {'Ga',1.365},
-       %  {'As',1.2070},
-       %  {'Nb',1.5522},
-       %  {'Se',1.2075},
-       %  {'Bi',1.68}}; 
+        covalent_radii_list = { ...
+        {'Ga',1.365},
+        {'As',1.2070},
+        {'Nb',1.5522},
+        {'Se',1.2075},
+        {'Bi',2.68}}; 
 
 
-       %  for i = 1:numel(varargin)
-       %      for j = covalent_radii_list
-       %        if(strcmp(varargin{i},))
 
-       %        end
-       %      end
-       %  end 
-       % end
-       %%
+        for i = 1:numel(varargin)
+            for j = 1:numel(covalent_radii_list)
+              if(strcmp(covalent_radii_list{j}{1},varargin{i}))
+                  self.covalent_radii = self.covalent_radii + covalent_radii_list{j}{2};
+              end
+            end
+        end 
+       end
+       %
        function set_orbital(self,varargin)
 
           self.no_orbital = 0;
@@ -94,6 +99,9 @@ classdef tightbinding < handle
             end
           end
           %self.no_orbital = size(self.orbitals,2);
+       end
+       function set_matrix_size(self,sz)
+          self.matrix_size = sz;
        end
        %%
         function set_primitive_vectors(self,a1,varargin)
@@ -475,9 +483,12 @@ classdef tightbinding < handle
 
       function Energy_cell = calc_band_internalHR(self,k)
 
-        matrix_row_size = size(self.unit_cell,2) * self.no_orbital; % if there is soc we have 2 times bigger matrix
-        if(self.is_soc), matrix_row_size = matrix_row_size * 2; end
-
+        if(self.matrix_size == 0)
+          matrix_row_size = size(self.unit_cell,2) * self.no_orbital; % if there is soc we have 2 times bigger matrix
+          if(self.is_soc), matrix_row_size = matrix_row_size * 2; end
+        else
+          matrix_row_size = self.matrix_size;
+        end
         %disp(matrix_row_size)
         %matrix_row_size = 11;
 
@@ -750,11 +761,11 @@ classdef tightbinding < handle
 
         omin = min(min(E{1}));
         omax = max(max(E{size(E,2)}));
-        onum = 10*size(kvec{1},1);
+        onum = 50*size(kvec{1},1);
         omega = linspace(omin,omax,onum);
         %size(E,2)
 
-        sigma = (omax- omin)/onum*6;
+        sigma = (omax- omin)/onum
 
         dosE = zeros(1,onum);
         for oiter = 1:numel(omega)
@@ -773,7 +784,7 @@ classdef tightbinding < handle
         ax = fig.CurrentAxes;
         plot(ax,omega(1,:),dosE(1,:),varargin{:});
         xlabel(ax,'E(eV)','Interpreter','Latex','FontSize',15);
-        ylabel(ax,'D(E)','Interpreter','Latex','FontSize',15);
+        ylabel(ax,'D(E)(arb. units.)','Interpreter','Latex','FontSize',15);
         %title(ax,'Density of States','Interpreter','Latex');
         set(ax,'TickLabelInterpreter','Latex');
         grid(ax);
@@ -1018,7 +1029,7 @@ classdef tightbinding < handle
         plotted_bonds = {};
         
         %plot_bonds
-        if(0)
+        if(plot_bonds && self.dim <3)
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%BOND plottign
         old_x = 0;
         old_y = 0;
@@ -1027,7 +1038,7 @@ classdef tightbinding < handle
         ctr = 0;
         plotted = 0;
        
-        %which_bonds = self.bonds;
+        which_bonds = self.bonds;
 
         for i = 1 : numel(which_bonds)
         bond = which_bonds{i};
@@ -1193,11 +1204,14 @@ classdef tightbinding < handle
         end
         end%end of plot atoms 
 
+
+        if(self.dim ==3)
         fprintf('plotted atoms\n');
 
+        bond_dist = self.covalent_radii;
         %bond_dist = 2.56; %gaas
-        %bond_dist = 2.8; %bi2se3
-        bond_dist = 2.72; %nbse2
+        %bond_dist = 4; %bi2se3
+        %bond_dist = 2.72; %nbse2
 
         for i = 1:numel(plotted_atoms);
           %fprintf("[%d] (%.2f,%.2f,%.2f)\n",i,plotted_atoms{i});
@@ -1217,6 +1231,7 @@ classdef tightbinding < handle
             end
           end
         end
+      end
 
 
 
@@ -1234,10 +1249,11 @@ classdef tightbinding < handle
             v1 = gp.draw('vector black',uv_cx,uv_cy,uv_cz,uv_cx+a1(1),uv_cy+a1(2),uv_cz+a1(3),'LineWidth',2,'MaxHeadSize',0.5);
             gp.draw('text',uv_cx+a1(1),uv_cy+a1(2),uv_cz+a1(3),"$$a_{1}$$",'Interpreter','Latex','FontSize',15);
             
+            if(self.dim > 1)
             v2 = gp.draw('vector black',uv_cx,uv_cy,uv_cz,uv_cx+a2(1),uv_cy+a2(2),uv_cz+a2(3),'LineWidth',2,'MaxHeadSize',0.5);
             gp.draw('text',uv_cx+a2(1),uv_cy+a2(2),uv_cz+a2(3),"$$a_{2}$$",'Interpreter','Latex','FontSize',15);
-
-            if(self.dim == 3)
+            end
+            if(self.dim > 2)
               v3 = gp.draw('vector black',uv_cx,uv_cy,uv_cz,uv_cx+a3(1),uv_cy+a3(2),uv_cz+a3(3),'LineWidth',2,'MaxHeadSize',0.5);
               gp.draw('text',uv_cx+a3(1),uv_cy+a3(2),uv_cz+a3(3),"$$a_{3}$$",'Interpreter','Latex','FontSize',15);
             end

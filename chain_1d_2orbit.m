@@ -34,7 +34,15 @@ atomb = gp.draw('circle red',0,0,0.15,'Visible','off');
 bond = gp.draw('line black',0,0,0,0,'Visible','off');
 bonds = {bond};
 atoms = {atoma,atomb};
-tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",-6:6,"y",-2:2);
+tb.plot_lattice(gp,"bonds",bonds,"atoms",atoms,"x",-6:6,"y",-2:2,'unit vector',[a 1 0]);
+
+box = gp.draw('crect black',a,0,a,a);
+box.FaceColor = 'none';
+box = gp.draw('crect black',2*a,0,a,a);
+box.FaceColor = 'none';
+
+legend({'A','B'},'Location','southwest','Interpreter','Latex','FontSize',24) 
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -58,8 +66,8 @@ k = tb.set_kvector(-range,range,precision);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fig_hsym = figure("Name","High Symmetry Points Figure");
-any_point = {[3.2/a 0 0],'L'};
-G = {[0 0 0],'$$\Gamma$$'};
+any_point = {[3.2/a 0 0],'3.2/a'};
+G = {[0 0 0],'0'};
 f2 = tb.plot_high_symmetry_points(fig_hsym,precision,G,any_point);
 
 end

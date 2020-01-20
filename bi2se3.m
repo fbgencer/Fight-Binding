@@ -49,6 +49,7 @@ pos_se3 = [0.000000    -3.583615    8.420160];
 %	'Se',posse1,'Se',posse2,'Se',posse3,'Se',posse4,'Se',posse5,'Se',posse6,'Se',posse7,'Se',posse8,'Se',posse9);
 
 
+tb.set_atom_types('Bi','Se');
 tb.set_unit_cell('Bi',pos_bi1,'Bi',pos_bi2,'Se',pos_se1,'Se',pos_se3,'Se',pos_se3); %give unit cell atoms and their locations
 
 
@@ -100,10 +101,10 @@ end
 
 if(0)
 range = pi; 
-precision = 20;
+precision = 30;
 k = tb.set_kvector(-range,range,precision);
 fig_dos = figure("Name","Density of States");
-ce = tb.plot_dos(fig_dos,k);
+ce = tb.plot_dos(fig_dos,k,'k -','LineWidth',1.5);
 end
 
 
@@ -111,10 +112,7 @@ end
 if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20,20);
-gp.xaxis_symmetric();
-gp.yaxis_symmetric();
-gp.zaxis_symmetric();
-
+gp.axis_symmetric();
 
 %Gallium covalent radius = 1.26 ang, 1.36 atomic
 %As covalent radius = 1.19 ang, 1.14 atomic

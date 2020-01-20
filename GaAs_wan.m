@@ -12,6 +12,7 @@ a3 = (a/2).*[1, 1, 0];
 
 tb = tightbinding(3,a1,a2,a3);% Start with name and primitive vectors
 
+tb.set_atom_types('Ga','As');
 tb.set_unit_cell('Ga',[0 0 0],'As',[0.25 0.25 0.25].*a );
 tb.set_orbital('1s','2s','2px,2py,2pz','3s','3px,3py,3pz');
 tb.set_metric_unit('A');
@@ -42,7 +43,7 @@ gp.draw('cuboid',an,an,an,an,an,an,'FaceColor','None','LineWidth',1);
 legend({'Ga','As'},'Location','southwest','Interpreter','Latex','FontSize',24)
 end 
 
-if(1)
+if(0)
 
 L = {2*pi*[0.5 0.5 0.5],'L'};
 G = {[0 0 0],'$$\Gamma$$'};
@@ -60,10 +61,10 @@ end
 
 if(0)
 range = pi; 
-precision = 50;
+precision = 10;
 k = tb.set_kvector(-range,range,precision);
 fig_dos = figure("Name","Density of States");
-ce = tb.plot_dos(fig_dos,k);
+ce = tb.plot_dos(fig_dos,k,'k -','LineWidth',1.5);
 end
 
 

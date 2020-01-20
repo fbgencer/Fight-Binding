@@ -12,9 +12,12 @@ Nb1=[0.000000    0.000000    12.016047];
 Se1=[0.981316    1.699689    13.682898];
 Se2=[0.981316    1.699689    10.349196];
 
+tb.set_atom_types('Nb','Se');
+
 tb.set_unit_cell('Nb',Nb1,'Se',Se1,'Se',Se2);
 
-tb.set_orbital('d1,d2,d3,d4');
+%tb.set_orbital('Nb:d1,d2,d3,d4,d5','Se:px,py,pz');
+tb.set_matrix_size(11);
 tb.set_metric_unit('A');
 tb.spin_orbit_coupling('false');
 tb.add_hrfile('NbSe2_hr_3site.dat');
@@ -22,7 +25,9 @@ tb.set_fermi_level(-1.1865);
 
 
 
-if(1)
+ 
+
+if(0)
 % 0.0000 0.0000 0.0000 20 !Gamma
 % 0.5000 0.0000 0.0000 20 !M
 % 0.3300 0.3300 0.0000 20 !K
@@ -45,11 +50,17 @@ ax.YLim = [-6 5];
 end
 
 
-
-
 if(0)
+range = pi; 
+precision = 20;
+k = tb.set_kvector(-range,range,precision);
+fig_dos = figure("Name","Density of States");
+ce = tb.plot_dos(fig_dos,k,'k -','LineWidth',1.5);
+end
+
+if(1)
 lat_f = figure("Name","Lattice Figure");
-gp = lattice_drawer(lat_f,20,20,80);
+gp = lattice_drawer(lat_f,20,20,30);
 gp.xaxis_symmetric();
 gp.yaxis_symmetric();
 gp.zaxis_symmetric();
