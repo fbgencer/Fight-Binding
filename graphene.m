@@ -37,7 +37,7 @@ tb.set_unit_cell('A',[-a0/2 0],'B',[a0/2 0]); %give unit cell atoms and their lo
 tb.set_metric_unit('A');
 
 Eo = 0;
-t = 0.1;
+t = 1;
 tb.add_hopping(Eo,'A','A',[0 0]);  % 0 to 0
 tb.add_hopping(Eo,'B','B',[0 0]);  % 0 to 0
 
@@ -49,7 +49,7 @@ tb.add_hopping(-t,'A','B',[-1 0]);  % 0 to 1 with -a1 vector
 tb.add_hopping(-t,'A','B',[0 -1]);  % 0 to 3
 %tb.add_hopping(-t,2,1,[0 1]);  % 0 to 4
 
-if(1)
+if(0)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20);
 
@@ -73,16 +73,16 @@ end
 
 if(1)
 range = pi/a; 
-precision = 20;
+precision = 200;
 k = tb.set_kvector(-range,range,precision);
 fig_dos = figure("Name","Density of States");
-ce = tb.plot_dos(fig_dos,k,'k -','LineWidth',1.5);
+ce = tb.plot_dos(fig_dos,k,200,0.4,'k -','LineWidth',1.5);
 end
 
-if(1)
+if(0)
 
 range = 2*pi/a; 
-precision = 30;
+precision = 300;
 k = tb.set_kvector(-range,range,precision);
 fig_band = figure("Name","Energy Band Figure");
 surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None','Visible','on');
@@ -96,7 +96,7 @@ surfaces = tb.plot_energy_band(fig_band,k,'surface','EdgeColor','None','Visible'
 view(43,27);
 end
 
-if(1)
+if(0)
 
 %surfaces{1}.Visible = 'off';
 
@@ -110,8 +110,8 @@ K2 = {[2*pi / (sqrt(3)*a), 2*pi / (3*a), 0],'K'};
 M = {[2*pi / (sqrt(3)*a), 0, 0],'M'};
 
 fig_hsym = figure("Name","High Symmetry Points Figure");
-tb.plot_high_symmetry_points(fig_hsym,precision,K1,G,M,K2);
-
+%tb.plot_high_symmetry_points(fig_hsym,precision,K1,G,M,K2);
+tb.plot_high_symmetry_points(fig_hsym,precision,G,M,K2,G);
 grid on;
 
 % band_dw = lattice_drawer(fig_band); 

@@ -18,9 +18,9 @@ tb.set_orbital('1s','2s','2px,2py,2pz','3s','3px,3py,3pz');
 tb.set_metric_unit('A');
 tb.spin_orbit_coupling('true');
 tb.add_hrfile('GaAs_hr.dat');
-tb.set_fermi_level(7.7950);
+tb.set_fermi_level(7.1912);
 
-if(1)
+if(0)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,15,15,15);
 
@@ -43,7 +43,7 @@ gp.draw('cuboid',an,an,an,an,an,an,'FaceColor','None','LineWidth',1);
 legend({'Ga','As'},'Location','southwest','Interpreter','Latex','FontSize',24)
 end 
 
-if(0)
+if(1)
 
 L = {2*pi*[0.5 0.5 0.5],'L'};
 G = {[0 0 0],'$$\Gamma$$'};

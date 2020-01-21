@@ -26,13 +26,8 @@ tb.set_fermi_level(-1.1865);
 
 
  
+if(1)
 
-if(0)
-% 0.0000 0.0000 0.0000 20 !Gamma
-% 0.5000 0.0000 0.0000 20 !M
-% 0.3300 0.3300 0.0000 20 !K
-% 0.0000 0.0000 0.0000 20 !Gamma
-% 0.5000 0.0000 0.5000 20 !L
 G = {[0 0 0],'$$\Gamma$$'};
 M = {2*pi*[0.5 0 0],'M'};
 K = {2*pi*[0.33 0.33 0],'K'};
@@ -44,15 +39,12 @@ fig_hsym = figure("Name","High Symmetry Points Figure");
 tb.plot_high_symmetry_points(fig_hsym,precision,G,M,K,G);
 ax = fig_hsym.CurrentAxes;
 ax.YLim = [-6 5];
-%ax.YTick = -5:1:5;
-%ax.YTickLabel = {'-5','-4','-3','-2','-1','0','1','2','3','4','5'}
-%,W,L,K,G
 end
 
 
-if(0)
+if(1)
 range = pi; 
-precision = 20;
+precision = 10;
 k = tb.set_kvector(-range,range,precision);
 fig_dos = figure("Name","Density of States");
 ce = tb.plot_dos(fig_dos,k,'k -','LineWidth',1.5);
@@ -61,10 +53,7 @@ end
 if(1)
 lat_f = figure("Name","Lattice Figure");
 gp = lattice_drawer(lat_f,20,20,30);
-gp.xaxis_symmetric();
-gp.yaxis_symmetric();
-gp.zaxis_symmetric();
-
+gp.axis_symmetric();
 
 %Gallium covalent radius = 1.26 ang, 1.36 atomic
 %As covalent radius = 1.19 ang, 1.14 atomic

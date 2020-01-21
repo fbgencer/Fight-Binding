@@ -448,13 +448,16 @@ classdef tightbinding < handle
           Energy_cell{i} = zeros(size(k,1),1);
           %zeros(%zeros(alen,blen,clen);
         end
-       
+        
+
         bonding_no = numel(self.bonds);
         if(size(self.unit_cell,2) == 0)
           error('Unit cell is undefined !');
         end
+
         tic;
         disp('Starting diagonalization...');
+        fprintf("K iteration number :%d\n",size(k,1));
 
         for kiter = 1:size(k,1)
           eig_matrix = zeros(matrix_row_size,matrix_row_size);
@@ -476,6 +479,11 @@ classdef tightbinding < handle
           for iter_eig = 1:size(eigens,1)
             Energy_cell{iter_eig}(kiter) = (eigens(iter_eig));
           end
+
+          if(mod(kiter,10000) == 0)
+            fprintf("K iteration:[%d]\n",kiter);
+          end
+
          end
 
         toc;
@@ -522,7 +530,7 @@ classdef tightbinding < handle
             %For some cases there are imaginary values around 1e-20 level so we will cut them with real
             Energy_cell{iter_eig}(kiter) = eigens(iter_eig) - self.Efermi;
           end
-          if(mod(kiter,1000) == 0)
+          if(mod(kiter,10000) == 0)
             fprintf("K iteration:[%d]\n",kiter);
           end
         end
@@ -744,7 +752,7 @@ classdef tightbinding < handle
         %self.Epath = E;
       end
       %%
-      function ddd = plot_dos(self,fig,kvec,varargin)
+      function ddd = plot_dos(self,fig,kvec,precision,sigma,varargin)
         k = kvec{4};
 
         hold on;
@@ -761,24 +769,33 @@ classdef tightbinding < handle
 
         omin = min(min(E{1}));
         omax = max(max(E{size(E,2)}));
-        onum = 50*size(kvec{1},1);
+        onum = precision*size(kvec{1},1);
         omega = linspace(omin,omax,onum);
         %size(E,2)
 
-        sigma = (omax- omin)/onum
+
+        fprintf("Starting dos calculation.\n");
+        fprintf("Omega total %d\n",numel(omega));
 
         dosE = zeros(1,onum);
-        for oiter = 1:numel(omega)
+        band_no = size(E,2);
+        ksize = size(k,1);
+        tic;
+        parfor (oiter = 1:onum,12)
           omg = omega(oiter);
           sum_ = 0;
-          for band_iter = 1:size(E,2)
+          for band_iter = 1:band_no
             Eband = E{band_iter};
-            for kiter = 1:size(k,1)
+            for kiter = 1:ksize
                 sum_ = sum_ + delta_gaussian(omg - Eband(kiter), sigma);
             end
           end
             dosE(oiter) = dosE(oiter) + sum_;
+          %if(mod(oiter,10000) == 0)
+          %  fprintf("Omega iteration:[%d]\n",oiter);
+          %end
         end
+        toc;
 
         ddd = dosE;
         ax = fig.CurrentAxes;
@@ -1551,6 +1568,7 @@ end %class end
 
 function res = delta_gaussian(x,sigma)
   A = 1/sqrt(2*pi)/sigma;
+  %A = 1;
   pow = (x.^2)./(2*sigma*sigma);
   res = A*exp(-pow);
 end
